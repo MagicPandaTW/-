@@ -382,8 +382,8 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
           </div>
           <div class="param-row">
             <span class="param-label">速度 v₂</span>
-            <input type="range" id="v2" min="-8" max="8" step="0.5" value="-2" oninput="updateParam()">
-            <span class="param-val" id="v2v">−2</span>
+            <input type="range" id="v2" min="-8" max="8" step="0.5" value="0" oninput="updateParam()">
+            <span class="param-val" id="v2v">0</span>
           </div>
         </div>
       </div>
@@ -435,7 +435,8 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
     <button class="data-tab active" onclick="showDataTab(0)">動量</button>
     <button class="data-tab"        onclick="showDataTab(1)">動能</button>
     <button class="data-tab"        onclick="showDataTab(2)">速度</button>
-    <button class="data-tab"        onclick="showDataTab(3)">守恆</button>
+    <button class="data-tab"        onclick="showDataTab(3)">質心系</button>
+    <button class="data-tab"        onclick="showDataTab(4)">守恆</button>
   </div>
   <div id="data-panel">
     <!-- TAB 0: 動量 -->
@@ -458,15 +459,25 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
     </div>
     <!-- TAB 2: 速度 -->
     <div class="data-page" id="dp-2">
-      <div class="tbl-head">速度 v</div>
+      <div class="tbl-head">速度 v（地面）</div>
       <div class="tbl-row"><span class="tbl-lbl">碰前 v₁</span><span class="tbl-val a" id="t-v1b">—</span></div>
       <div class="tbl-row"><span class="tbl-lbl">碰前 v₂</span><span class="tbl-val b" id="t-v2b">—</span></div>
       <div class="tbl-row"><span class="tbl-lbl">碰後 v₁'</span><span class="tbl-val a" id="t-v1a">—</span></div>
       <div class="tbl-row"><span class="tbl-lbl">碰後 v₂'</span><span class="tbl-val b" id="t-v2a">—</span></div>
       <div class="tbl-row"><span class="tbl-lbl">v<sub>cm</sub></span><span class="tbl-val" style="color:var(--purple)" id="t-vcm">—</span></div>
     </div>
-    <!-- TAB 3: 守恆 -->
+
+    <!-- TAB 3: 質心系 -->
     <div class="data-page" id="dp-3">
+      <div class="tbl-head">相對質心速度 u = v − v<sub>cm</sub></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 u₁</span><span class="tbl-val a" id="t-u1b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 u₂</span><span class="tbl-val b" id="t-u2b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 u₁'</span><span class="tbl-val a" id="t-u1a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 u₂'</span><span class="tbl-val b" id="t-u2a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">u₁ + u₁'</span><span class="tbl-val" style="color:var(--amber)" id="t-ucheck1">—</span></div>
+    </div>
+    <!-- TAB 4: 守恆 -->
+    <div class="data-page" id="dp-4">
       <div class="tbl-head">守恆 / 比較</div>
       <div class="tbl-row"><span class="tbl-lbl">v<sub>cm</sub></span><span class="tbl-val" style="color:var(--purple)" id="ro-vcm">—</span></div>
       <div class="tbl-row"><span class="tbl-lbl">P 總</span><span class="tbl-val tot" id="ro-p">—</span></div>
@@ -813,6 +824,18 @@ function updateTable(u1, u2, u1a, u2a){
     document.getElementById('ro-vcm').textContent = view==='cm'?'0':s.vcm;
     document.getElementById('ro-p').textContent   = s.ptot;
     document.getElementById('t-ktotb').textContent= s.k1b;
+    // preset 質心系符號
+    const PRESET_U = {
+      'xl-xs':{u1b:'≈0',    u2b:'≈-V₀',  u1a:'≈0',     u2a:'≈V₀',   uc:'≈0'},
+      'l-s'  :{u1b:'V₀/5',  u2b:'-4V₀/5',u1a:'-V₀/5',  u2a:'4V₀/5', uc:'0'},
+      'eq'   :{u1b:'V₀/2',  u2b:'-V₀/2', u1a:'-V₀/2',  u2a:'V₀/2',  uc:'0'},
+      's-l'  :{u1b:'4V₀/5', u2b:'-V₀/5', u1a:'-4V₀/5', u2a:'V₀/5',  uc:'0'},
+      'xs-xl':{u1b:'≈V₀',   u2b:'≈0',    u1a:'≈-V₀',   u2a:'≈0',    uc:'≈0'},
+    };
+    const pu = PRESET_U[activePreset]||PRESET_U['eq'];
+    document.getElementById('t-u1b').textContent = pu.u1b;
+    document.getElementById('t-u2b').textContent = pu.u2b;
+
     if(u1a !== null && u1a !== undefined){
       document.getElementById('t-v1a').textContent  = s.v1a;
       document.getElementById('t-v2a').textContent  = s.v2a;
@@ -823,8 +846,12 @@ function updateTable(u1, u2, u1a, u2a){
       document.getElementById('t-dke').textContent  = s.dke;
       document.getElementById('t-ktota').textContent= s.k1a;
       document.getElementById('t-dke2').textContent = s.dke;
+      document.getElementById('t-u1a').textContent  = pu.u1a;
+      document.getElementById('t-u2a').textContent  = pu.u2a;
+      document.getElementById('t-ucheck1').textContent = pu.uc;
     } else {
-      ['t-v1a','t-v2a','t-p1a','t-p2a','t-ke1a','t-ke2a','t-dke','t-ktota','t-dke2'].forEach(id=>{
+      ['t-v1a','t-v2a','t-p1a','t-p2a','t-ke1a','t-ke2a','t-dke','t-ktota','t-dke2',
+       't-u1a','t-u2a','t-ucheck1'].forEach(id=>{
         document.getElementById(id).textContent='—';
       });
     }
@@ -839,15 +866,23 @@ function updateTable(u1, u2, u1a, u2a){
   document.getElementById('t-ke1b').textContent = fmtA(0.5*params.m1*_u1**2);
   document.getElementById('t-ke2b').textContent = fmtA(0.5*params.m2*_u2**2);
   document.getElementById('t-ptot').textContent = fmtA(params.m1*_u1+params.m2*_u2);
-  document.getElementById('t-vcm').textContent  = view==='cm'?'0.00':vcm.toFixed(2);
-  document.getElementById('ro-vcm').textContent = view==='cm'?'0.00':vcm.toFixed(2);
-  document.getElementById('ro-p').textContent   = fmtA(params.m1*_u1+params.m2*_u2);
+  document.getElementById('t-vcm').textContent  = vcm.toFixed(2);
+  document.getElementById('ro-vcm').textContent = vcm.toFixed(2);
+  document.getElementById('ro-p').textContent   = fmtA(params.m1*params.v1+params.m2*params.v2);
   const ktotb = 0.5*params.m1*_u1**2+0.5*params.m2*_u2**2;
   document.getElementById('t-ktotb').textContent = fmtA(ktotb);
+  // 相對質心速度
+  const ru1b = params.v1 - vcm;
+  const ru2b = params.v2 - vcm;
+  document.getElementById('t-u1b').textContent = fmt(ru1b);
+  document.getElementById('t-u2b').textContent = fmt(ru2b);
+  document.getElementById('t-u1a').textContent = '—';
+  document.getElementById('t-u2a').textContent = '—';
+  document.getElementById('t-ucheck1').textContent = '—';
 
   if(u1a !== null && u1a !== undefined){
-    const _u1a = view==='cm' ? u1a-vcm : u1a;
-    const _u2a = view==='cm' ? u2a-vcm : u2a;
+    const _u1a = u1a;
+    const _u2a = u2a;
     document.getElementById('t-v1a').textContent  = fmt(_u1a);
     document.getElementById('t-v2a').textContent  = fmt(_u2a);
     document.getElementById('t-p1a').textContent  = fmtA(params.m1*_u1a);
@@ -859,8 +894,15 @@ function updateTable(u1, u2, u1a, u2a){
     document.getElementById('t-dke').textContent  = fmtA(ke0-ke1);
     document.getElementById('t-ktota').textContent= fmtA(ke1);
     document.getElementById('t-dke2').textContent = fmtA(ke0-ke1);
+    // 碰後相對質心速度
+    const ru1a = u1a - vcm;
+    const ru2a = u2a - vcm;
+    document.getElementById('t-u1a').textContent = fmt(ru1a);
+    document.getElementById('t-u2a').textContent = fmt(ru2a);
+    // u₁ + u₁'：完全彈性應 = 0
+    document.getElementById('t-ucheck1').textContent = fmtA(ru1b + ru1a);
   } else {
-    ['t-v1a','t-v2a','t-p1a','t-p2a','t-ke1a','t-ke2a','t-dke','t-ktota','t-dke2'].forEach(id=>{
+    ['t-v1a','t-v2a','t-p1a','t-p2a','t-ke1a','t-ke2a','t-dke','t-ktota','t-dke2','t-u1a','t-u2a'].forEach(id=>{
       document.getElementById(id).textContent='—';
     });
   }
