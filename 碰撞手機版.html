@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>006m 碰撞動畫（手機版）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --fs-title: clamp(15px,4.5vw,22px);
+  --fs-body:  clamp(13px,3.8vw,19px);
+  --fs-small: clamp(11px,3vw,15px);
+  --fs-mini:  clamp(10px,2.5vw,13px);
+  --blue:#3b82f6; --blue-l:#60a5fa; --blue-d:#1d4ed8;
+  --red:#ef4444;  --red-l:#f87171;  --red-d:#b91c1c;
+  --green:#4ade80; --purple:#a78bfa; --amber:#f59e0b;
+  --bg:#0f1117; --bg2:#13161f; --bg3:#0d1020; --bg4:#0b0e16;
+  --border:#1e2130; --border2:#2a2d38;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body{
+  font-family:'Noto Sans TC',system-ui,sans-serif;
+  color:#e8e6df;
+  display:flex;flex-direction:column;
+  height:100dvh;overflow:hidden;
+}
+
+/* ── TOP BAR ── */
+#topbar{
+  display:flex;align-items:center;
+  height:44px;min-height:44px;flex-shrink:0;
+  padding:0 3vw;
+  background:var(--bg2);border-bottom:1px solid var(--border2);
+  gap:8px;
+}
+#topbar h1{font-size:var(--fs-title);font-weight:700;letter-spacing:.03em;flex:1;}
+.page-btn{
+  padding:.3em .7em;font-size:var(--fs-mini);
+  border:1px solid var(--border2);border-radius:5px;
+  background:transparent;color:#888;cursor:pointer;transition:.2s;
+  white-space:nowrap;
+}
+.page-btn.active{background:#2563eb;color:#fff;border-color:#2563eb;}
+
+/* ── PAGES ── */
+#page-sim, #page-formula{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+}
+#page-formula{display:none;}
+
+/* ── CANVAS ── */
+#canvas-wrap{
+  width:100%;flex-shrink:0;
+  height:38dvh;
+  background:var(--bg4);border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+
+/* ── VIEW TOGGLE ── */
+#view-toggle{
+  display:flex;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+.view-btn{
+  flex:1;padding:.45em 0;font-size:var(--fs-mini);font-weight:600;
+  background:var(--bg2);color:#666;border:none;cursor:pointer;
+  transition:.2s;border-right:1px solid var(--border);
+}
+.view-btn:last-child{border-right:none;}
+.view-btn.active{background:#1a2a4a;color:var(--blue-l);}
+
+/* ── CONTROL SCROLL ── */
+#ctrl-scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  background:var(--bg2);padding:2.5vw 3vw;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* mode toggle */
+.sec-label{
+  font-size:var(--fs-mini);font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#5a6080;margin-bottom:.4em;margin-top:.9em;
+}
+.sec-label:first-child{margin-top:0;}
+.mode-toggle{display:flex;border:1px solid #2a2d3e;border-radius:5px;overflow:hidden;margin-bottom:.7em;}
+.mode-btn{
+  flex:1;padding:.5em 0;font-size:var(--fs-small);font-weight:600;
+  background:#1a1d2a;color:#666;border:none;cursor:pointer;transition:.15s;
+}
+.mode-btn.active{background:#2563eb;color:#fff;}
+
+/* preset grid */
+.preset-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2%;margin-bottom:.6em;}
+.preset-btn{
+  padding:.4em 0;font-size:var(--fs-mini);font-weight:600;
+  background:#1a1d2a;color:#8890a8;
+  border:1px solid #2a2d3e;border-radius:4px;cursor:pointer;transition:.15s;
+  text-align:center;line-height:1.3;
+}
+.preset-btn.active{background:#1a2a4a;color:var(--blue-l);border-color:#2563eb;}
+
+/* obj rows */
+.obj-2col{display:grid;grid-template-columns:1fr 1fr;gap:3vw;margin-bottom:.5em;}
+.obj-header{
+  font-size:var(--fs-small);font-weight:700;
+  padding:.2em .5em;border-radius:4px;margin-bottom:.4em;
+}
+.obj-header.a{background:#1a2a4a;color:var(--blue-l);}
+.obj-header.b{background:#2a1a1a;color:var(--red-l);}
+
+.param-row{display:flex;align-items:center;gap:2vw;margin-bottom:.4em;}
+.param-label{font-size:var(--fs-mini);color:#8890a8;flex-shrink:0;width:36%;}
+.param-val{font-size:var(--fs-small);font-weight:700;color:#e8e6df;flex-shrink:0;width:18%;text-align:right;}
+input[type=range]{
+  flex:1;min-width:0;-webkit-appearance:none;
+  height:4px;background:#2a2d3e;border-radius:2px;outline:none;cursor:pointer;
+  touch-action:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:#2563eb;cursor:pointer;
+}
+input[type=range].red::-webkit-slider-thumb{background:#ef4444;}
+input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
+
+.e-row{display:flex;align-items:center;gap:2vw;margin-bottom:.3em;}
+.e-val{font-size:var(--fs-small);font-weight:700;color:var(--purple);width:18%;text-align:right;flex-shrink:0;}
+
+/* btn row */
+.btn-row{display:flex;gap:3%;margin:0.5em 0;}
+.btn{
+  flex:1;padding:.55em 0;border-radius:5px;border:1px solid #2a2d3e;
+  font-size:var(--fs-body);font-weight:700;
+  cursor:pointer;transition:.15s;background:#1a1d2a;color:#c0c8e0;
+}
+.btn.go{background:#1a3a4a;color:var(--blue-l);border-color:#2563eb;}
+.btn.go.running{background:#1a3020;color:#4ade80;border-color:#22c55e;}
+.btn.reset{background:#2a1a20;color:var(--red-l);border-color:#7f1d1d;}
+
+/* ── DATA TABS ── */
+#data-tabs{
+  flex-shrink:0;
+  display:flex;
+  background:var(--bg3);border-top:1px solid var(--border);
+}
+.data-tab{
+  flex:1;padding:.4em 0;font-size:var(--fs-mini);font-weight:700;
+  background:transparent;color:#666;border:none;cursor:pointer;
+  border-right:1px solid var(--border);transition:.2s;letter-spacing:.03em;
+}
+.data-tab:last-child{border-right:none;}
+.data-tab.active{background:#1a1d2a;color:#e8e6df;}
+
+#data-panel{
+  flex-shrink:0;height:22dvh;min-height:110px;
+  background:var(--bg3);
+  overflow:hidden;position:relative;
+}
+.data-page{
+  display:none;
+  padding:1.5vw 3vw;
+  height:100%;overflow-y:auto;
+}
+.data-page.active{display:block;}
+.tbl-head{
+  font-size:var(--fs-small);font-weight:700;color:#e8e6df;
+  text-align:center;border-bottom:1px solid var(--border);
+  padding-bottom:.3em;margin-bottom:.4em;
+}
+.tbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3em;}
+.tbl-lbl{font-size:var(--fs-small);color:#c8cde0;}
+.tbl-val{font-size:var(--fs-body);font-weight:700;color:#e8e6df;}
+.tbl-val.a{color:var(--blue-l);}
+.tbl-val.b{color:var(--red-l);}
+.tbl-val.tot{color:var(--green);}
+
+/* ── FORMULA PAGE（直式詳解風格）── */
+#page-formula{
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:4vw 5vw 10vw;background:var(--bg);
+  flex:1;
+}
+/* 大標題（章節） */
+.fs-h1{
+  font-size:var(--fs-title);font-weight:900;
+  color:#e8e6df;letter-spacing:.06em;
+  margin:6vw 0 1vw;
+  padding-left:3vw;
+  border-left:4px solid var(--blue-l);
+  line-height:1.4;
+}
+.fs-h1:first-child{margin-top:2vw;}
+/* 小標題（子項） */
+.fs-h2{
+  font-size:var(--fs-body);font-weight:700;
+  color:var(--purple);
+  margin:4vw 0 1vw;
+  padding-left:2.5vw;
+  border-left:2px solid var(--purple);
+  line-height:1.4;
+}
+/* 說明文字 */
+.fs-p{
+  font-size:var(--fs-small);color:#b0b8d0;
+  line-height:1.9;margin:.5em 0;
+}
+/* 公式框 */
+.fs-box{
+  background:#0d1120;
+  border:1px solid #2a2d50;
+  border-left:3px solid var(--blue-l);
+  border-radius:0 6px 6px 0;
+  padding:3vw 4vw;
+  margin:2vw 0 3vw;
+  font-size:var(--fs-body);
+  font-family:'Courier New',monospace;
+  font-weight:700;
+  color:#e8e6df;
+  line-height:2;
+  word-break:break-all;
+}
+.fs-box.purple{border-left-color:var(--purple);}
+.fs-box.amber {border-left-color:var(--amber);}
+.fs-box.green {border-left-color:var(--green);}
+.fs-box.red   {border-left-color:var(--red-l);}
+/* 行內色彩 */
+.cb{color:var(--blue-l);}
+.cr{color:var(--red-l);}
+.cg{color:var(--green);}
+.cp{color:var(--purple);}
+.ca{color:var(--amber);}
+/* 條件標籤 */
+.fs-tag{
+  display:inline-block;font-size:var(--fs-mini);font-weight:700;
+  padding:.15em .6em;border-radius:3px;margin:.2em .3em .2em 0;
+  vertical-align:middle;
+}
+.tag-e{background:#1a3020;color:#4ade80;border:1px solid #22c55e;}
+.tag-p{background:#1a1a2a;color:var(--purple);border:1px solid #6d28d9;}
+.tag-i{background:#2a1a20;color:var(--red-l);border:1px solid var(--red-d);}
+/* 備註 */
+.fs-rem{
+  font-size:var(--fs-mini);color:#5a6080;
+  padding-left:3vw;line-height:1.8;
+  border-left:1px dashed #2a2d3e;
+  margin:.5em 0 2em;
+}
+/* 分隔線 */
+.fs-hr{
+  border:none;border-top:1px solid #1e2235;
+  margin:6vw 0;
+}
+
+
+/* 分數排版 */
+.frac{
+  display:inline-flex;flex-direction:column;align-items:center;
+  vertical-align:middle;margin:0 .25em;line-height:1.1;
+}
+.frac .num{
+  border-bottom:2px solid currentColor;
+  padding:0 .4em .15em;text-align:center;white-space:nowrap;
+  opacity:.95;
+}
+.frac .den{
+  padding:.15em .4em 0;text-align:center;white-space:nowrap;
+}
+/* 公式行（inline-flex，基線對齊，縮放不換行） */
+.fs-eq{
+  display:flex;align-items:center;
+  flex-wrap:nowrap;
+  gap:.15em;
+  font-family:'Courier New',monospace;
+  font-size:clamp(11px,3.2vw,18px);font-weight:700;
+  line-height:1;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding-bottom:.1em;
+}
+/* 公式框內部重設，避免 fs-box line-height 干擾 */
+.fs-box{line-height:1 !important;padding:3.5vw 4vw;}
+.fs-box .fs-eq{font-size:var(--fs-body);}
+
+/* KaTeX inline in math-line */
+#page-formula .math-line{
+  display:block;
+  text-align:center;
+  margin:.45em 0;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  font-size:clamp(13px,3.5vw,19px);
+}
+#page-formula .fs-box .katex{color:inherit;font-size:1em;}
+#page-formula .fs-box.green .katex{color:#d4f0d4;}
+#page-formula .fs-box.purple .katex{color:#ddd4ff;}
+#page-formula .fs-box.amber .katex{color:#fff0c0;}
+#page-formula .fs-box.red .katex{color:#ffd4d4;}
+#page-formula .fs-box{line-height:1.6 !important; overflow-x:visible;}
+#page-formula .katex-display{margin:.2em 0 !important;}
+
+
+/* ── 公式放大 Modal ── */
+#math-modal{
+  display:none;position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.85);
+  justify-content:center;align-items:center;
+  padding:6vw;
+  cursor:pointer;
+}
+#math-modal.open{display:flex;}
+#math-modal-content{
+  background:#0d1120;
+  border:1px solid #2a2d50;
+  border-radius:12px;
+  padding:7vw 8vw;
+  max-width:92vw;
+  max-height:80dvh;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  text-align:center;
+  font-size:clamp(18px,6vw,32px);
+  cursor:default;
+}
+#math-modal-content .katex{ color:#e8e6df; }
+#math-modal-content .katex-display{
+  margin:0 !important;
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+#math-modal-hint{
+  position:absolute;bottom:5dvh;
+  font-size:var(--fs-mini);color:#5a6080;
+  pointer-events:none;
+}
+.math-line{cursor:zoom-in;}
+.math-line:active{opacity:.7;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#2a2d3e;border-radius:2px;}
+</style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.getElementById('page-formula'),{
+      delimiters:[
+        {left:'\\[',right:'\\]',display:true},
+        {left:'$',right:'$',display:false}
+      ],
+      throwOnError:false
+    });"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <h1>正向碰撞</h1>
+  <button class="page-btn active" id="pg-sim" onclick="showPage('sim')">模擬</button>
+  <button class="page-btn" id="pg-formula" onclick="showPage('formula')">公式</button>
+</div>
+
+<!-- ══ SIM PAGE ══ -->
+<div id="page-sim">
+  <!-- CANVAS -->
+  <div id="canvas-wrap"><canvas id="c"></canvas></div>
+
+  <!-- VIEW TOGGLE -->
+  <div id="view-toggle">
+    <button class="view-btn active" id="btn-lab" onclick="setView('lab')">地面（實驗室）</button>
+    <button class="view-btn" id="btn-cm"  onclick="setView('cm')">質心座標</button>
+  </div>
+
+  <!-- CONTROL SCROLL -->
+  <div id="ctrl-scroll">
+    <!-- MODE -->
+    <div class="sec-label">設定模式</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-free"   onclick="setMode('free')">自由設定</button>
+      <button class="mode-btn"        id="mode-preset" onclick="setMode('preset')">固定質量比</button>
+    </div>
+
+    <!-- PRESET BUTTONS -->
+    <div id="preset-panel" style="display:none">
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="applyPreset('xl-xs')" id="p-xl-xs">極大<br>碰<br>極小</button>
+        <button class="preset-btn" onclick="applyPreset('l-s')"   id="p-l-s">大<br>碰<br>小</button>
+        <button class="preset-btn active" onclick="applyPreset('eq')" id="p-eq">等<br>碰<br>等</button>
+        <button class="preset-btn" onclick="applyPreset('s-l')"   id="p-s-l">小<br>碰<br>大</button>
+        <button class="preset-btn" onclick="applyPreset('xs-xl')" id="p-xs-xl">極小<br>碰<br>極大</button>
+      </div>
+    </div>
+
+    <!-- FREE PARAMS -->
+    <div id="free-panel">
+      <div class="obj-2col">
+        <div>
+          <div class="obj-header a">A（藍）</div>
+          <div class="param-row">
+            <span class="param-label">質量 m₁</span>
+            <input type="range" id="m1" min="1" max="5" step="0.5" value="3" oninput="updateParam()">
+            <span class="param-val" id="m1v">3</span>
+          </div>
+          <div class="param-row">
+            <span class="param-label">速度 v₁</span>
+            <input type="range" id="v1" min="-8" max="8" step="0.5" value="4" oninput="updateParam()">
+            <span class="param-val" id="v1v">+4</span>
+          </div>
+        </div>
+        <div>
+          <div class="obj-header b">B（紅）</div>
+          <div class="param-row">
+            <span class="param-label">質量 m₂</span>
+            <input type="range" id="m2" min="1" max="5" step="0.5" value="2" oninput="updateParam()">
+            <span class="param-val" id="m2v">2</span>
+          </div>
+          <div class="param-row">
+            <span class="param-label">速度 v₂</span>
+            <input type="range" id="v2" min="-8" max="8" step="0.5" value="-2" oninput="updateParam()">
+            <span class="param-val" id="v2v">−2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESET VELOCITY -->
+    <div id="preset-vel-panel" style="display:none">
+      <div class="obj-2col">
+        <div>
+          <div class="obj-header a">A 速度</div>
+          <div class="param-row">
+            <input type="range" id="pv1" min="-8" max="8" step="0.5" value="4" oninput="updatePresetVel()">
+            <span class="param-val" id="pv1v">+4</span>
+          </div>
+        </div>
+        <div>
+          <div class="obj-header b">B 速度</div>
+          <div class="param-row" id="pv2-row" style="opacity:.35;pointer-events:none">
+            <input type="range" id="pv2" min="-8" max="8" step="0.5" value="0" oninput="updatePresetVel()">
+            <span class="param-val" id="pv2v">0（靜止）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESTITUTION -->
+    <div id="e-section">
+      <div class="sec-label">恢復係數</div>
+      <div class="e-row">
+        <span style="font-size:var(--fs-small);color:#8890a8;flex-shrink:0;width:8%;">e</span>
+        <input type="range" class="purple" id="ecoef" min="0" max="1" step="0.05" value="1" style="flex:1" oninput="updateParam()">
+        <span class="e-val" id="ecoefv">1.00</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:var(--fs-mini);color:#3a4060;padding:0 .3em;margin-top:-.1em;margin-bottom:.4em;">
+        <span>完全非彈性</span><span>部分彈性</span><span>完全彈性</span>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="sec-label">控制</div>
+    <div class="btn-row">
+      <button class="btn go" id="btn-go" onclick="toggleRun()">▶ 開始</button>
+      <button class="btn reset" onclick="resetSim()">↺ 重設</button>
+    </div>
+  </div><!-- /ctrl-scroll -->
+
+  <!-- DATA TABS -->
+  <div id="data-tabs">
+    <button class="data-tab active" onclick="showDataTab(0)">動量</button>
+    <button class="data-tab"        onclick="showDataTab(1)">動能</button>
+    <button class="data-tab"        onclick="showDataTab(2)">速度</button>
+    <button class="data-tab"        onclick="showDataTab(3)">守恆</button>
+  </div>
+  <div id="data-panel">
+    <!-- TAB 0: 動量 -->
+    <div class="data-page active" id="dp-0">
+      <div class="tbl-head">動量 P</div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 P₁</span><span class="tbl-val a" id="t-p1b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 P₂</span><span class="tbl-val b" id="t-p2b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 P₁'</span><span class="tbl-val a" id="t-p1a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 P₂'</span><span class="tbl-val b" id="t-p2a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">總動量</span><span class="tbl-val tot" id="t-ptot">—</span></div>
+    </div>
+    <!-- TAB 1: 動能 -->
+    <div class="data-page" id="dp-1">
+      <div class="tbl-head">動能 K</div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 K₁</span><span class="tbl-val a" id="t-ke1b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 K₂</span><span class="tbl-val b" id="t-ke2b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 K₁'</span><span class="tbl-val a" id="t-ke1a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 K₂'</span><span class="tbl-val b" id="t-ke2a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">ΔKE 損失</span><span class="tbl-val" style="color:var(--amber)" id="t-dke">—</span></div>
+    </div>
+    <!-- TAB 2: 速度 -->
+    <div class="data-page" id="dp-2">
+      <div class="tbl-head">速度 v</div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 v₁</span><span class="tbl-val a" id="t-v1b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰前 v₂</span><span class="tbl-val b" id="t-v2b">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 v₁'</span><span class="tbl-val a" id="t-v1a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">碰後 v₂'</span><span class="tbl-val b" id="t-v2a">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">v<sub>cm</sub></span><span class="tbl-val" style="color:var(--purple)" id="t-vcm">—</span></div>
+    </div>
+    <!-- TAB 3: 守恆 -->
+    <div class="data-page" id="dp-3">
+      <div class="tbl-head">守恆 / 比較</div>
+      <div class="tbl-row"><span class="tbl-lbl">v<sub>cm</sub></span><span class="tbl-val" style="color:var(--purple)" id="ro-vcm">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">P 總</span><span class="tbl-val tot" id="ro-p">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">K₀ (碰前)</span><span class="tbl-val" id="t-ktotb">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">K (碰後)</span><span class="tbl-val" id="t-ktota">—</span></div>
+      <div class="tbl-row"><span class="tbl-lbl">ΔK</span><span class="tbl-val" style="color:var(--amber)" id="t-dke2">—</span></div>
+    </div>
+  </div>
+</div><!-- /page-sim -->
+
+<!-- ══ FORMULA PAGE（直式詳解）══ -->
+<div id="page-formula">
+
+  <!-- ① 動量守恆 -->
+  <div class="fs-h1">① 動量守恆定律</div>
+  <p class="fs-p">碰撞過程中，若系統不受外力，則系統總動量守恆，與碰撞種類無關。</p>
+  <div class="fs-box">
+    <div class="math-line" data-latex="m_1 v_1 + m_2 v_2 = m_1 v_1' + m_2 v_2'">$m_1 v_1 + m_2 v_2 = m_1 v_1' + m_2 v_2'$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 此為向量守恆，正向碰撞取一維正方向即可。<br>
+    ▸ 碰前總動量 = 碰後總動量，恆成立，與碰撞種類無關。
+  </p>
+
+  <hr class="fs-hr">
+
+  <!-- ② 恢復係數 -->
+  <div class="fs-h1">② 恢復係數 e</div>
+  <p class="fs-p">恢復係數定義為分離速度與接近速度之比：</p>
+  <div class="fs-box purple">
+    <div class="math-line" data-latex="e = \frac{v_2' - v_1'}{v_1 - v_2}">$e = \frac{v_2' - v_1'}{v_1 - v_2}$</div>
+  </div>
+  <p class="fs-p">
+    <span class="fs-tag tag-e">e = 1</span>完全彈性碰撞<br>
+    <span class="fs-tag tag-p">0 &lt; e &lt; 1</span>部分彈性碰撞<br>
+    <span class="fs-tag tag-i">e = 0</span>完全非彈性碰撞（碰後黏合）
+  </p>
+
+  <hr class="fs-hr">
+
+  <!-- ③ 判斷彈性碰撞 -->
+  <div class="fs-h1">③ 如何判斷完全彈性碰撞</div>
+  <p class="fs-p">以下三個條件等價，滿足其一即可：</p>
+
+  <div class="fs-h2">條件一：動能守恆</div>
+  <div class="fs-box green">
+    <div class="math-line" data-latex="\frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2 = \frac{1}{2}m_1 v_1'^2 + \frac{1}{2}m_2 v_2'^2 \quad \Rightarrow \quad \Delta K = 0">$\frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2 = \frac{1}{2}m_1 v_1'^2 + \frac{1}{2}m_2 v_2'^2 \quad \Rightarrow \quad \Delta K = 0$</div>
+  </div>
+
+  <div class="fs-h2">條件二：恢復係數 e = 1</div>
+  <div class="fs-box green">
+    <div class="math-line" data-latex="e = \frac{v_2' - v_1'}{v_1 - v_2} = 1">$e = \frac{v_2' - v_1'}{v_1 - v_2} = 1$</div>
+  </div>
+
+  <div class="fs-h2">條件三：相對速度大小不變、方向相反</div>
+  <div class="fs-box green">
+    <div class="math-line" data-latex="v_1 - v_2 = -(v_1' - v_2')">$v_1 - v_2 = -(v_1' - v_2')$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 三個條件彼此等價，答題時選最方便的使用。<br>
+    ▸ 條件三最快：只需比較相對速度是否反向且大小相等。
+  </p>
+
+  <hr class="fs-hr">
+
+  <!-- ④ 完全彈性：碰後速度 -->
+  <div class="fs-h1">④ 完全彈性：碰後速度</div>
+
+  <div class="fs-h2">公式一：直接代入質量與速度</div>
+  <div class="fs-box green">
+    <div class="math-line" data-latex="v_1' = \frac{m_1 - m_2}{m_1 + m_2}\,v_1 + \frac{2m_2}{m_1 + m_2}\,v_2">$v_1' = \frac{m_1 - m_2}{m_1 + m_2}\,v_1 + \frac{2m_2}{m_1 + m_2}\,v_2$</div>
+    <div class="math-line" data-latex="v_2' = \frac{m_2 - m_1}{m_1 + m_2}\,v_2 + \frac{2m_1}{m_1 + m_2}\,v_1">$v_2' = \frac{m_2 - m_1}{m_1 + m_2}\,v_2 + \frac{2m_1}{m_1 + m_2}\,v_1$</div>
+  </div>
+
+  <div class="fs-h2">公式二：利用質心速度 $v_{cm}$（最快）</div>
+  <div class="fs-box purple">
+    <div class="math-line" data-latex="v_1' = 2v_{cm} - v_1 \qquad v_2' = 2v_{cm} - v_2">$v_1' = 2v_{cm} - v_1 \qquad v_2' = 2v_{cm} - v_2$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 先算出 $v_{cm}$，各自代入，一步到位。<br>
+    ▸ 意涵：碰後速度是以 $v_{cm}$ 為對稱軸的鏡射。
+  </p>
+
+  <div class="fs-h2">特例：質量相等（$m_1 = m_2$）</div>
+  <div class="fs-box green">
+    <div class="math-line" data-latex="v_1' = v_2 \qquad v_2' = v_1 \quad \text{（速度完全互換）}">$v_1' = v_2 \qquad v_2' = v_1 \quad \text{（速度完全互換）}$</div>
+  </div>
+
+  <div class="fs-h2">特例：B 靜止（$v_2 = 0$）</div>
+  <div class="fs-box green">
+    <div class="math-line" data-latex="m_1 \gg m_2 \;\Rightarrow\; v_1' \approx v_1,\quad v_2' \approx 2v_1">$m_1 \gg m_2 \;\Rightarrow\; v_1' \approx v_1,\quad v_2' \approx 2v_1$</div>
+    <div class="math-line" data-latex="m_1 = m_2 \;\Rightarrow\; v_1' = 0,\quad v_2' = v_1">$m_1 = m_2 \;\Rightarrow\; v_1' = 0,\quad v_2' = v_1$</div>
+    <div class="math-line" data-latex="m_1 \ll m_2 \;\Rightarrow\; v_1' \approx -v_1,\quad v_2' \approx 0">$m_1 \ll m_2 \;\Rightarrow\; v_1' \approx -v_1,\quad v_2' \approx 0$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 大碰小：小球飛出約 2 倍速，大球幾乎不變。<br>
+    ▸ 小碰大：小球原速反彈，大球幾乎靜止。
+  </p>
+
+  <hr class="fs-hr">
+
+  <!-- ⑤ 完全非彈性 -->
+  <div class="fs-h1">⑤ 完全非彈性碰撞</div>
+  <p class="fs-p">碰後兩物體黏合，以共同速度 $v'$ 運動，此速度等於質心速度：</p>
+  <div class="fs-box amber">
+    <div class="math-line" data-latex="v' = \frac{m_1 v_1 + m_2 v_2}{m_1 + m_2} = v_{cm}">$v' = \frac{m_1 v_1 + m_2 v_2}{m_1 + m_2} = v_{cm}$</div>
+  </div>
+  <p class="fs-p">動能損失量（此情況為最大值，等於碰前內動能）：</p>
+  <div class="fs-box amber">
+    <div class="math-line" data-latex="\Delta K = \frac{1}{2}\mu(v_1 - v_2)^2">$\Delta K = \frac{1}{2}\mu(v_1 - v_2)^2$</div>
+    <div class="math-line" data-latex="\Delta K = \frac{1}{2} \cdot \frac{m_1 m_2}{m_1 + m_2} \cdot (v_1 - v_2)^2">$\Delta K = \frac{1}{2} \cdot \frac{m_1 m_2}{m_1 + m_2} \cdot (v_1 - v_2)^2$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 彈道擺、泥球互碰屬此類。<br>
+    ▸ $\Delta K$ 正比於相對速度的平方。
+  </p>
+
+  <hr class="fs-hr">
+
+  <!-- ⑥ 質心速度 -->
+  <div class="fs-h1">⑥ 質心速度 $v_{cm}$</div>
+  <div class="fs-box purple">
+    <div class="math-line" data-latex="v_{cm} = \frac{m_1 v_1 + m_2 v_2}{m_1 + m_2}">$v_{cm} = \frac{m_1 v_1 + m_2 v_2}{m_1 + m_2}$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ $v_{cm}$ 碰撞前後不變（動量守恆的等價表述）。
+  </p>
+
+  <hr class="fs-hr">
+
+  <!-- ⑦ 動能分解 -->
+  <div class="fs-h1">⑦ 動能的分解</div>
+  <p class="fs-p">系統總動能 = 質心動能 + 內動能：</p>
+
+  <div class="fs-h2">總動能 $K_{\text{總}}$</div>
+  <div class="fs-box">
+    <div class="math-line" data-latex="K_{\text{總}} = \frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2">$K_{\text{總}} = \frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2$</div>
+  </div>
+
+  <div class="fs-h2">質心動能 $K_{cm}$</div>
+  <div class="fs-box purple">
+    <div class="math-line" data-latex="K_{cm} = \frac{1}{2}(m_1+m_2)v_{cm}^2 = \frac{(m_1 v_1 + m_2 v_2)^2}{2(m_1+m_2)}">$K_{cm} = \frac{1}{2}(m_1+m_2)v_{cm}^2 = \frac{(m_1 v_1 + m_2 v_2)^2}{2(m_1+m_2)}$</div>
+  </div>
+  <p class="fs-rem">▸ 碰撞前後不變（因為 $v_{cm}$ 守恆）。</p>
+
+  <div class="fs-h2">折合質量（約化質量）$\mu$</div>
+  <div class="fs-box red">
+    <div class="math-line" data-latex="\mu = \frac{m_1 m_2}{m_1 + m_2}">$\mu = \frac{m_1 m_2}{m_1 + m_2}$</div>
+  </div>
+
+  <div class="fs-h2">內動能 $K_{\text{內}}$</div>
+  <div class="fs-box red">
+    <div class="math-line" data-latex="K_{\text{內}} = \frac{1}{2}\mu(v_1-v_2)^2 = \frac{1}{2} \cdot \frac{m_1 m_2}{m_1+m_2} \cdot (v_1-v_2)^2">$K_{\text{內}} = \frac{1}{2}\mu(v_1-v_2)^2 = \frac{1}{2} \cdot \frac{m_1 m_2}{m_1+m_2} \cdot (v_1-v_2)^2$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 形式上等同於質量 $\mu$、速度 $(v_1-v_2)$ 的單體動能。<br>
+    ▸ 完全非彈性碰撞時，$K_{\text{內}}$ 全部損失：$\Delta K = K_{\text{內}}$（碰前）。
+  </p>
+
+  <div class="fs-h2">三者關係</div>
+  <div class="fs-box">
+    <div class="math-line" data-latex="K_{\text{總}} = K_{cm} + K_{\text{內}}">$K_{\text{總}} = K_{cm} + K_{\text{內}}$</div>
+  </div>
+  <p class="fs-rem">
+    ▸ 完全彈性碰撞：$K_{\text{內}}$ 不變，$\Delta K = 0$。<br>
+    ▸ 完全非彈性碰撞：$K_{\text{內}}$ 全部損失。<br>
+    ▸ $K_{cm}$ 在任何碰撞中都守恆，可損失的動能上限就是 $K_{\text{內}}$。
+  </p>
+
+</div><!-- /page-formula -->
+
+<script>
+// ── PAGE SWITCH ──
+function showPage(p){
+  document.getElementById('page-sim').style.display     = p==='sim'     ? 'flex':'none';
+  document.getElementById('page-formula').style.display = p==='formula' ? 'flex':'none';
+  document.getElementById('pg-sim').classList.toggle('active',     p==='sim');
+  document.getElementById('pg-formula').classList.toggle('active', p==='formula');
+}
+
+// ── DATA TABS ──
+function showDataTab(i){
+  document.querySelectorAll('.data-tab').forEach((t,idx)=>t.classList.toggle('active',idx===i));
+  document.querySelectorAll('.data-page').forEach((p,idx)=>p.classList.toggle('active',idx===i));
+}
+
+// ──────────────────────────────────────────────
+//  SIMULATION  (identical physics to desktop)
+// ──────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+let W, H;
+let view     = 'lab';
+let running  = false;
+let collided = false;
+let collideTime = 0;
+
+let params = {};
+let state  = {};
+
+function massFromSlider(v){ return v >= 5 ? 100000 : +v; }
+function massLabel(v){ return v >= 5 ? '100000' : v; }
+function snapVel(v){ return Math.abs(v) <= 0.6 ? 0 : +v; }
+
+function readParams(){
+  params.m1 = massFromSlider(document.getElementById('m1').value);
+  params.m2 = massFromSlider(document.getElementById('m2').value);
+  params.v1 = snapVel(document.getElementById('v1').value);
+  params.v2 = snapVel(document.getElementById('v2').value);
+  params.e  = +document.getElementById('ecoef').value;
+}
+
+function computeVcm(){
+  return (params.m1*params.v1 + params.m2*params.v2)/(params.m1+params.m2);
+}
+function computeAfterCollision(){
+  const {m1,m2,v1,v2,e} = params;
+  const v1p = ((m1-e*m2)*v1 + (1+e)*m2*v2)/(m1+m2);
+  const v2p = ((m2-e*m1)*v2 + (1+e)*m1*v1)/(m1+m2);
+  return {v1p, v2p};
+}
+
+function initState(){
+  const scale = H * 0.18;
+  const logR  = m => Math.log(m + 1);
+  const maxLog= Math.log(100001);
+  const rA = scale*(0.4 + 0.6*logR(params.m1)/maxLog);
+  const rB = scale*(0.4 + 0.6*logR(params.m2)/maxLog);
+  const gap = W * 0.12;
+  state = {
+    xA: W*0.5-gap-rA, xB: W*0.5+gap+rB,
+    vA: params.v1, vB: params.v2,
+    rA, rB,
+    hasCollided:false, v1After:null, v2After:null,
+    trailA:[], trailB:[],
+    collideX:null,
+    goneA:false, goneB:false,
+    cmOffset:0,
+  };
+  collided = false; collideTime = 0;
+  updateReadout();
+}
+
+function setView(v){
+  view = v;
+  document.getElementById('btn-lab').classList.toggle('active', v==='lab');
+  document.getElementById('btn-cm').classList.toggle('active',  v==='cm');
+  resetSim();
+}
+
+// ── MODE & PRESET ──
+let mode = 'free';
+let activePreset = 'eq';
+const PRESETS = {
+  'xl-xs':{m1:100000,m2:1},
+  'l-s'  :{m1:4,     m2:1},
+  'eq'   :{m1:1,     m2:1},
+  's-l'  :{m1:1,     m2:4},
+  'xs-xl':{m1:1,     m2:100000},
+};
+
+function setMode(m){
+  mode = m;
+  document.getElementById('mode-free').classList.toggle('active',   m==='free');
+  document.getElementById('mode-preset').classList.toggle('active', m==='preset');
+  document.getElementById('free-panel').style.display        = m==='free'   ? '' : 'none';
+  document.getElementById('preset-panel').style.display      = m==='preset' ? '' : 'none';
+  document.getElementById('preset-vel-panel').style.display  = m==='preset' ? '' : 'none';
+  document.getElementById('e-section').style.display         = m==='preset' ? 'none' : '';
+  if(m==='preset'){
+    params.e = 1;
+    document.getElementById('ecoef').value = 1;
+    document.getElementById('ecoefv').textContent = '1.00';
+    applyPreset(activePreset);
+  } else { readParams(); resetSim(); }
+}
+
+function applyPreset(key){
+  activePreset = key;
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('p-'+key).classList.add('active');
+  const p = PRESETS[key];
+  params.m1 = p.m1; params.m2 = p.m2;
+  params.v1 = +document.getElementById('pv1').value;
+  params.v2 = 0; params.e = 1;
+  document.getElementById('pv2').value = 0;
+  document.getElementById('pv2v').textContent = '+0';
+  if(!running) resetSim();
+}
+
+function updatePresetVel(){
+  const v1 = +document.getElementById('pv1').value;
+  document.getElementById('pv1v').textContent = (v1>=0?'+':'')+v1;
+  document.getElementById('pv2').value = 0;
+  document.getElementById('pv2v').textContent = '+0';
+  params.v1 = v1; params.v2 = 0; params.e = 1;
+  if(!running) resetSim();
+}
+
+function updateParam(){
+  readParams();
+  document.getElementById('m1v').textContent   = massLabel(document.getElementById('m1').value);
+  document.getElementById('m2v').textContent   = massLabel(document.getElementById('m2').value);
+  document.getElementById('v1v').textContent   = (params.v1>=0?'+':'')+params.v1;
+  document.getElementById('v2v').textContent   = (params.v2>=0?'+':'')+params.v2;
+  document.getElementById('ecoefv').textContent= params.e.toFixed(2);
+  if(!running) resetSim();
+}
+
+const fmt  = v => (v>=0?'+':'')+v.toFixed(2);
+const fmtA = v => v.toFixed(2);
+
+function updateReadout(){
+  const vcm = computeVcm();
+  const u1  = view==='cm' ? params.v1-vcm : params.v1;
+  const u2  = view==='cm' ? params.v2-vcm : params.v2;
+  document.getElementById('ro-vcm').textContent = vcm.toFixed(2);
+  document.getElementById('ro-p').textContent   = (params.m1*params.v1+params.m2*params.v2).toFixed(2);
+  updateTable(u1, u2, null, null);
+}
+
+function updateTable(u1, u2, u1a, u2a){
+  const vcm = computeVcm();
+  const _u1 = u1 !== undefined ? u1 : (view==='cm' ? params.v1-vcm : params.v1);
+  const _u2 = u2 !== undefined ? u2 : (view==='cm' ? params.v2-vcm : params.v2);
+
+  if(mode === 'preset'){
+    const PRESET_SYM = {
+      'xl-xs':{v1b:'V₀',v2b:'0',p1b:'P₀',p2b:'0',k1b:'K₀',k2b:'0',ptot:'P₀',vcm:'≈V₀',v1a:'≈V₀',v2a:'≈2V₀',p1a:'≈P₀',p2a:'≈2m₂V₀',k1a:'≈K₀',k2a:'≈2m₂V₀²',dke:'≈0'},
+      'l-s'  :{v1b:'V₀',v2b:'0',p1b:'P₀',p2b:'0',k1b:'K₀',k2b:'0',ptot:'P₀',vcm:'4V₀/5',v1a:'3V₀/5',v2a:'8V₀/5',p1a:'3P₀/5',p2a:'2P₀/5',k1a:'9K₀/25',k2a:'16K₀/25',dke:'0'},
+      'eq'   :{v1b:'V₀',v2b:'0',p1b:'P₀',p2b:'0',k1b:'K₀',k2b:'0',ptot:'P₀',vcm:'V₀/2',v1a:'0',v2a:'V₀',p1a:'0',p2a:'P₀',k1a:'0',k2a:'K₀',dke:'0'},
+      's-l'  :{v1b:'V₀',v2b:'0',p1b:'P₀',p2b:'0',k1b:'K₀',k2b:'0',ptot:'P₀',vcm:'V₀/5',v1a:'-3V₀/5',v2a:'2V₀/5',p1a:'-3P₀/5',p2a:'2P₀/5',k1a:'9K₀/25',k2a:'16K₀/25',dke:'0'},
+      'xs-xl':{v1b:'V₀',v2b:'0',p1b:'P₀',p2b:'0',k1b:'K₀',k2b:'0',ptot:'P₀',vcm:'≈0',v1a:'≈-V₀',v2a:'≈0',p1a:'≈-P₀',p2a:'≈0',k1a:'≈K₀',k2a:'≈0',dke:'≈0'},
+    };
+    const s = PRESET_SYM[activePreset]||PRESET_SYM['eq'];
+    document.getElementById('t-v1b').textContent  = s.v1b;
+    document.getElementById('t-v2b').textContent  = s.v2b;
+    document.getElementById('t-p1b').textContent  = s.p1b;
+    document.getElementById('t-p2b').textContent  = s.p2b;
+    document.getElementById('t-ke1b').textContent = s.k1b;
+    document.getElementById('t-ke2b').textContent = s.k2b;
+    document.getElementById('t-ptot').textContent = s.ptot;
+    document.getElementById('t-vcm').textContent  = view==='cm'?'0':s.vcm;
+    document.getElementById('ro-vcm').textContent = view==='cm'?'0':s.vcm;
+    document.getElementById('ro-p').textContent   = s.ptot;
+    document.getElementById('t-ktotb').textContent= s.k1b;
+    if(u1a !== null && u1a !== undefined){
+      document.getElementById('t-v1a').textContent  = s.v1a;
+      document.getElementById('t-v2a').textContent  = s.v2a;
+      document.getElementById('t-p1a').textContent  = s.p1a;
+      document.getElementById('t-p2a').textContent  = s.p2a;
+      document.getElementById('t-ke1a').textContent = s.k1a;
+      document.getElementById('t-ke2a').textContent = s.k2a;
+      document.getElementById('t-dke').textContent  = s.dke;
+      document.getElementById('t-ktota').textContent= s.k1a;
+      document.getElementById('t-dke2').textContent = s.dke;
+    } else {
+      ['t-v1a','t-v2a','t-p1a','t-p2a','t-ke1a','t-ke2a','t-dke','t-ktota','t-dke2'].forEach(id=>{
+        document.getElementById(id).textContent='—';
+      });
+    }
+    return;
+  }
+
+  // numeric
+  document.getElementById('t-v1b').textContent  = fmt(_u1);
+  document.getElementById('t-v2b').textContent  = fmt(_u2);
+  document.getElementById('t-p1b').textContent  = fmtA(params.m1*_u1);
+  document.getElementById('t-p2b').textContent  = fmtA(params.m2*_u2);
+  document.getElementById('t-ke1b').textContent = fmtA(0.5*params.m1*_u1**2);
+  document.getElementById('t-ke2b').textContent = fmtA(0.5*params.m2*_u2**2);
+  document.getElementById('t-ptot').textContent = fmtA(params.m1*_u1+params.m2*_u2);
+  document.getElementById('t-vcm').textContent  = view==='cm'?'0.00':vcm.toFixed(2);
+  document.getElementById('ro-vcm').textContent = view==='cm'?'0.00':vcm.toFixed(2);
+  document.getElementById('ro-p').textContent   = fmtA(params.m1*_u1+params.m2*_u2);
+  const ktotb = 0.5*params.m1*_u1**2+0.5*params.m2*_u2**2;
+  document.getElementById('t-ktotb').textContent = fmtA(ktotb);
+
+  if(u1a !== null && u1a !== undefined){
+    const _u1a = view==='cm' ? u1a-vcm : u1a;
+    const _u2a = view==='cm' ? u2a-vcm : u2a;
+    document.getElementById('t-v1a').textContent  = fmt(_u1a);
+    document.getElementById('t-v2a').textContent  = fmt(_u2a);
+    document.getElementById('t-p1a').textContent  = fmtA(params.m1*_u1a);
+    document.getElementById('t-p2a').textContent  = fmtA(params.m2*_u2a);
+    document.getElementById('t-ke1a').textContent = fmtA(0.5*params.m1*_u1a**2);
+    document.getElementById('t-ke2a').textContent = fmtA(0.5*params.m2*_u2a**2);
+    const ke0 = 0.5*params.m1*_u1**2+0.5*params.m2*_u2**2;
+    const ke1 = 0.5*params.m1*_u1a**2+0.5*params.m2*_u2a**2;
+    document.getElementById('t-dke').textContent  = fmtA(ke0-ke1);
+    document.getElementById('t-ktota').textContent= fmtA(ke1);
+    document.getElementById('t-dke2').textContent = fmtA(ke0-ke1);
+  } else {
+    ['t-v1a','t-v2a','t-p1a','t-p2a','t-ke1a','t-ke2a','t-dke','t-ktota','t-dke2'].forEach(id=>{
+      document.getElementById(id).textContent='—';
+    });
+  }
+}
+
+function updateReadoutAfter(v1a, v2a){ updateTable(params.v1, params.v2, v1a, v2a); }
+
+function toggleRun(){
+  running = !running;
+  const btn = document.getElementById('btn-go');
+  btn.textContent = running ? '⏸ 暫停' : '▶ 開始';
+  btn.classList.toggle('running', running);
+  if(running && !state.hasCollided && state.xA > state.xB - state.rA - state.rB){
+    resetSim(); running=true;
+    btn.textContent='⏸ 暫停'; btn.classList.add('running');
+  }
+}
+
+function resetSim(){
+  running = false;
+  const btn = document.getElementById('btn-go');
+  btn.textContent='▶ 開始'; btn.classList.remove('running');
+  if(mode==='free') readParams();
+  initState(); draw();
+}
+
+// ── ANIMATION ──
+let lastT = null;
+const SPEED = 0.045;
+function step(ts){
+  requestAnimationFrame(step);
+  resize();
+  if(running){
+    const dt = lastT ? Math.min(ts-lastT,32) : 16;
+    lastT = ts;
+    update(dt*SPEED);
+  } else { lastT=null; }
+  draw();
+}
+
+function update(dt){
+  const tNow = Date.now();
+  state.trailA = state.trailA.filter(p=>tNow-p.t<600);
+  state.trailB = state.trailB.filter(p=>tNow-p.t<600);
+  state.xA += state.vA*dt; state.xB += state.vB*dt;
+  const vcm = computeVcm();
+  if(view==='cm') state.cmOffset += vcm*dt;
+  const sxA = screenX(state.xA), sxB = screenX(state.xB);
+  state.trailA.push({x:sxA, t:tNow});
+  state.trailB.push({x:sxB, t:tNow});
+  if(!state.hasCollided && state.xB-state.xA <= state.rA+state.rB+0.5){
+    state.xB = state.xA+state.rA+state.rB+0.5;
+    const {v1p,v2p} = computeAfterCollision();
+    state.v1After=v1p; state.v2After=v2p;
+    state.vA=v1p; state.vB=v2p;
+    state.hasCollided=true;
+    state.collideX=screenX(state.xA+state.rA);
+    collided=true; collideTime=Date.now();
+    updateReadoutAfter(v1p,v2p);
+  }
+  if(sxA+state.rA<0||sxA-state.rA>W) state.goneA=true;
+  if(sxB+state.rB<0||sxB-state.rB>W) state.goneB=true;
+}
+
+function screenX(labX){ return view==='cm' ? labX-state.cmOffset : labX; }
+
+function resize(){
+  const wrap = document.getElementById('canvas-wrap');
+  if(canvas.width!==wrap.clientWidth||canvas.height!==wrap.clientHeight){
+    canvas.width=wrap.clientWidth; canvas.height=wrap.clientHeight;
+    W=canvas.width; H=canvas.height;
+    if(!running) initState();
+  }
+}
+
+const FLOOR_Y_RATIO = 0.72;
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  if(!W||!H) return;
+  const fy = H*FLOOR_Y_RATIO;
+  drawBackground(fy);
+  if(view==='cm') drawCmIndicator(fy);
+  ctx.save();
+  ctx.font=`${Math.max(12,H/26)}px 'Noto Sans TC',sans-serif`;
+  ctx.fillStyle=view==='cm'?'rgba(167,139,250,0.7)':'rgba(90,100,140,0.7)';
+  ctx.textAlign='left';
+  ctx.fillText(view==='cm'?'質心座標系':'地面（實驗室）座標系', W*0.01, fy-H*0.04);
+  ctx.restore();
+  const sxA=screenX(state.xA), sxB=screenX(state.xB);
+  if(collided){
+    const age=(Date.now()-collideTime)/1000;
+    if(age<0.5&&state.collideX){
+      const alpha=Math.max(0,0.7-age*1.4);
+      const r=H*0.25*alpha;
+      const grad=ctx.createRadialGradient(state.collideX,fy,0,state.collideX,fy,r);
+      grad.addColorStop(0,'rgba(255,200,80,'+alpha+')');
+      grad.addColorStop(0.4,'rgba(255,120,40,'+(alpha*0.5)+')');
+      grad.addColorStop(1,'rgba(255,80,20,0)');
+      ctx.save(); ctx.fillStyle=grad;
+      ctx.beginPath(); ctx.arc(state.collideX,fy,r,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+  if(!state.goneA) drawTrail(state.trailA,fy,'#3b82f6');
+  if(!state.goneB) drawTrail(state.trailB,fy,'#ef4444');
+  const vA_show=view==='cm'?state.vA-computeVcm():state.vA;
+  const vB_show=view==='cm'?state.vB-computeVcm():state.vB;
+  if(!state.goneA) drawBall(sxA,fy,state.rA,params.m1,vA_show,'#3b82f6','#1d4ed8','A');
+  if(!state.goneB) drawBall(sxB,fy,state.rB,params.m2,vB_show,'#ef4444','#b91c1c','B');
+  if(!state.goneA) drawMomentumArrow(sxA,fy,state.rA,vA_show,'#60a5fa');
+  if(!state.goneB) drawMomentumArrow(sxB,fy,state.rB,vB_show,'#f87171');
+  const totM=params.m1+params.m2;
+  const xcm_lab=(params.m1*state.xA+params.m2*state.xB)/totM;
+  if(!state.goneA||!state.goneB) drawCmMarker(screenX(xcm_lab),fy);
+}
+
+function drawTrail(trail,fy,color){
+  if(trail.length<2) return;
+  ctx.save();
+  const now=Date.now();
+  for(let i=1;i<trail.length;i++){
+    const age=(now-trail[i].t)/600;
+    ctx.globalAlpha=Math.max(0,(1-age)*0.4);
+    ctx.strokeStyle=color; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(trail[i-1].x,fy); ctx.lineTo(trail[i].x,fy); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBall(cx,fy,r,mass,vel,col1,col2,label){
+  const y=fy-r; ctx.save();
+  const shadowGrad=ctx.createRadialGradient(cx,fy+2,0,cx,fy+2,r*1.2);
+  shadowGrad.addColorStop(0,'rgba(0,0,0,0.35)'); shadowGrad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=shadowGrad; ctx.beginPath();
+  ctx.ellipse(cx,fy+r*0.15,r*1.1,r*0.35,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=col1; ctx.beginPath(); ctx.arc(cx,y,r,0,Math.PI*2); ctx.fill();
+  const edge=ctx.createRadialGradient(cx,y,r*0.5,cx,y,r);
+  edge.addColorStop(0,'rgba(0,0,0,0)'); edge.addColorStop(1,'rgba(0,0,0,0.35)');
+  ctx.fillStyle=edge; ctx.beginPath(); ctx.arc(cx,y,r,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.font=`bold ${Math.max(9,r*0.7)}px 'Noto Sans TC',sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,cx,y);
+  ctx.fillStyle=col1==='#3b82f6'?'#93c5fd':'#fca5a5';
+  ctx.font=`${Math.max(10,r*0.5)}px 'Noto Sans TC',sans-serif`;
+  const mval=params[label==='A'?'m1':'m2'];
+  const mlabel=label==='A'?'m\u2081':'m\u2082';
+  ctx.fillText(mlabel+'='+(mval>=100000?'極大':mval),cx,fy+r*0.4);
+  ctx.restore();
+}
+
+function drawMomentumArrow(cx,fy,r,vel,color){
+  if(Math.abs(vel)<0.01) return;
+  const y=fy-r;
+  const arrowLen=vel*(W/20);
+  const arrowStart=cx, arrowEnd=cx+arrowLen;
+  const headSize=Math.min(12,Math.abs(arrowLen)*0.3+4)*Math.sign(vel);
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color;
+  ctx.lineWidth=Math.max(1.5,Math.abs(vel)*0.3+1);
+  ctx.globalAlpha=0.85;
+  ctx.beginPath(); ctx.moveTo(arrowStart,y-r*0.15); ctx.lineTo(arrowEnd-headSize,y-r*0.15); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(arrowEnd,y-r*0.15);
+  ctx.lineTo(arrowEnd-headSize,y-r*0.15-5);
+  ctx.lineTo(arrowEnd-headSize,y-r*0.15+5);
+  ctx.closePath(); ctx.fill();
+  ctx.font=`bold ${Math.max(11,H/28)}px 'Noto Sans TC',sans-serif`;
+  ctx.textAlign=vel>0?'left':'right';
+  ctx.fillText((vel>=0?'+':'')+vel.toFixed(1),arrowEnd+(vel>0?4:-4),y-r*0.15-8);
+  ctx.restore();
+}
+
+function drawCmMarker(xcm,fy){
+  ctx.save();
+  ctx.strokeStyle='rgba(167,139,250,0.8)'; ctx.lineWidth=1.5;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(xcm,fy*0.3); ctx.lineTo(xcm,fy+H*0.05); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#a78bfa';
+  ctx.beginPath(); ctx.moveTo(xcm,fy-3); ctx.lineTo(xcm-5,fy-12); ctx.lineTo(xcm+5,fy-12); ctx.closePath(); ctx.fill();
+  ctx.font=`bold ${Math.max(11,H/26)}px 'Noto Sans TC',sans-serif`;
+  ctx.textAlign='center'; ctx.fillText('C.M.',xcm,fy*0.3-6);
+  ctx.restore();
+}
+
+function drawCmIndicator(fy){
+  ctx.save();
+  ctx.fillStyle='rgba(167,139,250,0.06)'; ctx.fillRect(0,0,W,fy);
+  ctx.strokeStyle='rgba(167,139,250,0.25)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(W*0.5,fy*0.1); ctx.lineTo(W*0.5,fy); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+}
+
+function drawBackground(fy){
+  const cmShift = view==='cm' ? -state.cmOffset : 0;
+  const poleSpacing=W*0.22, tileSpacing=W*0.09, hatchSpacing=20;
+  const mod=(a,b)=>((a%b)+b)%b;
+  const poleOff=mod(cmShift,poleSpacing), tileOff=mod(cmShift,tileSpacing), hatchOff=mod(cmShift,hatchSpacing);
+  ctx.fillStyle='#0b0e18'; ctx.fillRect(0,0,W,fy);
+  for(let x=poleOff-poleSpacing;x<W+poleSpacing;x+=poleSpacing) drawLamp(x,fy);
+  ctx.save();
+  ctx.strokeStyle='rgba(80,95,150,0.7)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,fy); ctx.lineTo(W,fy); ctx.stroke(); ctx.restore();
+  ctx.save();
+  ctx.strokeStyle='rgba(40,48,80,0.6)'; ctx.lineWidth=1;
+  for(let x=tileOff-tileSpacing;x<W+tileSpacing;x+=tileSpacing){
+    ctx.beginPath(); ctx.moveTo(x,fy); ctx.lineTo(x,fy+H*0.32); ctx.stroke();
+  }
+  for(let i=1;i<=3;i++){
+    ctx.beginPath(); ctx.moveTo(0,fy+H*0.08*i); ctx.lineTo(W,fy+H*0.08*i); ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle='rgba(35,40,65,0.5)'; ctx.lineWidth=1;
+  for(let x=hatchOff-H-hatchSpacing;x<W+H;x+=hatchSpacing){
+    ctx.beginPath(); ctx.moveTo(x,fy); ctx.lineTo(x+H*0.4,fy+H*0.4); ctx.stroke();
+  }
+  ctx.restore();
+  drawVelocityAxis(fy);
+}
+
+function drawLamp(x,fy){
+  const poleH=H*0.34, poleW=W*0.006, crossW=W*0.07, crossY=fy-poleH*0.88;
+  ctx.save();
+  ctx.fillStyle='rgba(100,115,175,0.8)'; ctx.fillRect(x-poleW/2,fy-poleH,poleW,poleH);
+  ctx.fillStyle='rgba(110,125,185,0.75)'; ctx.fillRect(x-crossW/2,crossY-H*0.013,crossW,H*0.013);
+  ctx.fillStyle='rgba(160,175,230,0.8)';
+  [-1,0,1].forEach(d=>{
+    ctx.beginPath(); ctx.arc(x+d*crossW*0.38,crossY,H*0.009,0,Math.PI*2); ctx.fill();
+  });
+  const spacing=W*0.2;
+  ctx.strokeStyle='rgba(80,95,155,0.55)'; ctx.lineWidth=1;
+  [-1,0,1].forEach(d=>{
+    const wx=x+d*crossW*0.38, sag=H*0.022;
+    ctx.beginPath(); ctx.moveTo(wx-spacing/2,crossY+sag*0.3);
+    ctx.quadraticCurveTo(wx,crossY+sag,wx+spacing/2,crossY+sag*0.3); ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawVelocityAxis(fy){
+  ctx.save();
+  ctx.strokeStyle='rgba(60,70,100,0.4)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W*0.02,fy*0.18); ctx.lineTo(W*0.98,fy*0.18); ctx.stroke();
+  const arrowX=W*0.98;
+  ctx.fillStyle='rgba(60,70,100,0.6)';
+  ctx.beginPath(); ctx.moveTo(arrowX+6,fy*0.18); ctx.lineTo(arrowX-4,fy*0.18-4); ctx.lineTo(arrowX-4,fy*0.18+4); ctx.closePath(); ctx.fill();
+  ctx.font=`${Math.max(10,H/32)}px sans-serif`;
+  ctx.fillStyle='rgba(80,90,130,0.7)'; ctx.textAlign='right';
+  ctx.fillText('+v →',W*0.97,fy*0.18-H*0.025);
+  ctx.restore();
+}
+
+// ── INIT ──
+updateParam();
+requestAnimationFrame(step);
+
+// ── 公式放大 ──
+function openMathModal(el){
+  const latex   = el.getAttribute('data-latex');
+  if(!latex) return;
+  const modal   = document.getElementById('math-modal');
+  const content = document.getElementById('math-modal-content');
+  content.innerHTML = '';
+  // 用 KaTeX display 模式直接渲染，字體大、自動換行
+  if(window.katex){
+    try{
+      katex.render(latex, content, {
+        displayMode: true,
+        throwOnError: false,
+        output: 'html'
+      });
+    } catch(e){
+      content.textContent = latex;
+    }
+  }
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMathModal(){
+  document.getElementById('math-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.math-line').forEach(el=>{
+    el.addEventListener('click',()=>openMathModal(el));
+  });
+});
+</script>
+
+<!-- 公式放大 Modal -->
+<div id="math-modal" onclick="closeMathModal()">
+  <div id="math-modal-content" onclick="event.stopPropagation()"></div>
+  <span id="math-modal-hint">點任意處關閉</span>
+</div>
+
+</body>
+</html>
