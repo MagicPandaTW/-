@@ -7,10 +7,11 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --fs-title: clamp(15px,4.5vw,22px);
-  --fs-body:  clamp(13px,3.8vw,19px);
-  --fs-small: clamp(11px,3vw,15px);
-  --fs-mini:  clamp(10px,2.5vw,13px);
+  /* 字體全部改用 dvh，隨螢幕高度縮放 */
+  --fs-title: clamp(13px,2.2dvh,22px);
+  --fs-body:  clamp(11px,1.9dvh,19px);
+  --fs-small: clamp(10px,1.6dvh,16px);
+  --fs-mini:  clamp(9px,1.35dvh,14px);
   --blue:#3b82f6; --blue-l:#60a5fa; --blue-d:#1d4ed8;
   --red:#ef4444;  --red-l:#f87171;  --red-d:#b91c1c;
   --green:#4ade80; --purple:#a78bfa; --amber:#f59e0b;
@@ -28,14 +29,14 @@ body{
 /* ── TOP BAR ── */
 #topbar{
   display:flex;align-items:center;
-  height:44px;min-height:44px;flex-shrink:0;
+  height:5.5dvh;min-height:36px;flex-shrink:0;
   padding:0 3vw;
   background:var(--bg2);border-bottom:1px solid var(--border2);
   gap:8px;
 }
 #topbar h1{font-size:var(--fs-title);font-weight:700;letter-spacing:.03em;flex:1;}
 .page-btn{
-  padding:.3em .7em;font-size:var(--fs-mini);
+  padding:.2em .6em;font-size:var(--fs-mini);
   border:1px solid var(--border2);border-radius:5px;
   background:transparent;color:#888;cursor:pointer;transition:.2s;
   white-space:nowrap;
@@ -51,7 +52,7 @@ body{
 /* ── CANVAS ── */
 #canvas-wrap{
   width:100%;flex-shrink:0;
-  height:38dvh;
+  height:30dvh;
   background:var(--bg4);border-bottom:1px solid var(--border);
   position:relative;overflow:hidden;
 }
@@ -61,60 +62,66 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
 #view-toggle{
   display:flex;flex-shrink:0;
   border-bottom:1px solid var(--border);
+  height:4dvh;min-height:26px;
 }
 .view-btn{
-  flex:1;padding:.45em 0;font-size:var(--fs-mini);font-weight:600;
+  flex:1;padding:0;font-size:var(--fs-mini);font-weight:600;
   background:var(--bg2);color:#666;border:none;cursor:pointer;
   transition:.2s;border-right:1px solid var(--border);
 }
 .view-btn:last-child{border-right:none;}
 .view-btn.active{background:#1a2a4a;color:var(--blue-l);}
 
-/* ── CONTROL SCROLL ── */
+/* ── CONTROL AREA（用 flex 自動填滿剩餘空間）── */
 #ctrl-scroll{
-  flex:1;overflow-y:auto;overflow-x:hidden;
-  background:var(--bg2);padding:2.5vw 3vw;
-  -webkit-overflow-scrolling:touch;
+  flex:1;overflow:hidden;
+  background:var(--bg2);
+  padding:.8dvh 3vw .4dvh;
+  display:flex;flex-direction:column;justify-content:space-between;
 }
 
 /* mode toggle */
 .sec-label{
-  font-size:var(--fs-mini);font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:#5a6080;margin-bottom:.4em;margin-top:.9em;
+  font-size:var(--fs-mini);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:#5a6080;margin:0;line-height:1;
 }
-.sec-label:first-child{margin-top:0;}
-.mode-toggle{display:flex;border:1px solid #2a2d3e;border-radius:5px;overflow:hidden;margin-bottom:.7em;}
+.mode-toggle{
+  display:flex;border:1px solid #2a2d3e;border-radius:5px;
+  overflow:hidden;flex-shrink:0;
+}
 .mode-btn{
-  flex:1;padding:.5em 0;font-size:var(--fs-small);font-weight:600;
+  flex:1;padding:.4dvh 0;font-size:var(--fs-small);font-weight:600;
   background:#1a1d2a;color:#666;border:none;cursor:pointer;transition:.15s;
 }
 .mode-btn.active{background:#2563eb;color:#fff;}
 
 /* preset grid */
-.preset-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:2%;margin-bottom:.6em;}
+.preset-grid{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:2%;
+}
 .preset-btn{
-  padding:.4em 0;font-size:var(--fs-mini);font-weight:600;
+  padding:.3dvh 0;font-size:var(--fs-mini);font-weight:600;
   background:#1a1d2a;color:#8890a8;
   border:1px solid #2a2d3e;border-radius:4px;cursor:pointer;transition:.15s;
-  text-align:center;line-height:1.3;
+  text-align:center;line-height:1.2;
 }
 .preset-btn.active{background:#1a2a4a;color:var(--blue-l);border-color:#2563eb;}
 
 /* obj rows */
-.obj-2col{display:grid;grid-template-columns:1fr 1fr;gap:3vw;margin-bottom:.5em;}
+.obj-2col{display:grid;grid-template-columns:1fr 1fr;gap:3vw;}
 .obj-header{
   font-size:var(--fs-small);font-weight:700;
-  padding:.2em .5em;border-radius:4px;margin-bottom:.4em;
+  padding:.1dvh .5em;border-radius:4px;margin-bottom:.3dvh;
 }
 .obj-header.a{background:#1a2a4a;color:var(--blue-l);}
 .obj-header.b{background:#2a1a1a;color:var(--red-l);}
 
-.param-row{display:flex;align-items:center;gap:2vw;margin-bottom:.4em;}
+.param-row{display:flex;align-items:center;gap:2vw;margin-bottom:.3dvh;}
 .param-label{font-size:var(--fs-mini);color:#8890a8;flex-shrink:0;width:36%;}
 .param-val{font-size:var(--fs-small);font-weight:700;color:#e8e6df;flex-shrink:0;width:18%;text-align:right;}
 input[type=range]{
   flex:1;min-width:0;-webkit-appearance:none;
-  height:4px;background:#2a2d3e;border-radius:2px;outline:none;cursor:pointer;
+  height:3px;background:#2a2d3e;border-radius:2px;outline:none;cursor:pointer;
   touch-action:none;
 }
 input[type=range]::-webkit-slider-thumb{
@@ -124,13 +131,13 @@ input[type=range]::-webkit-slider-thumb{
 input[type=range].red::-webkit-slider-thumb{background:#ef4444;}
 input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
 
-.e-row{display:flex;align-items:center;gap:2vw;margin-bottom:.3em;}
+.e-row{display:flex;align-items:center;gap:2vw;}
 .e-val{font-size:var(--fs-small);font-weight:700;color:var(--purple);width:18%;text-align:right;flex-shrink:0;}
 
 /* btn row */
-.btn-row{display:flex;gap:3%;margin:0.5em 0;}
+.btn-row{display:flex;gap:3%;}
 .btn{
-  flex:1;padding:.55em 0;border-radius:5px;border:1px solid #2a2d3e;
+  flex:1;padding:.5dvh 0;border-radius:5px;border:1px solid #2a2d3e;
   font-size:var(--fs-body);font-weight:700;
   cursor:pointer;transition:.15s;background:#1a1d2a;color:#c0c8e0;
 }
@@ -140,12 +147,12 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
 
 /* ── DATA TABS ── */
 #data-tabs{
-  flex-shrink:0;
-  display:flex;
+  flex-shrink:0;display:flex;
   background:var(--bg3);border-top:1px solid var(--border);
+  height:4dvh;min-height:26px;
 }
 .data-tab{
-  flex:1;padding:.4em 0;font-size:var(--fs-mini);font-weight:700;
+  flex:1;padding:0;font-size:var(--fs-mini);font-weight:700;
   background:transparent;color:#666;border:none;cursor:pointer;
   border-right:1px solid var(--border);transition:.2s;letter-spacing:.03em;
 }
@@ -153,35 +160,44 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
 .data-tab.active{background:#1a1d2a;color:#e8e6df;}
 
 #data-panel{
-  flex-shrink:0;height:22dvh;min-height:110px;
-  background:var(--bg3);
-  overflow:hidden;position:relative;
+  flex:1;min-height:90px;
+  background:var(--bg3);overflow:hidden;position:relative;
 }
 .data-page{
-  display:none;
-  padding:1.5vw 3vw;
-  height:100%;overflow-y:auto;
+  display:none;padding:.6dvh 3vw;
+  height:100%;overflow:hidden;
 }
 .data-page.active{display:block;}
 .tbl-head{
   font-size:var(--fs-small);font-weight:700;color:#e8e6df;
   text-align:center;border-bottom:1px solid var(--border);
-  padding-bottom:.3em;margin-bottom:.4em;
+  padding-bottom:.2dvh;margin-bottom:.3dvh;
 }
-.tbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3em;}
+.tbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.2dvh;}
 .tbl-lbl{font-size:var(--fs-small);color:#c8cde0;}
 .tbl-val{font-size:var(--fs-body);font-weight:700;color:#e8e6df;}
 .tbl-val.a{color:var(--blue-l);}
 .tbl-val.b{color:var(--red-l);}
 .tbl-val.tot{color:var(--green);}
 
+/* 恢復係數說明文字 */
+#e-section > div:last-of-type{
+  display:flex;justify-content:space-between;
+  font-size:var(--fs-mini);color:#3a4060;
+  padding:0 .3em;
+}
+
+
 /* ── FORMULA PAGE（直式詳解風格）── */
 #page-formula{
+  --fs-title: clamp(15px,4.5vw,22px);
+  --fs-body:  clamp(13px,3.8vw,19px);
+  --fs-small: clamp(11px,3vw,15px);
+  --fs-mini:  clamp(10px,2.5vw,13px);
   overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:4vw 5vw 10vw;background:var(--bg);
   flex:1;
 }
-/* 大標題（章節） */
 .fs-h1{
   font-size:var(--fs-title);font-weight:900;
   color:#e8e6df;letter-spacing:.06em;
@@ -191,7 +207,6 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
   line-height:1.4;
 }
 .fs-h1:first-child{margin-top:2vw;}
-/* 小標題（子項） */
 .fs-h2{
   font-size:var(--fs-body);font-weight:700;
   color:var(--purple);
@@ -200,12 +215,10 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
   border-left:2px solid var(--purple);
   line-height:1.4;
 }
-/* 說明文字 */
 .fs-p{
   font-size:var(--fs-small);color:#b0b8d0;
   line-height:1.9;margin:.5em 0;
 }
-/* 公式框 */
 .fs-box{
   background:#0d1120;
   border:1px solid #2a2d50;
@@ -214,23 +227,15 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
   padding:3vw 4vw;
   margin:2vw 0 3vw;
   font-size:var(--fs-body);
-  font-family:'Courier New',monospace;
   font-weight:700;
   color:#e8e6df;
-  line-height:2;
-  word-break:break-all;
+  line-height:1.6;
+  overflow-x:auto;
 }
 .fs-box.purple{border-left-color:var(--purple);}
 .fs-box.amber {border-left-color:var(--amber);}
 .fs-box.green {border-left-color:var(--green);}
 .fs-box.red   {border-left-color:var(--red-l);}
-/* 行內色彩 */
-.cb{color:var(--blue-l);}
-.cr{color:var(--red-l);}
-.cg{color:var(--green);}
-.cp{color:var(--purple);}
-.ca{color:var(--amber);}
-/* 條件標籤 */
 .fs-tag{
   display:inline-block;font-size:var(--fs-mini);font-weight:700;
   padding:.15em .6em;border-radius:3px;margin:.2em .3em .2em 0;
@@ -239,49 +244,16 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
 .tag-e{background:#1a3020;color:#4ade80;border:1px solid #22c55e;}
 .tag-p{background:#1a1a2a;color:var(--purple);border:1px solid #6d28d9;}
 .tag-i{background:#2a1a20;color:var(--red-l);border:1px solid var(--red-d);}
-/* 備註 */
 .fs-rem{
   font-size:var(--fs-mini);color:#5a6080;
   padding-left:3vw;line-height:1.8;
   border-left:1px dashed #2a2d3e;
   margin:.5em 0 2em;
 }
-/* 分隔線 */
 .fs-hr{
   border:none;border-top:1px solid #1e2235;
   margin:6vw 0;
 }
-
-
-/* 分數排版 */
-.frac{
-  display:inline-flex;flex-direction:column;align-items:center;
-  vertical-align:middle;margin:0 .25em;line-height:1.1;
-}
-.frac .num{
-  border-bottom:2px solid currentColor;
-  padding:0 .4em .15em;text-align:center;white-space:nowrap;
-  opacity:.95;
-}
-.frac .den{
-  padding:.15em .4em 0;text-align:center;white-space:nowrap;
-}
-/* 公式行（inline-flex，基線對齊，縮放不換行） */
-.fs-eq{
-  display:flex;align-items:center;
-  flex-wrap:nowrap;
-  gap:.15em;
-  font-family:'Courier New',monospace;
-  font-size:clamp(11px,3.2vw,18px);font-weight:700;
-  line-height:1;
-  overflow-x:auto;
-  -webkit-overflow-scrolling:touch;
-  padding-bottom:.1em;
-}
-/* 公式框內部重設，避免 fs-box line-height 干擾 */
-.fs-box{line-height:1 !important;padding:3.5vw 4vw;}
-.fs-box .fs-eq{font-size:var(--fs-body);}
-
 /* KaTeX inline in math-line */
 #page-formula .math-line{
   display:block;
@@ -290,7 +262,9 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
   font-size:clamp(13px,3.5vw,19px);
+  cursor:zoom-in;
 }
+#page-formula .math-line:active{opacity:.7;}
 #page-formula .fs-box .katex{color:inherit;font-size:1em;}
 #page-formula .fs-box.green .katex{color:#d4f0d4;}
 #page-formula .fs-box.purple .katex{color:#ddd4ff;}
@@ -299,14 +273,12 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
 #page-formula .fs-box{line-height:1.6 !important; overflow-x:visible;}
 #page-formula .katex-display{margin:.2em 0 !important;}
 
-
-/* ── 公式放大 Modal ── */
+/* 公式放大 Modal */
 #math-modal{
   display:none;position:fixed;inset:0;z-index:9999;
   background:rgba(0,0,0,0.85);
   justify-content:center;align-items:center;
-  padding:6vw;
-  cursor:pointer;
+  padding:6vw;cursor:pointer;
 }
 #math-modal.open{display:flex;}
 #math-modal-content{
@@ -314,32 +286,25 @@ input[type=range].purple::-webkit-slider-thumb{background:#a78bfa;}
   border:1px solid #2a2d50;
   border-radius:12px;
   padding:7vw 8vw;
-  max-width:92vw;
-  max-height:80dvh;
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
+  max-width:92vw;max-height:80dvh;
+  overflow:auto;-webkit-overflow-scrolling:touch;
   text-align:center;
   font-size:clamp(18px,6vw,32px);
   cursor:default;
 }
-#math-modal-content .katex{ color:#e8e6df; }
-#math-modal-content .katex-display{
-  margin:0 !important;
-  overflow-x:auto;
-  overflow-y:hidden;
-}
+#math-modal-content .katex{color:#e8e6df;}
+#math-modal-content .katex-display{margin:0 !important;overflow-x:auto;overflow-y:hidden;}
 #math-modal-hint{
   position:absolute;bottom:5dvh;
   font-size:var(--fs-mini);color:#5a6080;
   pointer-events:none;
 }
-.math-line{cursor:zoom-in;}
-.math-line:active{opacity:.7;}
 
 /* scrollbar */
 ::-webkit-scrollbar{width:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#2a2d3e;border-radius:2px;}
+
 </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
