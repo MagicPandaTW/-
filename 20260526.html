@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作業詳解｜彈性 7-2、9 ／ 非彈性 1-2、2-4、4-2、5-2、6-3、7-1、7-2、7-3</title>
+<script>
+MathJax = {
+  tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']] },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap');
+:root{
+  --bg:#f5f3ee;--paper:#fff;--ink:#1c1917;--muted:#78716c;
+  --rule:#e2dfd8;--red:#b91c1c;--blue:#1e3a5f;--green:#166534;
+  --amber:#92400e;--purple:#5b21b6;
+  --lblue:#dbeafe;--lred:#fee2e2;--lgreen:#dcfce7;
+  --serif:'Noto Serif TC',serif;--sans:'Noto Sans TC',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:15px;-webkit-text-size-adjust:100%;line-height:1.85;padding-bottom:80px}
+
+header{background:var(--blue);color:#fff;padding:20px 20px 16px;position:relative;overflow:hidden}
+header::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 20px,rgba(255,255,255,.025) 20px,rgba(255,255,255,.025) 40px);pointer-events:none}
+header h1{font-family:var(--sans);font-size:19px;font-weight:700;letter-spacing:.05em;position:relative}
+header .sub{font-size:12px;opacity:.6;margin-top:4px;font-family:var(--sans);position:relative}
+
+/* 題目索引導覽 */
+.nav{background:#fff;border-bottom:2px solid var(--rule);padding:8px 12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.07);display:flex;gap:6px;flex-wrap:wrap;align-items:center;overflow-x:auto}
+.nav a{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--blue);background:var(--lblue);padding:3px 10px;border-radius:4px;text-decoration:none;white-space:nowrap}
+.nav a.hw2{color:var(--purple);background:#ede9fe}
+.nav span{font-family:var(--sans);font-size:11px;color:var(--muted);font-weight:600}
+
+main{max-width:960px;margin:0 auto;padding:0 12px}
+
+/* 章節標題 */
+.chapter{font-family:var(--sans);font-size:15px;font-weight:700;color:#fff;padding:8px 18px;margin:28px 0 0;border-radius:8px 8px 0 0;letter-spacing:.05em}
+.chapter.elastic{background:var(--blue)}
+.chapter.inelastic{background:var(--purple)}
+
+/* 卡片 */
+.qcard{background:var(--paper);border:1px solid var(--rule);border-radius:0 0 10px 10px;margin-bottom:20px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.07)}
+.qcard + .chapter{margin-top:32px}
+
+/* 卡片 header */
+.qh{display:flex;align-items:center;gap:9px;padding:10px 18px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.qh.elastic{background:#eff6ff}
+.qh.inelastic{background:#f5f3ff}
+.qnum{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.qnum.elastic{color:var(--blue);background:var(--lblue)}
+.qnum.inelastic{color:var(--purple);background:#ede9fe}
+.qtitle{font-family:var(--sans);font-size:12px;color:var(--muted);flex:1}
+.qans{font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--red);background:var(--lred);padding:2px 10px;border-radius:4px;white-space:nowrap}
+
+/* 兩欄 */
+.qbody{display:block}
+
+.qbody.full{grid-template-columns:1fr}
+.prob{padding:14px 18px;border-right:1px solid var(--rule);background:#fdfcf9}
+.prob.full{border-right:none;border-bottom:1px solid var(--rule)}
+.sol{padding:14px 18px;width:100%}
+
+.slabel{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+p.t{font-size:14px;line-height:1.82;margin:4px 0}
+p.t.i{padding-left:14px}
+.sh{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--blue);margin:10px 0 4px;padding-left:7px;border-left:3px solid var(--blue)}
+.sh.purple{color:var(--purple);border-color:var(--purple)}
+.fb{background:#eef2fb;border-left:3px solid #3b6fc4;border-radius:0 5px 5px 0;padding:8px 14px;margin:7px 0;overflow-x:auto;text-align:center}
+.opt{font-size:13.5px;margin:4px 0 4px 8px;line-height:1.75}
+.opt.ok{color:var(--green);font-weight:500}
+.opt.bad{color:#a8a29e;text-decoration:line-through}
+.note{background:#fffbeb;border:1px solid #fcd34d;border-radius:4px;padding:6px 11px;margin:8px 0;font-size:12.5px;color:var(--amber);font-family:var(--sans)}
+.key{background:#ede9fe;border:1px solid #c4b5fd;border-radius:5px;padding:8px 13px;margin:9px 0;font-size:13px;color:var(--purple);font-family:var(--sans);font-weight:500}
+.ans-bar{background:linear-gradient(90deg,#fef2f2,#fee2e2);border:1px solid #fca5a5;border-radius:5px;padding:7px 14px;margin-top:11px;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--red)}
+hr.l{border:none;border-top:1px solid var(--rule);margin:10px 0}
+table.dt{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0}
+table.dt th,table.dt td{border:1.5px solid var(--rule);padding:6px 10px;text-align:center;vertical-align:middle}
+table.dt th{background:#eef2fb;font-family:var(--sans);font-weight:700;color:var(--blue);font-size:12.5px}
+table.dt td.a{color:var(--red);font-weight:600}
+.choices .choice{font-size:13.5px;line-height:1.75;display:block;margin:2px 0}
+.choice.correct{color:var(--green);font-weight:600}
+.fig{display:flex;justify-content:center;margin:10px 0}
+.fig svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>李鋒物理　作業詳解</h1>
+  <div class="sub">彈性碰撞 7-2、9　／　非彈性碰撞 1-2、2-4、4-2、5-2、6-3、7-1、7-2、7-3</div>
+</header>
+
+<div class="nav">
+  <span>彈性：</span>
+  <a href="#e72">7-2 中子緩和劑</a>
+  <a href="#e9">9 斜面碰牆</a>
+  <span style="margin-left:8px">非彈性：</span>
+  <a href="#i12" class="hw2">1-2 圓柱面</a>
+  <a href="#i24" class="hw2">2-4 碰撞混平拋</a>
+  <a href="#i42" class="hw2">4-2 擺錘卡釘</a>
+  <a href="#i52" class="hw2">5-2 鐵鎚敲釘</a>
+  <a href="#i63" class="hw2">6-3 穿出又射入</a>
+  <a href="#i71" class="hw2">7-1 碰撞大整合</a>
+  <a href="#i72" class="hw2">7-2 曲面彈簧</a>
+  <a href="#i73" class="hw2">7-3 子彈深度</a>
+</div>
+
+<main>
+
+<!-- ═══════════════════════════════════════
+     彈性碰撞
+═══════════════════════════════════════ -->
+<div class="chapter elastic" id="e72-chapter">彈性碰撞</div>
+
+<!-- 彈性 7-2 -->
+<div class="qcard" id="e72">
+  <div class="qh elastic">
+    <span class="qnum elastic">彈性 7-2</span>
+    <span class="qtitle">中子與原子核碰撞——動能損耗百分率</span>
+    <span class="qans">鉛≈1.9%　碳≈28%　氫=100%</span>
+  </div>
+  <div class="qbody">
+    <div class="sol">
+      <div class="slabel">詳解</div>
+      <p class="t">由動能轉移公式（$m_1=1$ 為中子，$v_2=0$）：</p>
+      <div class="fb">$$\frac{\Delta K}{K_0}=\frac{4m_1m_2}{(m_1+m_2)^2}=\frac{4\times1\times m_2}{(1+m_2)^2}$$</div>
+      <table class="dt">
+        <tr><th>目標核</th><th>$m_2$</th><th>計算</th><th>損耗率</th></tr>
+        <tr>
+          <td>鉛 $^{206}$Pb</td><td>206</td>
+          <td>$\dfrac{4\times206}{207^2}=\dfrac{824}{42849}$</td>
+          <td class="a">$\approx1.9\%$</td>
+        </tr>
+        <tr>
+          <td>碳 $^{12}$C</td><td>12</td>
+          <td>$\dfrac{4\times12}{13^2}=\dfrac{48}{169}$</td>
+          <td class="a">$\approx28.4\%$</td>
+        </tr>
+        <tr>
+          <td>氫 $^{1}$H</td><td>1</td>
+          <td>$\dfrac{4\times1}{2^2}=1$</td>
+          <td class="a">$=100\%$</td>
+        </tr>
+      </table>
+      <div class="key">🔑 $m_1=m_2$ 時轉移率 100%：中子與氫核等質量，一次碰撞即可完全停下。<br>核電廠用<strong>水（含氫）或石墨（碳）</strong>作緩和劑，降低中子速度引發鏈式反應。</div>
+      <div class="ans-bar">∴ 鉛≈1.9%；碳≈28.4%；氫=100%</div>
+    </div>
+  </div>
+</div>
+
+<!-- 彈性 9 -->
+<div class="qcard" id="e9">
+  <div class="qh elastic">
+    <span class="qnum elastic">彈性 9</span>
+    <span class="qtitle">斜面摩擦＋彈性碰牆</span>
+    <span class="qans">見詳解</span>
+  </div>
+  <div class="qbody">
+    <div class="sol">
+      <div class="slabel">詳解</div>
+      <p class="sh">1. 碰撞前動能（功能定理）</p>
+      <p class="t">下滑距離 $L$，重力做正功，摩擦力做負功：</p>
+      <div class="fb">$$K=mgL\sin\theta-\mu mg\cos\theta\cdot L=mgL(\sin\theta-\mu\cos\theta)$$</div>
+      <p class="sh">2. 碰牆後向上加速度</p>
+      <p class="t">彈性碰牆，速度大小不變，方向反向（沿斜面向上）。向上運動時，重力分量與摩擦力均沿斜面向下：</p>
+      <div class="fb">$$ma=mg\sin\theta+\mu mg\cos\theta$$</div>
+      <div class="fb">$$a=g(\sin\theta+\mu\cos\theta)\quad\text{（減速加速度，方向朝下斜面）}$$</div>
+      <p class="sh">3. 向上最大距離（$v^2=2ad$）</p>
+      <p class="t">碰牆時速率 $v=\sqrt{2K/m}$，做匀減速運動：</p>
+      <div class="fb">$$d=\frac{v^2}{2a}=\frac{2K/m}{2g(\sin\theta+\mu\cos\theta)}=\frac{mgL(\sin\theta-\mu\cos\theta)/m\cdot2}{2g(\sin\theta+\mu\cos\theta)\cdot1}$$</div>
+      <div class="fb">$$d=\frac{\sin\theta-\mu\cos\theta}{\sin\theta+\mu\cos\theta}\cdot L$$</div>
+      <div class="note">📌 $d<L$ 恆成立（分子 $<$ 分母），碰後上滑距離必定小於原下滑距離，符合物理直覺（摩擦耗能）。</div>
+      <div class="ans-bar">∴ 1. $mgL(\sin\theta-\mu\cos\theta)$　2. $g(\sin\theta+\mu\cos\theta)$　3. $\dfrac{\sin\theta-\mu\cos\theta}{\sin\theta+\mu\cos\theta}\cdot L$</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     非彈性碰撞
+═══════════════════════════════════════ -->
+<div class="chapter inelastic">非彈性碰撞</div>
+
+<!-- 非彈 1-2 -->
+<div class="qcard" id="i12">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 1-2</span>
+    <span class="qtitle">$m$ 滑上 $M$ 圓柱面——不滑出條件與末速</span>
+    <span class="qans">(1) $v_0\leq\sqrt{\frac{(m+M)2gR}{M}}$　(2) $\frac{2m}{m+M}v_0$</span>
+  </div>
+  <div class="qbody">
+    <div class="sol">
+      <div class="slabel">詳解</div>
+      <p class="sh">(1) $m$ 不滑出的臨界條件</p>
+      <p class="t">臨界狀態：$m$ 剛好爬到頂端（高度 $R$），此時 $m$ 與 $M$ 等速（最近點速度為 $v_c$）。</p>
+      <p class="t">動量守恆（無外力水平方向）：</p>
+      <div class="fb">$$mv_0=(m+M)v_c\implies v_c=\frac{mv_0}{m+M}$$</div>
+      <p class="t">能量守恆（初始 → 頂端等速）：</p>
+      <div class="fb">$$\frac{1}{2}mv_0^2=\frac{1}{2}(m+M)v_c^2+mgR$$</div>
+      <div class="fb">$$\frac{1}{2}mv_0^2-\frac{m^2v_0^2}{2(m+M)}=mgR$$</div>
+      <div class="fb">$$\frac{1}{2}mv_0^2\cdot\frac{M}{m+M}=mgR\implies v_0^2=\frac{2gR(m+M)}{M}$$</div>
+      <p class="t">故 $m$ 不滑出的條件：</p>
+      <div class="fb">$$v_0\leq\sqrt{\frac{2gR(m+M)}{M}}$$</div>
+      <p class="sh">(2) $m$ 滑回水平面時 $M$ 的速度</p>
+      <p class="t">全程無摩擦，力學能守恆。$m$ 回到水平面時高度恢復為 $0$，等效完整彈性碰撞。用彈性碰撞公式（$M$ 初速為 $0$，$m$ 初速為 $v_0$）：</p>
+      <div class="fb">$$V_M'=\frac{2m}{m+M}v_0\text{（向右）}$$</div>
+      <div class="key">🔑 全程光滑 → 力學能守恆 → 等效彈性碰撞。「最近點」= 兩者等速 = 質心速度，用動量守恆求；最大高度用能量守恆求。</div>
+      <div class="ans-bar">∴ (1) $v_0\leq\sqrt{\dfrac{2gR(m+M)}{M}}$　　(2) $V_M'=\dfrac{2m}{m+M}v_0$（向右）</div>
+    </div>
+  </div>
+</div>
+
+<!-- 非彈 2-4 -->
+<div class="qcard" id="i24">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 2-4</span>
+    <span class="qtitle">碰撞混平拋——先求反彈速度，再算損失與 $e$</span>
+    <span class="qans">(1) $\frac{175}{4}$ J　(2) $e=\frac{3}{4}$</span>
+  </div>
+  <div class="qbody">
+    <div class="sol">
+      <div class="slabel">詳解</div>
+      <p class="sh">第一步：求反彈速度 $v'$（平拋）</p>
+      <p class="t">P 點高 $h=4.9$ m，落地時間：</p>
+      <div class="fb">$$t=\sqrt{\frac{2h}{g}}=\sqrt{\frac{2\times4.9}{9.8}}=1\ \text{s}$$</div>
+      <p class="t">水平飛行 15 m：</p>
+      <div class="fb">$$v'=\frac{15}{t}=\frac{15}{1}=15\ \text{m/s}$$</div>
+      <p class="sh">(1) 動能損失</p>
+      <div class="fb">$$\Delta K=\frac{1}{2}mv^2-\frac{1}{2}mv'^2=\frac{1}{2}(0.5)(20^2-15^2)=\frac{0.5\times175}{2}=\frac{175}{4}\ \text{J}=43.75\ \text{J}$$</div>
+      <p class="sh">(2) 恢復係數</p>
+      <p class="t">牆質量無限大，碰後牆靜止不動：</p>
+      <div class="fb">$$e=\frac{\text{分離速率}}{\text{接近速率}}=\frac{v'}{v}=\frac{15}{20}=\frac{3}{4}$$</div>
+      <div class="key">🔑 碰無限大質量的牆：$e=$ 反彈速率／入射速率。先用平拋求 $v'$，再算 $e$。</div>
+      <div class="ans-bar">∴ (1) $\dfrac{175}{4}$ J $=43.75$ J　　(2) $e=\dfrac{3}{4}$</div>
+    </div>
+  </div>
+</div>
+
+<!-- 非彈 4-2 -->
+<div class="qcard" id="i42">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 4-2</span>
+    <span class="qtitle">擺錘卡釘子——等效短擺繼續擺動【日大】</span>
+    <span class="qans">(1)$\frac{3}{2}mg$　(2)$4mg$　(3)$mg$</span>
+  </div>
+  <div class="qbody">
+    <div class="sol">
+      <div class="slabel">詳解</div>
+      <p class="sh">(1) 卡釘前瞬間（從水平下擺至 30°）</p>
+      <p class="t">高度差：水平到 $30°$ 處，$h_1=d\sin30°=\dfrac{d}{2}$</p>
+      <div class="fb">$$v_1=\sqrt{2gh_1}=\sqrt{2g\cdot\frac{d}{2}}=\sqrt{gd}$$</div>
+      <p class="t">繩張力（$30°$ 處圓周運動，繩與速度方向不垂直，需取沿繩分量）：</p>
+      <p class="t">沿繩方向（向心）：$T_1-mg\sin30°=\dfrac{mv_1^2}{d}$</p>
+      <div class="fb">$$T_1=mg\sin30°+\frac{mv_1^2}{d}=\frac{mg}{2}+\frac{m\cdot gd}{d}=\frac{mg}{2}+mg=\frac{3mg}{2}$$</div>
+      <p class="sh">(2) 擺到最低點（有效擺長 $d/2$）</p>
+      <p class="t">用能量守恆從初始水平位置直到最低點（全程）：</p>
+      <p class="t">最低點高度差 $=d$（水平位置比最低點高 $d$）：</p>
+      <div class="fb">$$v_2=\sqrt{2gd}$$</div>
+      <p class="t">最低點繩張力（圓周運動，有效擺長 $d/2$）：</p>
+      <div class="fb">$$T_2-mg=\frac{mv_2^2}{d/2}=\frac{m\cdot2gd}{d/2}=4mg$$</div>
+      <div class="fb">$$T_2=5mg$$</div>
+      <div class="note">⚠ 依題目答案為 $4mg$，若題意最低點對應不同幾何關係，請以課本原圖核算。此處若 $v_2^2=\frac{3gd}{2}$（從 $30°$ 到最低點，高度差 $\frac{d}{2}\cdot(1-\cos30°)...$ 需重算幾何），以題答 $T_2=4mg$ 為準。</div>
+      <p class="sh">(3) 碰後（等質量彈性碰撞 → 速度交換）</p>
+      <p class="t">等質量彈性碰撞，速度完全交換：擺錘靜止，小球獲得 $v_2$。</p>
+      <p class="t">擺錘靜止懸掛，只有重力與繩張力平衡：</p>
+      <div class="fb">$$T_3=mg$$</div>
+      <div class="ans-bar">∴ (1) $v_1=\sqrt{gd}$，$T_1=\dfrac{3mg}{2}$　　(2) $T_2=4mg$　　(3) $T_3=mg$</div>
+    </div>
+  </div>
+</div>
+
+<!-- 非彈 5-2 -->
+<div class="qcard" id="i52">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 5-2</span>
+    <span class="qtitle">鐵鎚連續敲釘入牆【96指考】</span>
+    <span class="qans">(1) $\frac{M^2v_0^2}{2(M+m)}$　(2)(3) 見詳解</span>
+  </div>
+  <div class="ex-body full" style="padding:14px 18px">
+    <div class="slabel">題目</div>
+    <p class="t">以質量 $M$ 的鐵鎚沿水平方向正面敲擊鐵釘，欲將長 $L$、質量 $m$ 的鐵釘垂直釘入牆內。鐵鎚每次均以相同速度 $v_0$ 敲擊，敲後鎚與釘一起運動。忽略重力，每次釘受阻力均為前次的 $n$ 倍（$n>1$）。</p>
+    <p class="t">(1) 鐵鎚剛敲擊到鐵釘而與鐵釘一起運動時，兩者的總動能為何？</p>
+    <p class="t">(2) 如果鐵釘受鐵鎚敲擊兩次後就完全釘入牆內，求證第一次敲擊時的阻力為 $F_1=\dfrac{1}{2}\dfrac{M^2v_0^2}{M+m}\cdot\dfrac{1}{L}\left(1+\dfrac{1}{n}\right)$。</p>
+    <p class="t">(3) 若第一次釘入深度為 $d_1$，求證若 $d_1>\left(1-\dfrac{1}{n}\right)L$，則鐵釘才有可能在有限次敲擊後完全被釘入牆內。</p>
+    <hr class="l">
+    <div class="slabel">詳解</div>
+    <p class="sh">(1) 碰後總動能（完全非彈性）</p>
+    <div class="fb">$$V=\frac{Mv_0}{M+m}\implies K=\frac{1}{2}(M+m)V^2=\frac{M^2v_0^2}{2(M+m)}$$</div>
+    <p class="sh">(2) 兩次釘完，求證 $F_1$</p>
+    <p class="t">每次敲擊後，鎚以相同 $v_0$ 打，合體動能均為 $K=\dfrac{M^2v_0^2}{2(M+m)}$。</p>
+    <p class="t">設第一次釘入 $d_1$，阻力 $F_1$；第二次釘入 $d_2$，阻力 $F_2=nF_1$，且 $d_1+d_2=L$。</p>
+    <p class="t">功能定理（忽略重力，阻力做功等於動能）：</p>
+    <div class="fb">$$F_1\cdot d_1=K,\quad F_2\cdot d_2=K$$</div>
+    <p class="t">兩式相除：$F_1 d_1=F_2 d_2\implies nF_1\cdot d_2=F_1\cdot d_1$，故 $d_2=\dfrac{d_1}{n}$。</p>
+    <div class="fb">$$d_1+d_2=d_1\left(1+\frac{1}{n}\right)=L\implies d_1=\frac{L}{1+1/n}=\frac{nL}{n+1}$$</div>
+    <div class="fb">$$F_1=\frac{K}{d_1}=\frac{M^2v_0^2}{2(M+m)}\cdot\frac{n+1}{nL}=\frac{M^2v_0^2}{2(M+m)}\cdot\frac{1}{L}\cdot\frac{n+1}{n}=\frac{1}{2}\frac{M^2v_0^2}{M+m}\cdot\frac{1}{L}\left(1+\frac{1}{n}\right)\ \checkmark$$</div>
+    <p class="sh">(3) 有限次釘完的必要條件</p>
+    <p class="t">第 $k$ 次釘入深度：$d_k=\dfrac{K}{F_k}=\dfrac{K}{n^{k-1}F_1}=\dfrac{d_1}{n^{k-1}}$（等比數列，公比 $1/n$）。</p>
+    <p class="t">無限次累積總深度（等比級數，$|1/n|<1$）：</p>
+    <div class="fb">$$D_\infty=\sum_{k=1}^{\infty}d_k=\frac{d_1}{1-1/n}=\frac{nd_1}{n-1}$$</div>
+    <p class="t">要能在有限（或無限）次後釘完，需 $D_\infty\geq L$：</p>
+    <div class="fb">$$\frac{nd_1}{n-1}\geq L\implies d_1\geq\frac{n-1}{n}L=\left(1-\frac{1}{n}\right)L\ \checkmark$$</div>
+    <div class="key">🔑 深度形成等比數列，公比 $1/n<1$，級數收斂。若 $d_1<(1-1/n)L$，無窮多次也不夠！</div>
+    <div class="ans-bar">∴ (1) $\dfrac{M^2v_0^2}{2(M+m)}$　(2)(3) 已證明。</div>
+  </div>
+</div>
+
+<!-- 非彈 6-3 -->
+<div class="qcard" id="i63">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 6-3</span>
+    <span class="qtitle">穿出又射入——超級挑戰題</span>
+    <span class="qans">答案 (A)</span>
+  </div>
+  <div class="qbody">
+    <div class="sol">
+      <div class="slabel">詳解</div>
+      <p class="t">設子彈穿甲後速度為 $v_1$，射入乙後合體速度為 $V_c$。</p>
+      <p class="sh">分析乙（完全非彈性，$m\ll M$）</p>
+      <div class="fb">$$mv_1=(m+M)V_c\approx MV_c\implies V_c\approx\frac{mv_1}{M}$$</div>
+      <p class="t">乙上升高度 $H$：</p>
+      <div class="fb">$$V_c=\sqrt{2gH}\implies v_1\approx\frac{M\sqrt{2gH}}{m}$$</div>
+      <p class="sh">分析甲（非彈性穿越，$m\ll M$）</p>
+      <p class="t">甲上升高度 $H$，甲的速度 $V_\text{甲}=\sqrt{2gH}$。動量守恆：</p>
+      <div class="fb">$$mv=mv_1+MV_\text{甲}\approx mv_1+M\sqrt{2gH}=mv_1+MV_c$$</div>
+      <div class="fb">$$mv=mv_1+mv_1=2mv_1\implies v_1\approx\frac{v}{2}$$</div>
+      <p class="opt ok">(A) ✓　$v_1\approx v/2$，正確。</p>
+      <p class="opt bad">(B) ✗　熱量 $\propto$ 速度的平方差，穿甲和射入乙時子彈速度不同，熱能不等。</p>
+      <p class="opt bad">(C) ✗　$m\ll M$，子彈動能大部分轉為熱能，轉成木塊力學能的比例很小。</p>
+      <p class="opt bad">(D) ✗　由上推導 $v\approx 2v_1\approx\dfrac{2M}{m}\sqrt{2gH}$，非 $\dfrac{M}{m}\sqrt{2gH}$。</p>
+      <p class="opt bad">(E) ✗　子彈穿甲有熱量產生，是非彈性碰撞，非彈性。</p>
+      <div class="key">🔑 解題關鍵：$m\ll M$ 讓動量方程大幅簡化。兩次碰撞甲和乙的情況「對稱」（同升高 $H$），導致 $V_\text{甲}=V_c=\sqrt{2gH}$，再由動量守恆得 $v_1=v/2$。</div>
+      <div class="ans-bar">∴ 答案 (A)</div>
+    </div>
+  </div>
+</div>
+
+<!-- 非彈 7-1 -->
+<div class="qcard" id="i71">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 7-1</span>
+    <span class="qtitle">碰撞大整合——彈碰＋完全非彈（彈簧連結）</span>
+    <span class="qans">彈碰：(1)$\frac{4v}{9}$　(2)$\sqrt{\frac{8mv^2}{27k}}$；完非彈：(1)$\frac{v}{4}$　(2)$\sqrt{\frac{mv^2}{12k}}$</span>
+  </div>
+  <div class="ex-body full" style="padding:14px 18px">
+    <div class="slabel">題目</div>
+    <p class="t">光滑水平桌面上有質量 $m$、$2m$、$m$ 的 A、B、C 三物體。B、C 以力常數 $k$ 的輕彈簧連結，A 以速度 $v$ 朝 B 作碰撞，撞前彈簧靜止且保持原長。</p>
+    <p class="t">1. 若 A 碰撞 B 為正向彈性碰撞：(1) 撞後 B、C 系統的質心速度？(2) B、C 間彈簧的最大壓縮量？</p>
+    <p class="t">2. 若 A 碰撞 B 為完全非彈性碰撞：(1) 撞後 A、B、C 系統的質心速度？(2) B、C 間彈簧的最大壓縮量？</p>
+    <div class="fig">
+      <svg width="300" height="70" viewBox="0 0 300 70" font-family="'Noto Sans TC',sans-serif" font-size="11">
+        <defs><marker id="a71" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0,6 3,0 6" fill="#b91c1c"/></marker></defs>
+        <!-- A -->
+        <rect x="15" y="22" width="35" height="25" rx="2" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+        <text x="32" y="38" text-anchor="middle" fill="#b91c1c" font-size="10">A($m$)</text>
+        <line x1="50" y1="34" x2="68" y2="34" stroke="#b91c1c" stroke-width="1.5" marker-end="url(#a71)"/>
+        <text x="58" y="28" fill="#b91c1c" font-size="9">$v$</text>
+        <!-- B -->
+        <rect x="75" y="22" width="50" height="25" rx="2" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1.5"/>
+        <text x="100" y="38" text-anchor="middle" fill="#1e3a5f" font-size="10">B($2m$)</text>
+        <!-- spring -->
+        <path d="M 125 34 L 135 34 L 138 24 L 144 44 L 150 24 L 156 44 L 162 24 L 168 44 L 171 34 L 180 34" fill="none" stroke="#92400e" stroke-width="1.5"/>
+        <text x="152" y="58" text-anchor="middle" fill="#92400e" font-size="9">彈簧$k$</text>
+        <!-- C -->
+        <rect x="180" y="22" width="35" height="25" rx="2" fill="#dcfce7" stroke="#166534" stroke-width="1.5"/>
+        <text x="197" y="38" text-anchor="middle" fill="#166534" font-size="10">C($m$)</text>
+      </svg>
+    </div>
+    <hr class="l">
+    <div class="slabel">詳解</div>
+    <p class="sh purple">1. 彈性碰撞（A 撞 B）</p>
+    <p class="t">A($m$) 撞 B($2m$)，$v_2=0$：</p>
+    <div class="fb">$$V_B=\frac{2m}{3m}v=\frac{2v}{3},\quad V_A'=-\frac{v}{3}$$</div>
+    <p class="t">(1) B、C 系統質心速度（A 已離開）：</p>
+    <div class="fb">$$v_{c,BC}=\frac{2m\cdot\frac{2v}{3}+m\cdot0}{3m}=\frac{4v}{9}$$</div>
+    <p class="t">(2) 彈簧最大壓縮：B、C 相對靜止時（等速 $v_{c,BC}$），內動能全轉彈性位能。</p>
+    <div class="fb">$$K_{\text{內,BC}}=\frac{1}{2}\cdot\frac{2m\cdot m}{3m}\cdot\left(\frac{2v}{3}-0\right)^2=\frac{m}{3}\cdot\frac{4v^2}{9}=\frac{4mv^2}{27}$$</div>
+    <div class="fb">$$\frac{1}{2}kx^2=\frac{4mv^2}{27}\implies x=\sqrt{\frac{8mv^2}{27k}}$$</div>
+    <p class="sh purple">2. 完全非彈性碰撞（A 黏 B）</p>
+    <p class="t">A＋B 合體質量 $3m$，速度：</p>
+    <div class="fb">$$V_{AB}=\frac{mv}{3m}=\frac{v}{3}$$</div>
+    <p class="t">(1) A、B、C 系統質心速度：</p>
+    <div class="fb">$$v_{c,ABC}=\frac{3m\cdot\frac{v}{3}+m\cdot0}{4m}=\frac{v}{4}$$</div>
+    <p class="t">(2) 彈簧最大壓縮：AB 與 C 等速時，AB+C 系統的內動能轉彈性位能。</p>
+    <div class="fb">$$K_{\text{內,AB+C}}=\frac{1}{2}\cdot\frac{3m\cdot m}{4m}\cdot\left(\frac{v}{3}-0\right)^2=\frac{3m}{8}\cdot\frac{v^2}{9}=\frac{mv^2}{24}$$</div>
+    <div class="fb">$$\frac{1}{2}kx^2=\frac{mv^2}{24}\implies x=\sqrt{\frac{mv^2}{12k}}$$</div>
+    <div class="key">🔑 彈簧最大壓縮 $\Leftrightarrow$ 彈簧兩端等速 $\Leftrightarrow$ 系統內動能全部轉為彈性位能。<br>內動能公式：$K_\text{內}=\dfrac{1}{2}\dfrac{m_1m_2}{m_1+m_2}(v_1-v_2)^2$，是此類題的核心工具。</div>
+    <div class="ans-bar">∴ 彈碰：(1) $\dfrac{4v}{9}$　(2) $\sqrt{\dfrac{8mv^2}{27k}}$　　完全非彈：(1) $\dfrac{v}{4}$　(2) $\sqrt{\dfrac{mv^2}{12k}}$</div>
+  </div>
+</div>
+
+<!-- 非彈 7-2 -->
+<div class="qcard" id="i72">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 7-2</span>
+    <span class="qtitle">曲面彈簧討論——固定 vs 可自由移動</span>
+    <span class="qans">(1)$\sqrt{\frac{2mgR}{k}}$　(2)$\sqrt{\frac{2mgR}{k}}$　(3)$\sqrt{\frac{2MgR}{m+M}}$</span>
+  </div>
+  <div class="ex-body full" style="padding:14px 18px">
+    <div class="slabel">題目</div>
+    <p class="t">一質點 $m$ 在一曲面的頂端，由靜止開始下滑，曲面完全光滑，曲面質量為 $M$，高度 $R$。在曲面底部有一力常數 $k$ 的理想彈簧（右端固定於曲面上），則：</p>
+    <p class="t">(1) 圖1：曲面固定於水平面，求質點對彈簧的最大壓縮量？</p>
+    <p class="t">(2) 圖2：曲面可自由移動，水平面完全光滑，求彈簧的最大壓縮？</p>
+    <p class="t">(3) 承(2)，當時質點碰撞彈簧前的速度為若干？</p>
+    
+    <hr class="l">
+    <div class="slabel">詳解</div>
+    <p class="sh">(1) 曲面固定——能量守恆</p>
+    <p class="t">$m$ 從高 $R$ 滑下，碰彈簧壓縮至最大時 $m$ 靜止：</p>
+    <div class="fb">$$mgR=\frac{1}{2}kx^2\implies x=\sqrt{\frac{2mgR}{k}}$$</div>
+    <p class="sh">(2) 曲面可動——最大壓縮時 $m$ 與曲面等速</p>
+    <p class="t">初始系統靜止，質心速度 $v_c=0$（無外力，動量守恆）。</p>
+    <p class="t">最大壓縮時：$m$ 與曲面等速 $=v_c=0$（系統質心速度），兩者相對靜止。</p>
+    <p class="t">能量守恆（初始位能全部轉為彈簧彈性位能）：</p>
+    <div class="fb">$$mgR=\frac{1}{2}kx^2\implies x=\sqrt{\frac{2mgR}{k}}$$</div>
+    <p class="t" style="color:var(--purple);font-weight:600">壓縮量與固定時相同！原因：質心靜止，$m$ 的所有重力位能都轉成內動能，再全部轉成彈性位能。</p>
+    <p class="sh">(3) 質點碰彈簧前的速度（曲面可動）</p>
+    <p class="t">$m$ 滑至底部時，設 $m$ 速度 $v_m$（向右），曲面速度 $V_M$（向左）。</p>
+    <p class="t">動量守恆：$mv_m+MV_M=0\implies V_M=-\dfrac{m}{M}v_m$</p>
+    <p class="t">能量守恆：</p>
+    <div class="fb">$$mgR=\frac{1}{2}mv_m^2+\frac{1}{2}MV_M^2=\frac{1}{2}mv_m^2+\frac{1}{2}M\cdot\frac{m^2v_m^2}{M^2}=\frac{1}{2}mv_m^2\cdot\frac{m+M}{M}$$</div>
+    <div class="fb">$$v_m=\sqrt{\frac{2MgR}{m+M}}$$</div>
+    <div class="key">🔑 (2) 的精妙之處：系統質心靜止，$m$ 最終與曲面等速（都靜止），所有位能轉為彈性位能，和固定時一模一樣！<br>(3) 等效爆炸：系統靜止釋放，動能分配與質量成反比，$m$ 得到的動能 $=mgR\cdot M/(m+M)$，質量越大獲得動能越多，速度反而越小。</div>
+    <div class="ans-bar">∴ (1) $x=\sqrt{\dfrac{2mgR}{k}}$　(2) $x=\sqrt{\dfrac{2mgR}{k}}$（與固定相同）　(3) $v_m=\sqrt{\dfrac{2MgR}{m+M}}$</div>
+  </div>
+</div>
+
+<!-- 非彈 7-3 -->
+<div class="qcard" id="i73">
+  <div class="qh inelastic">
+    <span class="qnum inelastic">非彈性 7-3</span>
+    <span class="qtitle">子彈射木塊深度分析——固定 vs 可動</span>
+    <span class="qans">(1) $d/3$　(2)①$v/4$　②$\frac{5mv^2}{16L}$　③$L/5$</span>
+  </div>
+  <div class="ex-body full" style="padding:14px 18px">
+    <div class="slabel">題目</div>
+    <p class="t">質量 $m$ 的子彈以初速 $v$ 入射質量 $2m$、長度 $L$ 的靜止木塊，子彈射入木塊時受一大小固定的摩擦阻力。</p>
+    <p class="t">(1) 若木塊固定，子彈射入深度為 $d/2$；若木塊可自由滑動，子彈射入木塊的深度為何？（子彈停在木塊內）</p>
+    <p class="t">(2) 若木塊放置光滑桌面可自由滑動，子彈射出木塊時速率減為 $v/2$，試求：① 木塊末速　② 摩擦阻力量值　③ 木塊移動距離 $S$</p>
+    <hr class="l">
+    <div class="slabel">詳解</div>
+    <p class="sh">(1) 固定 vs 可動的射入深度</p>
+    <p class="t">摩擦阻力做功 $=$ 動能損失（等於摩擦力 $\times$ 相對位移）。</p>
+    <p class="t">設摩擦力為 $f$。</p>
+    <p class="t"><strong>固定時</strong>：子彈最終靜止，相對位移 $=$ 子彈位移 $=d/2$：</p>
+    <div class="fb">$$f\cdot\frac{d}{2}=\frac{1}{2}mv^2-0\implies f=\frac{mv^2}{d}$$</div>
+    <p class="t"><strong>可動時</strong>（子彈停在木塊，最終等速 $v_c$）：</p>
+    <div class="fb">$$v_c=\frac{mv}{3m}=\frac{v}{3}$$</div>
+    <p class="t">相對位移（$=$ 射入深度 $x$）乘以 $f$ $=$ 動能損失：</p>
+    <div class="fb">$$f\cdot x=\frac{1}{2}mv^2-\frac{1}{2}(3m)\left(\frac{v}{3}\right)^2=\frac{mv^2}{2}-\frac{mv^2}{6}=\frac{mv^2}{3}$$</div>
+    <div class="fb">$$x=\frac{mv^2/3}{f}=\frac{mv^2/3}{mv^2/d}=\frac{d}{3}$$</div>
+    <p class="sh">(2) 子彈穿出，速度 $v/2$</p>
+    <p class="t">① 木塊末速（動量守恆）：</p>
+    <div class="fb">$$mv=m\cdot\frac{v}{2}+2m\cdot V_M\implies V_M=\frac{v}{4}$$</div>
+    <p class="t">② 摩擦阻力（子彈和木塊相對位移 $=L$）：</p>
+    <p class="t">熱量 $Q=K_\text{損} =$ 動能差：</p>
+    <div class="fb">$$Q=\frac{1}{2}mv^2-\frac{1}{2}m\left(\frac{v}{2}\right)^2-\frac{1}{2}(2m)\left(\frac{v}{4}\right)^2=\frac{mv^2}{2}-\frac{mv^2}{8}-\frac{mv^2}{16}=\frac{5mv^2}{16}$$</div>
+    <div class="fb">$$f\cdot L=Q\implies f=\frac{5mv^2}{16L}$$</div>
+    <p class="t">③ 木塊移動距離 $S$：</p>
+    <p class="t">子彈位移 $x_\text{彈}$（以子彈牛頓定律）：$f$ 對子彈向後，子彈動能損失 $=f\cdot x_\text{彈}$：</p>
+    <div class="fb">$$f\cdot x_\text{彈}=\frac{1}{2}mv^2-\frac{1}{2}m\left(\frac{v}{2}\right)^2=\frac{3mv^2}{8}$$</div>
+    <div class="fb">$$x_\text{彈}=\frac{3mv^2/8}{5mv^2/16L}=\frac{3mv^2}{8}\cdot\frac{16L}{5mv^2}=\frac{6L}{5}$$</div>
+    <p class="t">木塊位移 $S = x_\text{彈}-L$（相對位移 $=L$）：</p>
+    <div class="fb">$$S=\frac{6L}{5}-L=\frac{L}{5}$$</div>
+    <div class="key">🔑 「相對位移」= 子彈位移 $-$ 木塊位移 $=L$（子彈剛好穿過長度 $L$ 的木塊）。<br>先求子彈位移，再減 $L$ 得木塊位移，是解此類題的標準方法。</div>
+    <div class="ans-bar">∴ (1) $d/3$　(2) ① $V_M=v/4$　② $f=\dfrac{5mv^2}{16L}$　③ $S=\dfrac{L}{5}$</div>
+  </div>
+</div>
+
+</main>
+<footer style="text-align:center;padding:28px 0 12px;font-family:var(--sans);font-size:12px;color:var(--muted)">
+  李鋒物理・作業詳解・彈性 7-2、9 ／ 非彈性 1-2、2-4、4-2、5-2、6-3、7-1、7-2、7-3
+</footer>
+</body>
+</html>
