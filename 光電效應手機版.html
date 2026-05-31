@@ -10,61 +10,55 @@
 body {
   background: #ffffff;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
 }
 
-/* 嚴格 16:9 wrapper */
-#stage {
-  position: relative;
-  background: #ffffff;
-  overflow: hidden;
-  /* 寬度撐滿，高度 = 寬/16*9；若高度先撐滿則改用 height */
-  width: min(100vw, 100vh * 16 / 9);
-  height: min(100vh, 100vw * 9 / 16);
-}
+/* ── 手機版垂直佈局 ──
+   標題   5dvh
+   電路   32dvh
+   Tab列  5dvh
+   圖表   30dvh
+   控制   28dvh
+*/
 
-/* 標題列：6% 高度 */
 #titlebar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 7%;
+  height: 5dvh;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #ffffff;
-  border-bottom: 1.5px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
   color: #5a3e1b;
   font-weight: 700;
-  font-size: clamp(14px, 2.2vw, 36px);
+  font-size: clamp(13px, 2.2dvh, 22px);
   letter-spacing: .06em;
-  z-index: 2;
 }
 
-/* 左側：模擬 canvas，佔寬 58%，高度從 7% 到 100% */
+/* 電路動畫區 */
 #simCanvas {
-  position: absolute;
-  top: 7%; left: 0;
-  width: 58%; height: 93%;
+  width: 100vw;
+  height: 32dvh;
+  flex-shrink: 0;
+  display: block;
 }
 
-/* 右側邊線 */
+/* 右側面板：改成下半部垂直排列 */
 #rightPanel {
-  position: absolute;
-  top: 7%; right: 0;
-  width: 42%; height: 93%;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  border-left: 1.5px solid #dddddd;
+  overflow: hidden;
+  border-top: 1px solid #dddddd;
 }
 
-/* 圖表區：佔右側 55% */
+/* 圖表區 */
 #graphWrap {
-  flex: 55;
+  flex: 52;
   position: relative;
   background: #ffffff;
 }
@@ -75,9 +69,9 @@ body {
 }
 #btnClear {
   position: absolute;
-  top: 6px; right: 8px;
-  font-size: clamp(10px, 1.05vw, 18px);
-  padding: .25em .7em;
+  top: 4px; right: 6px;
+  font-size: clamp(10px, 1.6dvh, 16px);
+  padding: .2em .6em;
   background: #fff;
   border: 1px solid #dddddd;
   border-radius: 5px;
@@ -87,34 +81,33 @@ body {
   touch-action: manipulation;
 }
 
-/* 控制區：佔右側 45% */
+/* 控制區 */
 #ctrlArea {
-  flex: 45;
+  flex: 48;
   background: #ffffff;
-  border-top: 1.5px solid #dddddd;
-  padding: 1% 2%;
+  border-top: 1px solid #dddddd;
+  padding: 1dvh 3vw;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  gap: 0;
 }
 
 .ctrl-row {
   display: flex;
   align-items: center;
-  gap: 2%;
+  gap: 3vw;
 }
 .ctrl-grp {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.3dvh;
 }
 .lbl-line {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: clamp(10px, 1.3vw, 22px);
+  font-size: clamp(11px, 1.7dvh, 19px);
   font-weight: 600;
   color: #5a3e1b;
 }
@@ -122,24 +115,24 @@ body {
   font-family: monospace;
   background: #e8e0d0;
   color: #c0392b;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
-  font-size: clamp(10px, 1.2vw, 20px);
+  font-size: clamp(10px, 1.5dvh, 16px);
 }
 
-/* ── 觸控友善滑桿 ── */
+/* ── 觸控滑桿（手機版，較大）── */
 .touch-slider-wrap {
   position: relative;
   width: 100%;
-  height: clamp(28px, 3.5vh, 48px);
+  height: 5dvh;
   display: flex;
   align-items: center;
-  touch-action: none; /* 避免頁面滾動干擾 */
+  touch-action: none;
 }
 .touch-slider-track {
   position: absolute;
   left: 0; right: 0;
-  height: clamp(6px, 0.9vh, 12px);
+  height: 1dvh;
   border-radius: 999px;
   background: #ccc3b0;
   pointer-events: none;
@@ -154,30 +147,30 @@ body {
 }
 .touch-slider-thumb {
   position: absolute;
-  width: clamp(28px, 3.6vw, 52px);
-  height: clamp(28px, 3.6vw, 52px);
+  width: 5dvh;
+  height: 5dvh;
   border-radius: 50%;
   background: #fff;
   border: 2.5px solid #5a3e1b;
   box-shadow: 0 2px 8px rgba(0,0,0,.25);
   transform: translateX(-50%);
   pointer-events: none;
-  top: 50%;
-  margin-top: calc(clamp(28px, 3.6vw, 52px) / -2);
+  top: 0;
   z-index: 1;
 }
+
 /* ── Tab 切換 ── */
 #tabBar {
   display: flex;
-  border-bottom: 1.5px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
   flex-shrink: 0;
 }
 .tab-btn {
   flex: 1;
-  padding: .4em 0;
+  padding: 1dvh 0;
   border: none;
   background: #f5f5f5;
-  font-size: clamp(10px, 1.2vw, 20px);
+  font-size: clamp(11px, 1.8dvh, 19px);
   font-family: 'Microsoft JhengHei', sans-serif;
   color: #888;
   cursor: pointer;
@@ -192,29 +185,29 @@ body {
   font-weight: 700;
 }
 
-/* Tab 內容區 */
-#tab1Content, #tab2Content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+/* Tab 內容 */
+#tab1Content, #tab2Content {
+  display: flex; flex-direction: column; flex: 1; overflow: hidden;
+}
 #tab2Content { display: none; }
 
 /* Kmax-f 控制區 */
 #ctrl2Area {
-  flex: 38;
+  flex: 48;
   background: #ffffff;
-  border-top: 1.5px solid #dddddd;
-  padding: 1% 2%;
+  border-top: 1px solid #dddddd;
+  padding: 1dvh 3vw;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
 }
 #kfStatus {
-  font-size: clamp(10px, 1.2vw, 18px);
+  font-size: clamp(10px, 1.6dvh, 16px);
   color: #555;
   text-align: center;
-  min-height: 1.4em;
 }
-/* 掃描動畫進度條 */
 #sweepBar {
-  height: clamp(4px, 0.6vh, 8px);
+  height: 0.8dvh;
   background: #eee;
   border-radius: 4px;
   overflow: hidden;
@@ -237,7 +230,7 @@ select {
   border-radius: 5px;
   border: 1px solid #dddddd;
   background: #fff;
-  font-size: clamp(10px, 1.2vw, 20px);
+  font-size: clamp(11px, 1.7dvh, 19px);
   color: #2c2416;
   cursor: pointer;
   touch-action: manipulation;
@@ -246,26 +239,24 @@ select {
 
 .dashboard {
   display: flex;
-  gap: 3%;
+  gap: 2vw;
   background: #fff;
-  padding: .35em .8em;
+  padding: .4dvh 2vw;
   border-radius: 7px;
   border: 1px solid #dddddd;
   align-items: center;
-  font-size: clamp(10px, 1.2vw, 20px);
+  font-size: clamp(10px, 1.5dvh, 16px);
   width: 100%;
 }
 .dval {
   font-weight: 700;
-  font-size: clamp(12px, 1.55vw, 26px);
+  font-size: clamp(12px, 1.9dvh, 19px);
 }
 </style>
 </head>
 <body>
-<div id="stage">
-  <div id="titlebar">光電效應虛擬實驗</div>
-
-  <canvas id="simCanvas"></canvas>
+<div id="titlebar">光電效應虛擬實驗</div>
+<canvas id="simCanvas"></canvas>
 
   <div id="rightPanel">
     <!-- Tab 切換列 -->
@@ -378,7 +369,6 @@ select {
     </div>
 
   </div>
-</div>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -444,11 +434,11 @@ let photons = [], electrons = [], traces = [], activeTrace = null;
 
 // ── Canvas 尺寸同步 ──
 function resizeCanvases() {
-  const stage = document.getElementById('stage');
-  simC.width  = stage.clientWidth * 0.58;
-  simC.height = stage.clientHeight * 0.93;
-  graphC.width  = stage.clientWidth * 0.42;
-  graphC.height = stage.clientHeight * 0.93 * 0.55;
+  simC.width  = simC.clientWidth;
+  simC.height = simC.clientHeight;
+  const gw = graphC.parentElement;
+  graphC.width  = gw ? gw.clientWidth  : window.innerWidth;
+  graphC.height = gw ? gw.clientHeight : window.innerHeight * 0.30;
 }
 window.addEventListener('resize', resizeCanvases);
 
