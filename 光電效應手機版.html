@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>007 光電效應模擬</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #ffffff;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Microsoft JhengHei', 'Segoe UI', sans-serif;
+}
+
+/* 嚴格 16:9 wrapper */
+#stage {
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+  /* 寬度撐滿，高度 = 寬/16*9；若高度先撐滿則改用 height */
+  width: min(100vw, 100vh * 16 / 9);
+  height: min(100vh, 100vw * 9 / 16);
+}
+
+/* 標題列：6% 高度 */
+#titlebar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 7%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-bottom: 1.5px solid #dddddd;
+  color: #5a3e1b;
+  font-weight: 700;
+  font-size: clamp(14px, 2.2vw, 36px);
+  letter-spacing: .06em;
+  z-index: 2;
+}
+
+/* 左側：模擬 canvas，佔寬 58%，高度從 7% 到 100% */
+#simCanvas {
+  position: absolute;
+  top: 7%; left: 0;
+  width: 58%; height: 93%;
+}
+
+/* 右側邊線 */
+#rightPanel {
+  position: absolute;
+  top: 7%; right: 0;
+  width: 42%; height: 93%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1.5px solid #dddddd;
+}
+
+/* 圖表區：佔右側 55% */
+#graphWrap {
+  flex: 55;
+  position: relative;
+  background: #ffffff;
+}
+#graphCanvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+#btnClear {
+  position: absolute;
+  top: 6px; right: 8px;
+  font-size: clamp(10px, 1.05vw, 18px);
+  padding: .25em .7em;
+  background: #fff;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #5a3e1b;
+  z-index: 3;
+  touch-action: manipulation;
+}
+
+/* 控制區：佔右側 45% */
+#ctrlArea {
+  flex: 45;
+  background: #ffffff;
+  border-top: 1.5px solid #dddddd;
+  padding: 1% 2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 0;
+}
+
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 2%;
+}
+.ctrl-grp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lbl-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: clamp(10px, 1.3vw, 22px);
+  font-weight: 600;
+  color: #5a3e1b;
+}
+.badge {
+  font-family: monospace;
+  background: #e8e0d0;
+  color: #c0392b;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: clamp(10px, 1.2vw, 20px);
+}
+
+/* ── 觸控友善滑桿 ── */
+.touch-slider-wrap {
+  position: relative;
+  width: 100%;
+  height: clamp(28px, 3.5vh, 48px);
+  display: flex;
+  align-items: center;
+  touch-action: none; /* 避免頁面滾動干擾 */
+}
+.touch-slider-track {
+  position: absolute;
+  left: 0; right: 0;
+  height: clamp(6px, 0.9vh, 12px);
+  border-radius: 999px;
+  background: #ccc3b0;
+  pointer-events: none;
+}
+.touch-slider-fill {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: #8a6a3a;
+  pointer-events: none;
+}
+.touch-slider-thumb {
+  position: absolute;
+  width: clamp(28px, 3.6vw, 52px);
+  height: clamp(28px, 3.6vw, 52px);
+  border-radius: 50%;
+  background: #fff;
+  border: 2.5px solid #5a3e1b;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  transform: translateX(-50%);
+  pointer-events: none;
+  top: 50%;
+  margin-top: calc(clamp(28px, 3.6vw, 52px) / -2);
+  z-index: 1;
+}
+/* ── Tab 切換 ── */
+#tabBar {
+  display: flex;
+  border-bottom: 1.5px solid #dddddd;
+  flex-shrink: 0;
+}
+.tab-btn {
+  flex: 1;
+  padding: .4em 0;
+  border: none;
+  background: #f5f5f5;
+  font-size: clamp(10px, 1.2vw, 20px);
+  font-family: 'Microsoft JhengHei', sans-serif;
+  color: #888;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  touch-action: manipulation;
+  transition: all .15s;
+}
+.tab-btn.active {
+  background: #fff;
+  color: #5a3e1b;
+  border-bottom: 2.5px solid #5a3e1b;
+  font-weight: 700;
+}
+
+/* Tab 內容區 */
+#tab1Content, #tab2Content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+#tab2Content { display: none; }
+
+/* Kmax-f 控制區 */
+#ctrl2Area {
+  flex: 38;
+  background: #ffffff;
+  border-top: 1.5px solid #dddddd;
+  padding: 1% 2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+#kfStatus {
+  font-size: clamp(10px, 1.2vw, 18px);
+  color: #555;
+  text-align: center;
+  min-height: 1.4em;
+}
+/* 掃描動畫進度條 */
+#sweepBar {
+  height: clamp(4px, 0.6vh, 8px);
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+#sweepBarFill {
+  height: 100%;
+  width: 0%;
+  background: #5a3e1b;
+  border-radius: 4px;
+  transition: width .05s linear;
+}
+
+/* 波長滑桿特殊背景 */
+#track_lambda {
+  background: linear-gradient(to right,#a020f0,#0000ff,#00ffff,#00ff00,#ffff00,#ff8800,#ff0000);
+}
+
+select {
+  padding: .3em .5em;
+  border-radius: 5px;
+  border: 1px solid #dddddd;
+  background: #fff;
+  font-size: clamp(10px, 1.2vw, 20px);
+  color: #2c2416;
+  cursor: pointer;
+  touch-action: manipulation;
+  width: 100%;
+}
+
+.dashboard {
+  display: flex;
+  gap: 3%;
+  background: #fff;
+  padding: .35em .8em;
+  border-radius: 7px;
+  border: 1px solid #dddddd;
+  align-items: center;
+  font-size: clamp(10px, 1.2vw, 20px);
+  width: 100%;
+}
+.dval {
+  font-weight: 700;
+  font-size: clamp(12px, 1.55vw, 26px);
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="titlebar">光電效應虛擬實驗</div>
+
+  <canvas id="simCanvas"></canvas>
+
+  <div id="rightPanel">
+    <!-- Tab 切換列 -->
+    <div id="tabBar">
+      <button class="tab-btn active" id="tabBtn1" onclick="switchTab(1)">I–V 圖</button>
+      <button class="tab-btn"        id="tabBtn2" onclick="switchTab(2)">Kmax–f 圖</button>
+    </div>
+
+    <!-- ── Tab 1：I-V ── -->
+    <div id="tab1Content">
+      <div id="graphWrap">
+        <button id="btnClear" onclick="clearGraph()">清除 Clear</button>
+        <canvas id="graphCanvas"></canvas>
+      </div>
+      <div id="ctrlArea">
+        <!-- 行1：波長 + 強度 -->
+        <div class="ctrl-row">
+          <div class="ctrl-grp">
+            <div class="lbl-line"><span>光波長 λ</span><span id="disp_lambda" class="badge">400 nm</span></div>
+            <div class="touch-slider-wrap" id="sw_lambda">
+              <div class="touch-slider-track" id="track_lambda"><div class="touch-slider-fill" id="fill_lambda"></div></div>
+              <div class="touch-slider-thumb" id="thumb_lambda"></div>
+            </div>
+          </div>
+          <div class="ctrl-grp">
+            <div class="lbl-line"><span>光強度</span><span id="disp_intensity" class="badge">5</span></div>
+            <div class="touch-slider-wrap" id="sw_intensity">
+              <div class="touch-slider-track"><div class="touch-slider-fill" id="fill_intensity"></div></div>
+              <div class="touch-slider-thumb" id="thumb_intensity"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 行2：電壓 + 金屬 -->
+        <div class="ctrl-row">
+          <div class="ctrl-grp" style="flex:1.4">
+            <div class="lbl-line"><span>電壓 V</span><span id="disp_voltage" class="badge">0.00 V</span></div>
+            <div class="touch-slider-wrap" id="sw_voltage">
+              <div class="touch-slider-track"><div class="touch-slider-fill" id="fill_voltage"></div></div>
+              <div class="touch-slider-thumb" id="thumb_voltage"></div>
+            </div>
+          </div>
+          <div class="ctrl-grp" style="flex:1">
+            <div class="lbl-line"><span>金屬材料</span></div>
+            <select id="metalSelect">
+              <option value="2.27">鈉 Na (2.27 eV)</option>
+              <option value="3.74">鋅 Zn (3.74 eV)</option>
+              <option value="4.50">鎢 W  (4.50 eV)</option>
+            </select>
+          </div>
+        </div>
+        <!-- 行3：數值顯示 -->
+        <div class="ctrl-row">
+          <div class="dashboard">
+            <div>光子能量:&nbsp;<span id="val_E" class="dval" style="color:#1d6a3a">3.10</span>&nbsp;eV</div>
+            <div>截止電壓:&nbsp;<span id="val_stop" class="dval" style="color:#c0392b">0.83</span>&nbsp;V</div>
+            <div>電流:&nbsp;<span id="val_I" class="dval" style="color:#1a5276">0.00</span>&nbsp;mA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 2：Kmax–f ── -->
+    <div id="tab2Content">
+      <div id="graphWrap2" style="flex:62;position:relative;background:#fff;">
+        <button style="position:absolute;top:6px;right:8px;font-size:clamp(10px,1.05vw,18px);padding:.25em .7em;background:#fff;border:1px solid #ddd;border-radius:5px;cursor:pointer;color:#5a3e1b;z-index:3;touch-action:manipulation;" onclick="clearKfGraph()">清除 Clear</button>
+        <canvas id="kfCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+      </div>
+      <div id="ctrl2Area">
+        <!-- 頻率滑桿 -->
+        <div class="ctrl-row">
+          <div class="ctrl-grp">
+            <div class="lbl-line">
+              <span>頻率 f</span>
+              <span id="disp_freq" class="badge">7.50 ×10¹⁴ Hz</span>
+            </div>
+            <div class="touch-slider-wrap" id="sw_freq">
+              <div class="touch-slider-track"><div class="touch-slider-fill" id="fill_freq"></div></div>
+              <div class="touch-slider-thumb" id="thumb_freq"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 金屬選擇 -->
+        <div class="ctrl-row">
+          <div class="ctrl-grp">
+            <div class="lbl-line"><span>金屬材料</span></div>
+            <select id="metalSelect2">
+              <option value="2.27" data-color="#e67e22">鈉 Na (2.27 eV)</option>
+              <option value="3.74" data-color="#27ae60">鋅 Zn (3.74 eV)</option>
+              <option value="4.08" data-color="#8e44ad">鋁 Al (4.08 eV)</option>
+            </select>
+          </div>
+          <div class="ctrl-grp" style="flex:0.4;align-items:center;justify-content:center;display:flex;flex-direction:column;">
+            <div class="lbl-line"><span>單位</span></div>
+            <button id="btnUnitKf" onclick="toggleKfUnit()" style="width:100%;padding:.3em 0;background:#5a3e1b;border:none;border-radius:6px;color:#fff;font-size:clamp(11px,1.3vw,22px);font-weight:700;cursor:pointer;touch-action:manipulation;">eV</button>
+          </div>
+          <div class="ctrl-grp">
+            <div id="kfStatus">等待量測…</div>
+            <div id="sweepBar"><div id="sweepBarFill"></div></div>
+          </div>
+        </div>
+        <!-- 數值顯示 -->
+        <div class="ctrl-row">
+          <div class="dashboard">
+            <div>頻率:&nbsp;<span id="val_f" class="dval" style="color:#555">7.50</span>&nbsp;×10¹⁴Hz</div>
+            <div>Kmax:&nbsp;<span id="val_kmax" class="dval" style="color:#c0392b">—</span>&nbsp;eV</div>
+            <div>截止f₀:&nbsp;<span id="val_f0" class="dval" style="color:#1d6a3a">—</span>&nbsp;×10¹⁴</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  觸控滑桿系統
+// ═══════════════════════════════════════════════════
+function makeTouchSlider(wrapId, min, max, initVal, step, onChange) {
+  const wrap  = document.getElementById(wrapId);
+  const thumb = wrap.querySelector('.touch-slider-thumb');
+  const fill  = wrap.querySelector('.touch-slider-fill');
+  let val = initVal;
+
+  function ratio() { return (val - min) / (max - min); }
+  function update() {
+    const pct = ratio() * 100;
+    thumb.style.left = pct + '%';
+    fill.style.width = pct + '%';
+  }
+  update();
+
+  function fromPointer(e) {
+    const rect = wrap.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    let r = (clientX - rect.left) / rect.width;
+    r = Math.max(0, Math.min(1, r));
+    let newVal = min + r * (max - min);
+    // snap to step
+    newVal = Math.round(newVal / step) * step;
+    newVal = Math.max(min, Math.min(max, newVal));
+    // fix float
+    newVal = parseFloat(newVal.toFixed(10));
+    if (newVal !== val) { val = newVal; update(); onChange(val); }
+  }
+
+  wrap.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    wrap.setPointerCapture(e.pointerId);
+    fromPointer(e);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!wrap.hasPointerCapture(e.pointerId)) return;
+    fromPointer(e);
+  });
+
+  return { getValue: () => val };
+}
+
+// ═══════════════════════════════════════════════════
+//  物理狀態
+// ═══════════════════════════════════════════════════
+const HC = 1239.8;
+let state = {
+  lambda: 400, intensity: 5, voltage: 0, workFunction: 2.27,
+  energy: 0, stopV: 0, current: 0, colorStr: 'rgb(100,0,255)'
+};
+let lastKey = '';
+
+const simC   = document.getElementById('simCanvas');
+const simCtx = simC.getContext('2d');
+const graphC = document.getElementById('graphCanvas');
+const graphCtx = graphC.getContext('2d');
+
+let photons = [], electrons = [], traces = [], activeTrace = null;
+
+// ── Canvas 尺寸同步 ──
+function resizeCanvases() {
+  const stage = document.getElementById('stage');
+  simC.width  = stage.clientWidth * 0.58;
+  simC.height = stage.clientHeight * 0.93;
+  graphC.width  = stage.clientWidth * 0.42;
+  graphC.height = stage.clientHeight * 0.93 * 0.55;
+}
+window.addEventListener('resize', resizeCanvases);
+
+// ── 物理計算 ──
+function updatePhysics() {
+  state.colorStr = wavelengthToColor(state.lambda);
+  const key = state.lambda + '_' + state.intensity + '_' + state.workFunction;
+  if (key !== lastKey) { startNewTrace(); lastKey = key; }
+
+  state.energy = HC / state.lambda;
+  const maxK = state.energy - state.workFunction;
+  state.stopV = maxK > 0 ? maxK : 0;
+
+  if (maxK <= 0) { state.current = 0; }
+  else {
+    const sat = state.intensity * 0.8;
+    if (state.voltage < -state.stopV) state.current = 0;
+    else if (state.voltage >= 0) state.current = sat;
+    else { const r = (state.voltage + state.stopV) / state.stopV; state.current = sat * r * r * (3 - 2 * r); }
+  }
+
+  document.getElementById('disp_lambda').innerText    = state.lambda + ' nm';
+  document.getElementById('disp_intensity').innerText = state.intensity;
+  document.getElementById('disp_voltage').innerText   = state.voltage.toFixed(2) + ' V';
+  document.getElementById('val_E').innerText    = state.energy.toFixed(2);
+  document.getElementById('val_stop').innerText = state.stopV.toFixed(2);
+  document.getElementById('val_I').innerText    = state.current.toFixed(2);
+}
+
+function startNewTrace() {
+  activeTrace = { color: state.colorStr, points: [] };
+  traces.push(activeTrace);
+}
+function recordPoint() {
+  if (!activeTrace) startNewTrace();
+  activeTrace.points.push({ v: state.voltage, i: state.current });
+}
+function resetGraph()  { traces = []; startNewTrace(); }
+function clearGraph()  { resetGraph(); }
+
+// ── 波長→顏色 ──
+function wavelengthToColor(wl) {
+  let r, g, b;
+  if      (wl >= 380 && wl < 440) { r = -(wl-440)/(440-380); g = 0; b = 1; }
+  else if (wl >= 440 && wl < 490) { r = 0; g = (wl-440)/(490-440); b = 1; }
+  else if (wl >= 490 && wl < 510) { r = 0; g = 1; b = -(wl-510)/(510-490); }
+  else if (wl >= 510 && wl < 580) { r = (wl-510)/(580-510); g = 1; b = 0; }
+  else if (wl >= 580 && wl < 645) { r = 1; g = -(wl-645)/(645-580); b = 0; }
+  else if (wl >= 645 && wl <= 780) { r = 1; g = 0; b = 0; }
+  else return 'rgb(148,0,211)'; // 紫外線一律顯示紫色
+  return `rgb(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)})`;
+}
+
+// ═══════════════════════════════════════════════════
+//  電路圖繪製（仿附圖版）
+// ═══════════════════════════════════════════════════
+function drawCircuit(ctx) {
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+  const lw = Math.max(1.5, W * 0.004); // 基準線寬
+
+  // ── 真空管幾何 ──
+  // 左右各留 12% 給外部電路豎線
+  const tubeX = W * 0.12,  tubeY = H * 0.06;
+  const tubeW = W * 0.76,  tubeH = H * 0.40;
+  const tubeMY = tubeY + tubeH / 2;
+  const tubeR  = tubeH / 2;
+
+  const cathX = tubeX + tubeR + W * 0.05;
+  const pHalf = tubeH * 0.28;
+  const anodX = tubeX + tubeW - tubeR * 0.28;  // 陽極板 X（右端內側）
+
+  // ── 1. 真空管（膠囊形，淺藍） ──
+  ctx.save();
+  ctx.fillStyle   = 'rgba(210,230,255,0.40)';
+  ctx.strokeStyle = '#7aaad0';
+  ctx.lineWidth   = lw * 1.5;
+  ctx.beginPath();
+  ctx.moveTo(tubeX + tubeR, tubeY);
+  ctx.lineTo(tubeX + tubeW - tubeR, tubeY);
+  ctx.arc(tubeX + tubeW - tubeR, tubeMY, tubeR, -Math.PI/2, Math.PI/2);
+  ctx.lineTo(tubeX + tubeR, tubeY + tubeH);
+  ctx.arc(tubeX + tubeR, tubeMY, tubeR, Math.PI/2, -Math.PI/2);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.restore();
+
+  // ── 2. 陰極板 T（灰色豎板，在管內） ──
+  const platW = W * 0.018;
+  ctx.fillStyle = '#607880';
+  ctx.fillRect(cathX - platW/2, tubeMY - pHalf, platW, pHalf * 2);
+
+
+
+  // ── 3. 陽極板（短豎線，與T極對稱）──
+  const cRad = pHalf * 0.95;  // 保留供其他地方使用
+  const cOpenAng = 0.38 * Math.PI;  // 保留
+  const cPlatW = W * 0.016;
+  const cPlatH = pHalf * 1.6;
+  ctx.fillStyle = '#607880';
+  ctx.fillRect(anodX - cPlatW/2, tubeMY - cPlatH/2, cPlatW, cPlatH);
+
+
+
+  // 「真空管」右上標籤
+  ctx.save();
+  ctx.fillStyle = '#5580aa';
+  ctx.font = `${Math.max(10, H/28)}px 'Microsoft JhengHei',sans-serif`;
+  ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+  ctx.fillText('真空管', tubeX + tubeW - W*0.01, tubeY - H*0.005);
+  ctx.restore();
+
+  // ── 4. 外部電路 ──
+  // 規則：管外導線只走管壁外側，不在管內畫任何橫線
+  // leftWX / rightWX = 左右管壁外側 X（貼緊管壁）
+  const leftWX   = tubeX   - lw;
+  const rightWX  = tubeX + tubeW + lw;
+  const wireSerY = tubeY + tubeH + H * 0.20;  // 串聯橫線 Y
+  const vLineY   = wireSerY + H * 0.14;        // V表 Y
+
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth   = lw;
+  ctx.lineJoin    = 'round';
+  ctx.lineCap     = 'round';
+
+  // 左側：T極 → 水平到左管壁 → 垂直往下
+  ctx.beginPath();
+  ctx.moveTo(cathX,  tubeMY);
+  ctx.lineTo(leftWX, tubeMY);
+  ctx.lineTo(leftWX, wireSerY);
+  ctx.stroke();
+
+  // 右側：C極(anodX) → 水平到右管壁(rightWX) → 垂直往下
+  ctx.beginPath();
+  ctx.moveTo(anodX,   tubeMY);
+  ctx.lineTo(rightWX, tubeMY);
+  ctx.lineTo(rightWX, wireSerY);
+  ctx.stroke();
+
+  // 串聯橫線
+  ctx.beginPath();
+  ctx.moveTo(leftWX,  wireSerY);
+  ctx.lineTo(rightWX, wireSerY);
+  ctx.stroke();
+
+  // ── 5. 串聯元件 ──
+  const batX = leftWX  + (rightWX - leftWX) * 0.22;
+  const muaX = leftWX  + (rightWX - leftWX) * 0.78;
+
+  drawVarSource(ctx, batX, wireSerY, lw, W, H);
+  ctx.save();
+  ctx.fillStyle = '#2c4060';
+  ctx.font = `${Math.max(9, H/32)}px 'Microsoft JhengHei',sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('可變電壓源', batX, wireSerY + H*0.036);
+  ctx.restore();
+
+  drawMeter(ctx, muaX, wireSerY, 'μA',
+    (state.current * 1000).toFixed(0), '#8b0000', lw, W, H);
+
+  // ── 6. 伏特計 V（並聯，串聯線下方）──
+  const vMeterX = leftWX + (rightWX - leftWX) * 0.50;
+  const vMeterY = vLineY;
+  const vMeterR = Math.max(14, H * 0.040);
+
+  ctx.strokeStyle = '#666'; ctx.lineWidth = lw * 0.85;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+  ctx.beginPath();
+  ctx.moveTo(leftWX,  wireSerY);
+  ctx.lineTo(leftWX,  vMeterY);
+  ctx.lineTo(vMeterX - vMeterR, vMeterY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(rightWX, wireSerY);
+  ctx.lineTo(rightWX, vMeterY);
+  ctx.lineTo(vMeterX + vMeterR, vMeterY);
+  ctx.stroke();
+
+  ctx.fillStyle = '#666';
+  ctx.beginPath(); ctx.arc(leftWX,  wireSerY, lw*1.6, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(rightWX, wireSerY, lw*1.6, 0, Math.PI*2); ctx.fill();
+
+  drawMeter(ctx, vMeterX, vMeterY, 'V',
+    state.voltage.toFixed(2) + 'V', '#1a3a6a', lw, W, H, true, vMeterR);
+
+
+}
+
+
+// ── 向上箭頭 ──
+function drawArrowUp(ctx, x, y, lw, W, H) {
+  const s = Math.max(7, H * 0.025);
+  ctx.save();
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.lineTo(x - s * 0.5, y + s * 0.4);
+  ctx.lineTo(x + s * 0.5, y + s * 0.4);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+// ── 圓形儀表（小圓圈 + 數值放大顯示在圓外）──
+function drawMeter(ctx, x, y, label, val, color, lw, W, H, isVoltmeter=false, rOverride=null) {
+  const r = rOverride ?? Math.max(12, H * 0.038); // 縮小的圓
+  ctx.save();
+
+  // 圓圈
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#555';
+  ctx.lineWidth = lw * 1.1;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+
+  // 圓內標籤（V / μA）- 只放符號
+  ctx.fillStyle = color;
+  ctx.font = `bold ${Math.max(10, H/28)}px 'Segoe UI',sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, y);
+
+  // 數值：放在圓圈正下方，字體大
+  const valSize = Math.max(13, H/20);
+  ctx.font = `bold ${valSize}px monospace`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  if (isVoltmeter) {
+    const numVal = parseFloat(val);
+    ctx.fillStyle = numVal < 0 ? '#c0392b' : (numVal > 0 ? '#1d6a3a' : '#555');
+  } else {
+    ctx.fillStyle = '#333';
+  }
+  ctx.fillText(val, x, y + r + H*0.008);
+
+  ctx.restore();
+}
+
+// ── 可變電壓源符號（橫置：豎線交替長短，左右橫線串接，斜箭頭表可調）──
+function drawVarSource(ctx, x, y, lw, W, H) {
+  ctx.save();
+  ctx.lineCap = 'butt';
+  ctx.strokeStyle = '#222';
+
+  // 橫置：原本「橫線」變「豎線」，原本「豎串線」變「橫串線」
+  // 4 對：每對 = 一長豎線（+）+ 一短粗豎線（-），沿 X 方向排列
+  const pairs   = 4;
+  const gap     = Math.max(5, W * 0.014);   // 每對間距（沿 X）
+  const longVH  = Math.max(10, H * 0.038);  // 長豎線半高（+極）
+  const shortVH = Math.max(6,  H * 0.022);  // 短豎線半高（-極）
+  const totalW  = (pairs * 2 - 1) * gap;
+  const leftX   = x - totalW / 2;
+
+  for (let i = 0; i < pairs; i++) {
+    const baseX = leftX + i * gap * 2;
+    // 長豎線（+）
+    ctx.lineWidth = lw * 0.9;
+    ctx.beginPath(); ctx.moveTo(baseX, y - longVH); ctx.lineTo(baseX, y + longVH); ctx.stroke();
+    // 短粗豎線（-）
+    ctx.lineWidth = lw * 2.6;
+    ctx.beginPath(); ctx.moveTo(baseX + gap, y - shortVH); ctx.lineTo(baseX + gap, y + shortVH); ctx.stroke();
+  }
+
+  // 中央橫串線（左右連接到主導線）
+  const symLeft  = leftX;
+  const symRight = leftX + totalW;
+  ctx.lineWidth = lw;
+  ctx.beginPath(); ctx.moveTo(symLeft - gap*0.3, y); ctx.lineTo(symRight + gap*0.3, y); ctx.stroke();
+
+  // 斜箭頭（可調符號，穿越整個符號，左下→右上）
+  const ax1 = x - totalW*0.55, ay1 = y + longVH*1.4;
+  const ax2 = x + totalW*0.55, ay2 = y - longVH*1.4;
+  ctx.strokeStyle = '#555'; ctx.lineWidth = lw * 0.85;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(ax1, ay1); ctx.lineTo(ax2, ay2); ctx.stroke();
+  // 箭頭尖（右上端）
+  const dx = ax2-ax1, dy = ay2-ay1, len = Math.sqrt(dx*dx+dy*dy);
+  const nx = dx/len, ny = dy/len;
+  const as = Math.max(4, H*0.014);
+  ctx.fillStyle = '#555';
+  ctx.beginPath();
+  ctx.moveTo(ax2, ay2);
+  ctx.lineTo(ax2 - as*(nx - ny*0.5), ay2 - as*(ny + nx*0.5));
+  ctx.lineTo(ax2 - as*(nx + ny*0.5), ay2 - as*(ny - nx*0.5));
+  ctx.closePath(); ctx.fill();
+
+  ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════
+//  粒子動畫
+// ═══════════════════════════════════════════════════
+function getSimLayout() {
+  const W = simC.width, H = simC.height;
+  const tubeX = W*0.12, tubeY = H*0.06;
+  const tubeW = W*0.76, tubeH = H*0.40;
+  const tubeR  = tubeH/2;
+  const cathX  = tubeX + tubeR + W*0.05;
+  const anodX  = tubeX + tubeW - tubeR * 0.28;  // 陽極板 X
+  const pHalf  = tubeH * 0.28;
+  const tubeMY = tubeY + tubeH/2;
+  const cRad = pHalf * 0.95;
+  return { W, H, tubeX, tubeY, tubeW, tubeH, tubeR, cathX, anodX, pHalf, tubeMY, cRad };
+}
+
+function updateParticles() {
+  const { W, H, tubeY, tubeH, cathX, anodX, pHalf, tubeMY, cRad } = getSimLayout();
+  const col = state.colorStr === 'rgba(0,0,0,0)' ? '#999' : state.colorStr;
+
+  // 產生光子
+  if (state.intensity > 0 && Math.random() < state.intensity * 0.04) {
+    const ang = -Math.PI * 0.33;
+    const lightLen = W * 0.22;
+    const targY = tubeMY - pHalf * 0.3 + (Math.random() - 0.5) * pHalf * 1.4;
+    const sx = cathX + Math.cos(ang + Math.PI) * lightLen;
+    const sy = targY + Math.sin(ang + Math.PI) * lightLen;
+    const dx = cathX - sx, dy = targY - sy;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    photons.push({ x: sx, y: sy, vx: dx/dist*5*(W/700), vy: dy/dist*5*(W/700), t: 0, active: true });
+  }
+
+  // 繪製光子
+  simCtx.strokeStyle = col;
+  simCtx.lineWidth   = Math.max(1.5, W * 0.003);
+  photons.forEach(p => {
+    if (!p.active) return;
+    p.x += p.vx; p.y += p.vy; p.t += 0.5;
+    const angle = Math.atan2(p.vy, p.vx);
+    simCtx.save();
+    simCtx.translate(p.x, p.y); simCtx.rotate(angle);
+    simCtx.beginPath();
+    const wl = 14 * (W/700);
+    for (let i = -wl; i <= wl; i += 1.5) {
+      const env = Math.cos(i/wl * 1.5);
+      const wave = Math.sin(i*0.38 - p.t) * 4 * env * (W/700);
+      if (i <= -wl) simCtx.moveTo(i, wave); else simCtx.lineTo(i, wave);
+    }
+    simCtx.stroke();
+    simCtx.restore();
+
+    if (p.x >= cathX - W*0.006) {
+      p.active = false;
+      const maxK = (HC / state.lambda) - state.workFunction;
+      if (maxK > 0 && Math.random() < 0.85) {
+        spawnElectron(cathX + W*0.012, p.y);
+      }
+    }
+  });
+  photons = photons.filter(p => p.active);
+
+  // ── 繪製電子 ──
+  electrons.forEach(e => {
+    if (!e.active) return;
+
+    // 電場：voltage>0 → 電子往右加速；voltage<0 → 電子往右減速（逆向電場）
+    // 物理上：F = eE，E = V/d，方向 voltage>0 時推電子往陽極
+    // 電場加速：
+    // vBase = span/50，截止時 vBase² = 2*accStop*span
+    // accStop = vBase²/(2*span) = span/(50²*2) = span/5000
+    // acc = (voltage/stopV) * accStop，正電壓加速，負電壓減速
+    const span    = anodX - cathX;
+    const vBase   = span / 50;
+    const accStop = vBase * vBase / (2 * span);
+    const stopV   = Math.max(state.stopV, 0.01);
+    const acc     = (state.voltage / stopV) * accStop;
+    e.vx += acc;
+    e.x  += e.vx;
+    e.y  += e.vy;
+
+    const goingBack = e.vx < 0;
+    simCtx.fillStyle = goingBack ? '#ff8c42' : '#00d4ff';
+    simCtx.beginPath();
+    simCtx.arc(e.x, e.y, 3.5*(W/700), 0, Math.PI*2);
+    simCtx.fill();
+
+    // 抵達 C 極（anodX）→ 被捕捉消失
+    if (e.x >= anodX) { e.active = false; return; }
+
+    // 折返超過陰極左側 → 消失
+    if (e.x < cathX - W*0.01 && goingBack) { e.active = false; return; }
+
+    // 上下碰管壁 → 消失
+    const wallTop = tubeY + tubeH * 0.10;
+    const wallBot = tubeY + tubeH * 0.90;
+    if (e.y < wallTop || e.y > wallBot) { e.active = false; return; }
+  });
+  electrons = electrons.filter(e => e.active);
+}
+
+function spawnElectron(x, y) {
+  const { W, H, cathX, anodX, tubeY, tubeH } = getSimLayout();
+  const maxK = (HC / state.lambda) - state.workFunction;
+  if (maxK <= 0) return;
+
+  const span = anodX - cathX;
+  // 速度基準：讓 kFrac=1、θ=0 的電子約 50 幀穿越管子
+  const vBase = span / 50;
+
+  // kFrac：動能比例，用 sqrt(rand) 讓分佈偏向高動能
+  // （對應實際光電子能量分佈：較多電子擁有接近最大動能）
+  const kFrac = Math.sqrt(Math.random());   // 偏高動能：0.7~1.0 比例較多
+
+  // 角度：±40° 隨機，偏小角使大部分 vx 夠大
+  const maxAng = Math.PI * 0.22;
+  const theta  = (Math.random() * 2 - 1) * maxAng;
+
+  const v  = vBase * kFrac;               // 速度正比於 kFrac（類比動能比例）
+  const vx = v * Math.cos(theta);
+  const vy = v * Math.sin(theta);
+
+  electrons.push({ x, y, vx, vy, active: true });
+}
+
+// ═══════════════════════════════════════════════════
+//  I-V 圖表
+// ═══════════════════════════════════════════════════
+function drawGraph(ctx) {
+  const w = ctx.canvas.width, h = ctx.canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+
+  const pad = { l: Math.max(30, w*0.12), r: 12, t: 18, b: Math.max(28, h*0.12) };
+  const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+  const xMin = -3, xMax = 3;  // X 軸範圍 ±3V
+  const mapX = v => pad.l + (v - xMin) / (xMax - xMin) * gw;
+  const mapY = i => pad.t + gh - (i / 10) * gh;
+
+  const fs = Math.max(9, w*0.035);
+
+  // 格線
+  ctx.strokeStyle = '#ddd8ce'; ctx.lineWidth = 1;
+  ctx.fillStyle = '#999';
+  ctx.font = `${fs}px monospace`;
+  ctx.textAlign = 'center';
+  for (let v = xMin; v <= xMax; v++) {
+    const x = mapX(v);
+    ctx.beginPath(); ctx.moveTo(x, pad.t); ctx.lineTo(x, pad.t+gh); ctx.stroke();
+    if (v !== 0) ctx.fillText(v, x, pad.t+gh+fs*1.3);
+  }
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 10; i += 2) {
+    const y = mapY(i);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w-pad.r, y); ctx.stroke();
+    ctx.fillText(i, pad.l-4, y+fs*0.4);
+  }
+
+  // 軸線
+  ctx.strokeStyle = '#777'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(mapX(xMin), mapY(0)); ctx.lineTo(mapX(xMax), mapY(0)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(mapX(0), pad.t); ctx.lineTo(mapX(0), pad.t+gh); ctx.stroke();
+
+  // 軸標籤
+  ctx.fillStyle = '#666';
+  ctx.font = `${fs}px 'Microsoft JhengHei',sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('電壓 V (V)', w/2, h - fs*0.1);
+  ctx.save(); ctx.translate(fs, h/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('電流 (mA)', 0, 0);
+  ctx.restore();
+
+  // 曲線
+  traces.forEach(trace => {
+    if (trace.points.length < 2) return;
+    ctx.strokeStyle = trace.color; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(mapX(trace.points[0].v), mapY(trace.points[0].i));
+    for (let k = 1; k < trace.points.length; k++)
+      ctx.lineTo(mapX(trace.points[k].v), mapY(trace.points[k].i));
+    ctx.stroke();
+  });
+
+  // 當前點
+  const ptCol = state.colorStr === 'rgba(0,0,0,0)' ? '#888' : state.colorStr;
+  ctx.fillStyle = ptCol;
+  ctx.beginPath(); ctx.arc(mapX(state.voltage), mapY(state.current), 5, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════════
+//  主迴圈
+// ═══════════════════════════════════════════════════
+function animate() {
+  simCtx.clearRect(0, 0, simC.width, simC.height);
+  drawCircuit(simCtx);
+  updateParticles();
+  drawGraph(graphCtx);
+  requestAnimationFrame(animate);
+}
+
+// ═══════════════════════════════════════════════════
+//  Tab 切換
+// ═══════════════════════════════════════════════════
+let currentTab = 1;
+function switchTab(n) {
+  currentTab = n;
+  document.getElementById('tab1Content').style.display = n === 1 ? 'flex' : 'none';
+  document.getElementById('tab2Content').style.display = n === 2 ? 'flex' : 'none';
+  document.getElementById('tabBtn1').classList.toggle('active', n === 1);
+  document.getElementById('tabBtn2').classList.toggle('active', n === 2);
+  if (n === 2) { resizeKfCanvas(); drawKfGraph(); }
+}
+
+// ═══════════════════════════════════════════════════
+//  Kmax–f 圖
+// ═══════════════════════════════════════════════════
+const HC_J  = 6.626e-34 * 3e8;  // hc in J·m
+const H_eVs = 4.136e-15;         // h in eV·s
+const fMIN  = 4e14, fMAX = 12e14;
+const eV2J  = 1.602e-19;   // 1 eV = 1.602×10⁻¹⁹ J
+let kfUnit  = 'eV';         // 'eV' or 'J'
+
+function toggleKfUnit() {
+  kfUnit = kfUnit === 'eV' ? 'J' : 'eV';
+  document.getElementById('btnUnitKf').textContent = kfUnit;
+  drawKfGraph();
+}
+
+const kfC   = document.getElementById('kfCanvas');
+const kfCtx = kfC.getContext('2d');
+
+// 資料：每種金屬各自的點陣列
+const metalColors = { '2.27': '#e67e22', '3.74': '#27ae60', '4.08': '#8e44ad' };
+const metalNames  = { '2.27': 'Na', '3.74': 'Zn', '4.08': 'Al' };
+let kfData = { '2.27': [], '3.74': [], '4.08': [] };  // [{f, kmax}]
+
+// 當前頻率狀態
+let kfFreq = 7.5e14;
+let kfMetal = 2.27;
+let sweepTimer = null;    // 靜止 1.5s 後觸發
+let sweepAnim  = null;    // requestAnimationFrame id
+let sweepVoltage = 3.0;   // 掃描用電壓
+let isSweeping = false;
+
+function resizeKfCanvas() {
+  kfC.width  = kfC.parentElement.clientWidth;
+  kfC.height = kfC.parentElement.clientHeight;
+}
+
+function clearKfGraph() {
+  kfData = { '2.27': [], '3.74': [], '4.50': [] };
+  drawKfGraph();
+}
+
+// ── Kmax-f 圖表繪製 ──
+function drawKfGraph() {
+  const w = kfC.width, h = kfC.height;
+  if (!w || !h) return;
+  kfCtx.clearRect(0, 0, w, h);
+  kfCtx.fillStyle = '#fff'; kfCtx.fillRect(0, 0, w, h);
+
+  const pad = { l: Math.max(40, w*0.14), r: 16, t: 16, b: Math.max(30, h*0.13) };
+  const gw = w - pad.l - pad.r, gh = h - pad.t - pad.b;
+
+  // 單位換算
+  const toUnit  = km_eV => kfUnit === 'eV' ? km_eV : km_eV * eV2J;
+  const unitLbl = kfUnit === 'eV' ? 'eV' : 'J';
+  const hVal    = kfUnit === 'eV' ? '4.14×10⁻¹⁵ eV·s' : '6.63×10⁻³⁴ J·s';
+
+  // 座標：X = 4~12 ×10¹⁴，Y 依單位
+  const xLo = 4e14, xHi = 12e14;
+  const yLoEV = -5.0, yHiEV = 4.0;
+  const yLo = toUnit(yLoEV), yHi = toUnit(yHiEV);
+  const mapX  = f    => pad.l + (f - xLo) / (xHi - xLo) * gw;
+  const mapY  = km   => pad.t + (yHi - km) / (yHi - yLo) * gh;
+  const mapYe = km_eV => mapY(toUnit(km_eV));   // 輸入 eV，自動換算
+  const fs = Math.max(9, w * 0.032);
+
+  // Y 軸刻度（eV 模式：整數；J 模式：×10⁻¹⁹）
+  const yTicks = kfUnit === 'eV'
+    ? [-5,-4,-3,-2,-1,0,1,2,3,4]
+    : [-8,-6,-4,-2,0,2,4,6].map(v => v * 1e-19);
+
+  kfCtx.strokeStyle = '#eee'; kfCtx.lineWidth = 1;
+  kfCtx.fillStyle = '#999'; kfCtx.font = `${fs}px monospace`;
+
+  // X 格線
+  kfCtx.textAlign = 'center';
+  for (let fi = 4; fi <= 12; fi++) {
+    const x = mapX(fi * 1e14);
+    kfCtx.strokeStyle = '#eee'; kfCtx.lineWidth = 1;
+    kfCtx.beginPath(); kfCtx.moveTo(x, pad.t); kfCtx.lineTo(x, pad.t+gh); kfCtx.stroke();
+    kfCtx.fillStyle = '#999';
+    kfCtx.fillText(fi, x, pad.t + gh + fs*1.3);
+  }
+  // Y 格線
+  kfCtx.textAlign = 'right';
+  yTicks.forEach(tick => {
+    const y = mapY(tick);
+    if (y < pad.t || y > pad.t+gh) return;
+    kfCtx.strokeStyle = tick === 0 ? '#aaa' : '#eee';
+    kfCtx.lineWidth   = tick === 0 ? 1.5 : 1;
+    kfCtx.beginPath(); kfCtx.moveTo(pad.l, y); kfCtx.lineTo(pad.l+gw, y); kfCtx.stroke();
+    kfCtx.fillStyle = '#999';
+    const lbl = kfUnit === 'eV' ? tick.toString() : (tick/1e-19).toFixed(0);
+    kfCtx.fillText(lbl, pad.l - 4, y + fs*0.4);
+  });
+
+  // 軸線
+  kfCtx.strokeStyle = '#555'; kfCtx.lineWidth = 1.5;
+  kfCtx.beginPath(); kfCtx.moveTo(pad.l, mapYe(0)); kfCtx.lineTo(pad.l+gw, mapYe(0)); kfCtx.stroke();
+  kfCtx.beginPath(); kfCtx.moveTo(pad.l, pad.t);    kfCtx.lineTo(pad.l, pad.t+gh);    kfCtx.stroke();
+
+  // 軸標籤
+  kfCtx.fillStyle = '#666'; kfCtx.font = `${fs}px 'Microsoft JhengHei',sans-serif`;
+  kfCtx.textAlign = 'center';
+  kfCtx.fillText('頻率 f (×10¹⁴ Hz)', pad.l + gw/2, h - 2);
+  kfCtx.save(); kfCtx.translate(fs*0.8, pad.t + gh/2); kfCtx.rotate(-Math.PI/2);
+  kfCtx.fillText(`Kmax (${kfUnit === 'eV' ? 'eV' : '×10⁻¹⁹ J'})`, 0, 0); kfCtx.restore();
+
+  // ── 左上角斜率標示（只寫一次）──
+  kfCtx.save();
+  kfCtx.fillStyle = '#333';
+  kfCtx.font = `bold ${Math.max(10, w*0.036)}px monospace`;
+  kfCtx.textAlign = 'left'; kfCtx.textBaseline = 'top';
+  kfCtx.fillText('斜率 = h = ' + hVal, pad.l + 6, pad.t + 6);
+  kfCtx.restore();
+
+  // ── 每個金屬畫線、點、虛線延伸 ──
+  // ── 各金屬線條（斜率標示已在左上角，這裡只畫線、點、截距）──
+  ['2.27','3.74','4.08'].forEach(phi_str => {
+    const phi   = parseFloat(phi_str);
+    const color = metalColors[phi_str];
+    const pts   = kfData[phi_str];
+    if (pts.length === 0) return;
+
+    const f0 = phi / H_eVs;  // 截止頻率
+
+    // 已記錄的點
+    kfCtx.fillStyle = color;
+    pts.forEach(p => {
+      kfCtx.beginPath();
+      kfCtx.arc(mapX(p.f), mapYe(p.kmax), 4, 0, Math.PI*2);
+      kfCtx.fill();
+    });
+
+    if (pts.length < 2) return;
+
+    // 理論直線：畫在 xLo~xHi 範圍內（含負值部分）
+    const kmLo = H_eVs * xLo - phi;  // 可能為負
+    const kmHi = H_eVs * xHi - phi;
+    kfCtx.strokeStyle = color; kfCtx.lineWidth = 2; kfCtx.setLineDash([]);
+    // 只畫 kmax>=0 的實線段
+    const fAtZero = f0;
+    const fSolid  = Math.max(xLo, fAtZero);
+    kfCtx.beginPath();
+    kfCtx.moveTo(mapX(fSolid), mapYe(Math.max(0, H_eVs*fSolid - phi)));
+    kfCtx.lineTo(mapX(xHi),   mapYe(kmHi));
+    kfCtx.stroke();
+
+    // 是否到達邊界
+    const hasLeft  = pts.some(p => p.f <= fMIN * 1.05);
+    const hasRight = pts.some(p => p.f >= fMAX * 0.95);
+
+    if (hasLeft || hasRight) {
+      kfCtx.setLineDash([5,4]);
+      kfCtx.strokeStyle = color; kfCtx.lineWidth = 1.5;
+
+      // 向左延伸到 Y 軸（x=xLo），顯示縱截距
+      kfCtx.beginPath();
+      kfCtx.moveTo(mapX(fSolid), mapYe(0));
+      kfCtx.lineTo(mapX(xLo),    mapYe(kmLo));
+      kfCtx.stroke();
+
+      // 向右延伸到 X 軸（截止頻率 f0），若 f0 在範圍內畫垂直虛線
+      if (f0 >= xLo && f0 <= xHi) {
+        kfCtx.beginPath();
+        kfCtx.moveTo(mapX(f0), mapYe(0));
+        kfCtx.lineTo(mapX(f0), pad.t + gh);
+        kfCtx.stroke();
+      }
+      kfCtx.setLineDash([]);
+
+      // 標：縱截距 = -φ
+      kfCtx.fillStyle = color;
+      kfCtx.font = `bold ${fs}px monospace`;
+      kfCtx.textAlign = 'left';
+      const phiDisp = kfUnit==='eV' ? `−φ=${(-phi).toFixed(2)} eV` : `−φ=${(-phi*eV2J/1e-19).toFixed(2)}×10⁻¹⁹J`;
+      kfCtx.fillText(phiDisp, pad.l + 3, mapYe(kmLo) - 3);
+
+      // 標：截止頻率 f0
+      if (f0 >= xLo && f0 <= xHi) {
+        kfCtx.textAlign = 'center';
+        kfCtx.fillText('f₀=' + (f0/1e14).toFixed(2), mapX(f0), pad.t + gh + fs*1.3);
+      }
+
+
+    }
+  });
+
+  // 當前頻率垂直指示線
+  kfCtx.strokeStyle = '#aaa'; kfCtx.lineWidth = 1; kfCtx.setLineDash([3,3]);
+  kfCtx.beginPath(); kfCtx.moveTo(mapX(kfFreq), mapYe(yHiEV)); kfCtx.lineTo(mapX(kfFreq), mapYe(0)); kfCtx.stroke();
+  kfCtx.setLineDash([]);
+}
+
+// ── 掃描動畫：從 +3V 掃到截止電壓，找 Kmax ──
+function startSweep() {
+  if (isSweeping) return;
+  const maxK = HC / (3e8 / kfFreq * 1e9 / 1e9) / 1e-9;  // 用 HC/lambda
+  // 直接用物理：Kmax = H_eVs * f - phi
+  const kmax = H_eVs * kfFreq - kfMetal;
+  if (kmax <= 0) {
+    document.getElementById('kfStatus').textContent = '此頻率無法產生光電效應';
+    recordKfPoint(kfFreq, 0, false);
+    return;
+  }
+
+  isSweeping = true;
+  sweepVoltage = 3.0;
+  let progress = 0;
+  document.getElementById('kfStatus').textContent = '掃描中…';
+
+  function step() {
+    progress += 0.012;  // 每幀推進量，約 80 幀完成
+    sweepVoltage = 3.0 - progress * 6.0;  // 從 +3 掃到 -3
+
+    // 更新 state.voltage 讓主動畫也反映
+    state.voltage = Math.max(-3, sweepVoltage);
+    updatePhysics();
+
+    document.getElementById('sweepBarFill').style.width = (progress * 100).toFixed(0) + '%';
+
+    // 截止條件：voltage < -kmax
+    if (state.voltage <= -kmax || progress >= 1) {
+      state.voltage = -kmax;
+      updatePhysics();
+      isSweeping = false;
+      document.getElementById('sweepBarFill').style.width = '100%';
+      document.getElementById('kfStatus').textContent =
+        `Kmax = ${kmax.toFixed(3)} eV  (f = ${(kfFreq/1e14).toFixed(2)}×10¹⁴)`;
+      recordKfPoint(kfFreq, kmax, true);
+      return;
+    }
+    sweepAnim = requestAnimationFrame(step);
+  }
+  sweepAnim = requestAnimationFrame(step);
+}
+
+function stopSweepImmediate() {
+  if (sweepAnim) { cancelAnimationFrame(sweepAnim); sweepAnim = null; }
+  if (isSweeping) {
+    // 直接記錄當前頻率的 Kmax
+    const kmax = Math.max(0, H_eVs * kfFreq - kfMetal);
+    recordKfPoint(kfFreq, kmax, kmax > 0);
+    isSweeping = false;
+  }
+  document.getElementById('sweepBarFill').style.width = '0%';
+}
+
+function recordKfPoint(f, kmax, valid) {
+  const key = kfMetal.toFixed(2);
+  // 避免重複記錄太近的點
+  const existing = kfData[key];
+  if (existing.some(p => Math.abs(p.f - f) < (fMAX-fMIN)*0.01)) return;
+  if (valid && kmax > 0) existing.push({ f, kmax });
+  drawKfGraph();
+  // 更新 UI
+  document.getElementById('val_f').textContent    = (f/1e14).toFixed(2);
+  document.getElementById('val_kmax').textContent = valid ? kmax.toFixed(3) : '—';
+  const f0 = kfMetal / H_eVs;
+  document.getElementById('val_f0').textContent   = (f0/1e14).toFixed(2);
+}
+
+// ─ 頻率滑桿改變 ─
+function onFreqChange(f) {
+  kfFreq = f;
+  document.getElementById('disp_freq').textContent =
+    (f/1e14).toFixed(2) + ' ×10¹⁴ Hz';
+  document.getElementById('val_f').textContent = (f/1e14).toFixed(2);
+
+  // 若正在掃描，立刻記錄當前點再停止
+  if (isSweeping) stopSweepImmediate();
+
+  // 重設靜止計時器
+  if (sweepTimer) clearTimeout(sweepTimer);
+  document.getElementById('kfStatus').textContent = '等待量測…';
+  document.getElementById('sweepBarFill').style.width = '0%';
+  sweepTimer = setTimeout(() => startSweep(), 1500);
+
+  drawKfGraph();
+}
+
+// ═══════════════════════════════════════════════════
+//  初始化
+// ═══════════════════════════════════════════════════
+function init() {
+  resizeCanvases();
+
+  // 觸控滑桿
+  makeTouchSlider('sw_lambda', 250, 750, 400, 1, v => {
+    state.lambda = Math.round(v); updatePhysics();
+  });
+  makeTouchSlider('sw_intensity', 0, 10, 5, 1, v => {
+    state.intensity = Math.round(v); updatePhysics();
+  });
+  makeTouchSlider('sw_voltage', -3, 3, 0, 0.01, v => {
+    state.voltage = parseFloat(v.toFixed(2)); updatePhysics(); recordPoint();
+  });
+
+  document.getElementById('metalSelect').onchange = function () {
+    state.workFunction = parseFloat(this.value); updatePhysics(); resetGraph();
+  };
+
+  // ── Tab2 初始化 ──
+  resizeKfCanvas();
+
+  makeTouchSlider('sw_freq', 4e14, 12e14, 7.5e14, 1e12, v => {
+    onFreqChange(v);
+  });
+
+  document.getElementById('metalSelect2').onchange = function () {
+    kfMetal = parseFloat(this.value);
+    if (isSweeping) stopSweepImmediate();
+    if (sweepTimer) clearTimeout(sweepTimer);
+    document.getElementById('kfStatus').textContent = '等待量測…';
+    document.getElementById('sweepBarFill').style.width = '0%';
+    const f0 = kfMetal / H_eVs;
+    document.getElementById('val_f0').textContent = (f0/1e14).toFixed(2);
+    drawKfGraph();
+  };
+
+  window.addEventListener('resize', () => { resizeKfCanvas(); drawKfGraph(); });
+
+  startNewTrace();
+  updatePhysics();
+  animate();
+}
+init();
+</script>
+</body>
+</html>
