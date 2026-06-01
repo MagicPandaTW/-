@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李鋒物理 高二下小考試題卷(15) 詳解</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$','$'],['\\(','\\)']],
+    displayMath: [['$$','$$'],['\\[','\\]']],
+    tags: 'none',
+    packages: {'[+]': ['html']}
+  },
+  loader: {load: ['[tex]/html']},
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+  startup: { typeset: true }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#f4f0e6;--card:#fffdf6;--border:#d4c8a4;
+  --accent:#b05418;--accent2:#1a5280;
+  --text:#221808;--muted:#6a5830;
+  --cbg:#edf4fb;--cborder:#8ab4d0;
+  --mbg:#fdf2e4;--mborder:#d0a050;
+  --fbg:#eff7ee;--fborder:#78b070;
+  --abg:#fef8e8;--aborder:#dfc040;
+  --qbg:#ede8d8;
+  --sh:0 2px 14px rgba(70,40,5,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Serif TC',Georgia,serif;font-size:16px;line-height:1.85;padding-bottom:60px}
+header{background:linear-gradient(135deg,#3e2208 0%,#844018 60%,#b06020 100%);color:#fff8ee;padding:26px 20px 20px;text-align:center;border-bottom:4px solid #c89828}
+header h1{font-size:clamp(18px,4vw,30px);letter-spacing:2px}
+header p{font-size:clamp(12px,2.5vw,15px);margin-top:6px;opacity:.85}
+.wrap{max-width:860px;margin:0 auto;padding:16px 12px}
+.pb{background:var(--card);border:1.5px solid var(--border);border-radius:10px;margin-bottom:30px;box-shadow:var(--sh);overflow:hidden}
+.pt{background:var(--qbg);border-bottom:2px solid var(--border);padding:13px 17px 10px;display:flex;align-items:flex-start;gap:11px}
+.pn{background:var(--accent);color:#fff;border-radius:50%;width:33px;height:33px;min-width:33px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:bold;margin-top:2px}
+.ptxt{flex:1;font-size:clamp(14px,2.2vw,16px);line-height:1.95}
+.sec{padding:13px 17px 11px;border-bottom:1px solid #e4d8c0}
+.sec:last-child{border-bottom:none}
+.sl{font-size:12px;font-weight:bold;letter-spacing:1px;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.lc{color:var(--accent2)}.lm{color:#966010}.lf{color:#287020}.la{color:#806000}
+.cbox{background:var(--cbg);border-left:4px solid var(--cborder);border-radius:0 6px 6px 0;padding:9px 13px;font-size:clamp(13px,2vw,15px);line-height:1.9}
+.mbox{background:var(--mbg);border-left:4px solid var(--mborder);border-radius:0 6px 6px 0;padding:9px 13px;font-size:clamp(13px,2vw,15px);line-height:1.9}
+.fbox{background:var(--fbg);border-left:4px solid var(--fborder);border-radius:0 6px 6px 0;padding:9px 13px;font-size:clamp(13px,2vw,15px);line-height:2.1}
+.abox{background:var(--abg);border:1.5px solid var(--aborder);border-radius:7px;padding:11px 15px;font-size:clamp(14px,2.2vw,16px);line-height:2}
+.ai{padding:4px 0;border-bottom:1px dashed #cob850;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ai:last-child{border-bottom:none}
+.al{font-weight:bold;color:var(--accent);min-width:28px}
+.av{color:#6a2e00;font-weight:bold;font-size:1.06em}
+.dw{display:flex;justify-content:center;align-items:center;padding:8px 0 4px;overflow-x:auto}
+svg{display:block;max-width:100%;height:auto}
+.mb{cursor:zoom-in;display:inline-block;transition:background .15s;border-radius:4px;padding:2px 4px}
+.mb:hover{background:rgba(170,130,30,.13)}
+.mdw{text-align:center;margin:5px 0}
+.mdw .mb{display:inline-block}
+#mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center}
+#mo.show{display:flex}
+#mc{background:#fffcf0;border:2px solid #c0a030;border-radius:12px;padding:30px 24px;max-width:92vw;max-height:88vh;overflow:auto;font-size:clamp(18px,4.5vw,32px);box-shadow:0 8px 40px rgba(0,0,0,.35);text-align:center;position:relative}
+#mclose{position:absolute;top:9px;right:13px;font-size:21px;cursor:pointer;color:#888;border:none;background:none;line-height:1}
+#mclose:hover{color:#333}
+.step{margin:3px 0 3px 10px}
+.step::before{content:'▶ ';color:var(--accent);font-size:.83em}
+.sub{margin:4px 0 4px 8px}
+@media(max-width:480px){.pt{padding:10px 11px 8px}.sec{padding:11px 11px 10px}.pn{width:28px;height:28px;min-width:28px;font-size:14px}}
+
+/* ── 物理量顏色系統 ── */
+/* 行標籤 */
+.eq-row{margin:10px 0 4px;display:flex;flex-direction:column;gap:0}
+.eq-label{
+  font-size:clamp(12px,1.8vw,13.5px);font-weight:bold;
+  padding:3px 10px 3px 8px;border-radius:4px 4px 0 0;
+  display:inline-block;max-width:fit-content;margin-bottom:0;
+  letter-spacing:.3px;
+}
+/* 動能 — 藍 */
+.lbl-ke{background:#ddeeff;color:#1a3a80;border-left:4px solid #4a7ad0}
+/* 位能（重力）— 綠 */
+.lbl-pe{background:#d8f0d8;color:#1a5a1a;border-left:4px solid #3a9a3a}
+/* 彈性位能 — 青綠 */
+.lbl-spe{background:#d4f0ec;color:#0a5048;border-left:4px solid #2a9080}
+/* 動量 — 橘紅 */
+.lbl-p{background:#fde8dc;color:#8a2000;border-left:4px solid #d05020}
+/* 力平衡／向心力 — 紫 */
+.lbl-f{background:#eeddf8;color:#4a1878;border-left:4px solid #8040c0}
+/* 能量守恆（兩色合一） — 金 */
+.lbl-ec{background:#fdf3d0;color:#5a3800;border-left:4px solid #c09020}
+/* 純推導（無底色） */
+.lbl-derive{background:#f0ece2;color:#4a3808;border-left:4px solid #b0a070}
+
+/* 公式框內 MathJax 著色 */
+.c-ke  {color:#1a4aaa}   /* 動能項 */
+.c-pe  {color:#1a6a1a}   /* 重力位能項 */
+.c-spe {color:#0a7060}   /* 彈性位能項 */
+.c-p   {color:#b03010}   /* 動量項 */
+.c-f   {color:#6020a8}   /* 力 */
+
+/* ── 觀念/思路文字內的著色 span ── */
+.t-ke  {color:#1a4aaa;font-weight:bold}   /* 動能 */
+.t-pe  {color:#1a6a1a;font-weight:bold}   /* 重力位能 */
+.t-spe {color:#0a7060;font-weight:bold}   /* 彈性位能 */
+.t-p   {color:#b03010;font-weight:bold}   /* 動量 */
+.t-f   {color:#6020a8;font-weight:bold}   /* 力/向心 */
+.t-ec  {color:#7a4a00;font-weight:bold}   /* 能量守恆 */
+
+/* 等號橋 — 基底 */
+.eq-bridge{
+  font-size:clamp(12px,1.8vw,13px);
+  color:#666;
+  padding:1px 8px 6px 14px;
+  font-style:italic;
+}
+/* 等號橋著色：跟下方公式同色 */
+.eq-bridge.eb-p  { color:#9a2800; }   /* 動量：橘紅 */
+.eq-bridge.eb-ke { color:#1a3a90; }   /* 動能：藍 */
+.eq-bridge.eb-pe { color:#1a5a1a; }   /* 重力位能：綠 */
+.eq-bridge.eb-spe{ color:#0a6050; }   /* 彈性位能：青綠 */
+.eq-bridge.eb-f  { color:#5010a0; }   /* 力：紫 */
+.eq-bridge.eb-ec { color:#6a4000; }   /* 能量守恆：金棕 */
+
+/* 公式含顏色的行 */
+.feq{
+  background:var(--card);
+  border:1px solid #ddd;
+  border-radius:0 6px 6px 6px;
+  padding:6px 10px 8px;
+  margin-bottom:8px;
+}
+.feq .mdw{margin:3px 0}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>李鋒物理　高二下小考試題卷(15)　詳解</h1>
+  <p>考試範圍：CH10-1.2　｜　動量、碰撞、能量</p>
+</header>
+
+<div id="mo" onclick="closeMo(event)">
+  <div id="mc">
+    <button id="mclose" onclick="document.getElementById('mo').classList.remove('show')">✕</button>
+    <div id="mb2"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ===== Q1 ===== -->
+<div class="pb">
+  <div class="pt">
+    <div class="pn">1</div>
+    <div class="ptxt">
+      兩物體 $m_1{=}3\,\text{kg}$、$m_2{=}5\,\text{kg}$，速度 $v_1{=}6\,\text{m/s}$、$v_2{=}2\,\text{m/s}$（同向），作<strong>完全彈性碰撞</strong>；$m_2$ 上繫彈力常數 $k{=}480\,\text{N/m}$ 的輕彈簧。<br>
+      (a) 彈簧最大壓縮量 = _______ m　(b) 碰後 $m_2$ 速度 = _______ m/s
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">📐 示意圖</div>
+    <div class="dw">
+<!-- Q1 diagram: before (left) | max compression (right) -->
+<svg viewBox="0 0 580 160" xmlns="http://www.w3.org/2000/svg" font-family="serif">
+  <defs>
+    <marker id="ra" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="ra2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+  </defs>
+
+  <!-- ── 左側：碰前 ── -->
+  <!-- ground line -->
+  <line x1="10" y1="115" x2="250" y2="115" stroke="#aaa" stroke-width="1.2"/>
+  <!-- ground hatching -->
+  <line x1="10" y1="115" x2="10" y2="125" stroke="#bbb" stroke-width="1"/>
+  <line x1="50" y1="115" x2="50" y2="125" stroke="#bbb" stroke-width="1"/>
+  <line x1="90" y1="115" x2="90" y2="125" stroke="#bbb" stroke-width="1"/>
+  <line x1="130" y1="115" x2="130" y2="125" stroke="#bbb" stroke-width="1"/>
+  <line x1="170" y1="115" x2="170" y2="125" stroke="#bbb" stroke-width="1"/>
+  <line x1="210" y1="115" x2="210" y2="125" stroke="#bbb" stroke-width="1"/>
+  <line x1="250" y1="115" x2="250" y2="125" stroke="#bbb" stroke-width="1"/>
+
+  <!-- m1 block -->
+  <rect x="15" y="80" width="52" height="35" rx="3" fill="#d8eaf8" stroke="#2a5a90" stroke-width="1.8"/>
+  <text x="41" y="101" text-anchor="middle" font-size="14" fill="#1a3a5a" font-style="italic">m</text>
+  <text x="52" y="107" font-size="11" fill="#1a3a5a">1</text>
+
+  <!-- v1 arrow -->
+  <line x1="69" y1="97" x2="105" y2="97" stroke="#c02010" stroke-width="2.2" marker-end="url(#ra)"/>
+  <text x="87" y="89" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="94" y="94" font-size="10" fill="#c02010">1</text>
+  <text x="87" y="130" text-anchor="middle" font-size="11" fill="#c02010">=6 m/s</text>
+
+  <!-- spring (natural length) — 12 teeth from x=107 to x=163 -->
+  <!-- spring label -->
+  <text x="135" y="72" text-anchor="middle" font-size="12" fill="#287020">k=480 N/m</text>
+  <polyline points="107,97 113,97 116,84 122,110 128,84 134,110 140,84 146,110 152,84 158,110 161,97 167,97"
+    fill="none" stroke="#287020" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- m2 block -->
+  <rect x="167" y="80" width="52" height="35" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="1.8"/>
+  <text x="193" y="101" text-anchor="middle" font-size="14" fill="#5a1800" font-style="italic">m</text>
+  <text x="204" y="107" font-size="11" fill="#5a1800">2</text>
+
+  <!-- v2 arrow -->
+  <line x1="221" y1="97" x2="248" y2="97" stroke="#c02010" stroke-width="2.2" marker-end="url(#ra)"/>
+  <text x="234" y="89" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="241" y="94" font-size="10" fill="#c02010">2</text>
+  <text x="234" y="130" text-anchor="middle" font-size="11" fill="#c02010">=2 m/s</text>
+
+  <!-- label -->
+  <text x="130" y="148" text-anchor="middle" font-size="13" fill="#444">【碰前】</text>
+
+  <!-- divider -->
+  <line x1="268" y1="20" x2="268" y2="150" stroke="#bbb" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ── 右側：壓縮最大時 ── -->
+  <line x1="285" y1="115" x2="575" y2="115" stroke="#aaa" stroke-width="1.2"/>
+
+  <!-- m1 block -->
+  <rect x="290" y="80" width="52" height="35" rx="3" fill="#d8eaf8" stroke="#2a5a90" stroke-width="1.8"/>
+  <text x="316" y="101" text-anchor="middle" font-size="14" fill="#1a3a5a" font-style="italic">m</text>
+  <text x="327" y="107" font-size="11" fill="#1a3a5a">1</text>
+
+  <!-- compressed spring (fewer, tighter teeth) -->
+  <polyline points="342,97 347,97 349,86 354,108 359,86 364,108 369,86 374,108 376,97 381,97"
+    fill="none" stroke="#287020" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- x_\text{最大} dimension -->
+  <line x1="342" y1="120" x2="381" y2="120" stroke="#287020" stroke-width="1.3"
+    marker-start="url(#dbl_l)" marker-end="url(#dbl_r)"/>
+  <text x="361" y="135" text-anchor="middle" font-size="12" fill="#287020" font-style="italic">x</text>
+  <text x="368" y="139" font-size="10" fill="#287020">m</text>
+
+  <!-- m2 block -->
+  <rect x="381" y="80" width="52" height="35" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="1.8"/>
+  <text x="407" y="101" text-anchor="middle" font-size="14" fill="#5a1800" font-style="italic">m</text>
+  <text x="418" y="107" font-size="11" fill="#5a1800">2</text>
+
+  <!-- common velocity arrow -->
+  <line x1="435" y1="97" x2="475" y2="97" stroke="#c02010" stroke-width="2.2" marker-end="url(#ra2)"/>
+  <text x="455" y="89" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="464" y="94" font-size="10" fill="#c02010">質心</text>
+
+  <!-- also draw arrow on m1 -->
+  <line x1="290" y1="70" x2="325" y2="70" stroke="#c02010" stroke-width="1.8" marker-end="url(#ra2)"/>
+  <text x="308" y="63" text-anchor="middle" font-size="12" fill="#c02010" font-style="italic">v</text>
+  <text x="317" y="68" font-size="9" fill="#c02010">質心</text>
+
+  <!-- annotation: two blocks same speed -->
+  <text x="430" y="148" text-anchor="middle" font-size="13" fill="#444">【壓縮最大，同速 </text>
+  <text x="530" y="148" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="539" y="152" font-size="10" fill="#c02010">質心</text>
+  <text x="553" y="148" font-size="13" fill="#444">】</text>
+</svg>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">💡 觀念</div>
+    <div class="cbox">
+      完全彈性碰撞：<span class="t-p">動量守恆</span>（全程）且<span class="t-ke">動能守恆</span>（碰前與碰後相等）。<br>
+      彈簧壓縮「最大」時，兩物相對速度為零、同速，即 $v_\text{質心}$，此刻<span class="t-spe">彈性位能</span>最大。<br>
+      損失的<span class="t-ke">動能</span> = <span class="t-ke">內動能 $K_\text{內}$</span>，可用<strong>約化質量 $\mu$</strong> 直接計算，全部轉為<span class="t-spe">彈性位能</span>。<br>
+      碰後末速：用 $K_\text{內}$ 不需要 $v_\text{質心}$，直接代彈性碰撞公式即可。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lm">🔍 解題思路</div>
+    <div class="mbox">
+      <div class="step">(a) 直接用 <span class="t-ke">$K_\text{內}=\frac{1}{2}\mu(v_1-v_2)^2$</span> → <span class="t-spe">$\frac{1}{2}kx_\text{最大}^2 = K_\text{內}$</span>（不需要求 $v_\text{質心}$）</div>
+      <div class="step">(b) 直接代彈性碰撞末速公式；若已知 $v_\text{質心}$ 亦可用 $\bar{v}_2 = 2v_\text{質心} - v_2$</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lf">📋 公式</div>
+    <div class="fbox">
+
+      <!-- K_內 約化質量公式 -->
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">🟡 內動能 $K_\text{內}$　→　用約化質量 $\mu$ 直接計算</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">約化質量（reduced mass）</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\mu = \frac{m_1 m_2}{m_1+m_2}$$</span></div>
+          <div class="eq-bridge eb-ke">內動能 = 約化質量 × 相對速度的動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{K_\text{內}} = \frac{1}{2}\mu(v_1-v_2)^2$$</span></div>
+          <div class="eq-bridge eb-spe">壓縮最大時，$K_\text{內}$ 全部轉為彈性位能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-spe}{\tfrac{1}{2}kx_\text{最大}^2} = \class{c-ke}{K_\text{內}} = \class{c-ke}{\frac{1}{2}\mu(v_1-v_2)^2}$$</span></div>
+        </div>
+      </div>
+
+      <!-- 碰後末速 -->
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 彈性碰撞後速度公式</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">動量守恆 ＋ 動能守恆 聯立解出</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\bar{v}_2=\frac{2m_1}{m_1+m_2}v_1+\frac{m_2-m_1}{m_1+m_2}v_2$$</span></div>
+          <div class="eq-bridge" style="color:#888;font-size:11.5px">另解（需先求 $v_\text{質心}$）：$\bar{v}_2 = 2v_\text{質心} - v_2$</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl la">✏️ 代入計算</div>
+    <div class="abox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ke">① 約化質量 → $K_\text{內}$　→　壓縮量</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">約化質量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\mu=\frac{3\times5}{3+5}=\frac{15}{8}\;\text{kg}$$</span></div>
+          <div class="eq-bridge eb-ke">內動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{K_\text{內}}=\frac{1}{2}\cdot\frac{15}{8}\cdot(6-2)^2=\frac{1}{2}\cdot\frac{15}{8}\cdot16=15\;\text{J}$$</span></div>
+          <div class="eq-bridge eb-spe">$K_\text{內}$ 全轉為彈性位能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-spe}{\tfrac{1}{2}(480)x_\text{最大}^2}=\class{c-ke}{15} \;\Rightarrow\; x_\text{最大}^2=\frac{1}{16}$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(a)</span><span class="av">$x_\text{最大}=0.25\;\text{m}$</span></div>
+
+      <div class="eq-row" style="margin-top:10px">
+        <span class="eq-label lbl-p">② 彈性碰撞公式　→　碰後 $m_2$ 末速</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">直接代公式</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\bar{v}_2=\frac{2\times3}{8}(6)+\frac{5-3}{8}(2)=\frac{36+4}{8}=5\;\text{m/s}$$</span></div>
+          <div class="eq-bridge" style="color:#888;font-size:11.5px">另解：先求 $v_\text{質心}=\frac{3(6)+5(2)}{8}=3.5$ m/s，再 $\bar{v}_2=2(3.5)-2=5$ m/s</div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(b)</span><span class="av">$\bar{v}_2=5\;\text{m/s}$（向右）</span></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Q2 ===== -->
+<div class="pb">
+  <div class="pt">
+    <div class="pn">2</div>
+    <div class="ptxt">
+      子彈質量 $m$，木塊質量 $9m$，懸於長 $L$ 繩下端。子彈射入木塊後<strong>合體</strong>，最大擺幅 $60°$。<br>
+      (a) 子彈初速　(b) 能量損失比率 %　(c) 繩子最大張力
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">📐 示意圖</div>
+    <div class="dw">
+<svg viewBox="0 0 580 310" xmlns="http://www.w3.org/2000/svg" font-family="serif">
+  <defs>
+    <marker id="a1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="aT" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#5010a0"/>
+    </marker>
+    <marker id="aG" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#1a6a1a"/>
+    </marker>
+    <marker id="aC" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#1a4aaa"/>
+    </marker>
+  </defs>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- 左側：擺動示意圖 -->
+  <!-- ══════════════════════════════════ -->
+
+  <!-- ceiling -->
+  <rect x="60" y="5" width="120" height="10" fill="#aaa"/>
+  <line x1="60" y1="15" x2="180" y2="15" stroke="#777" stroke-width="1.5"/>
+  <line x1="66"  y1="5" x2="60"  y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="78"  y1="5" x2="68"  y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="90"  y1="5" x2="80"  y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="102" y1="5" x2="92"  y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="114" y1="5" x2="104" y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="126" y1="5" x2="116" y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="138" y1="5" x2="128" y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="150" y1="5" x2="140" y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="162" y1="5" x2="152" y2="15" stroke="#ccc" stroke-width="1"/>
+  <line x1="174" y1="5" x2="164" y2="15" stroke="#ccc" stroke-width="1"/>
+
+  <!-- pivot -->
+  <circle cx="120" cy="15" r="3.5" fill="#555"/>
+
+  <!-- vertical dashed (鉛直線) -->
+  <line x1="120" y1="15" x2="120" y2="195" stroke="#aaa" stroke-width="1.4" stroke-dasharray="5,3"/>
+
+  <!-- 60° angled rope -->
+  <!-- L_svg=170px, sin60=0.866, cos60=0.5 -->
+  <!-- end: x=120+170×0.866=267, y=15+170×0.5=100 -->
+  <line x1="120" y1="15" x2="267" y2="100" stroke="#555" stroke-width="2"/>
+
+  <!-- block at 60° position -->
+  <rect x="251" y="92" width="38" height="26" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="1.8"/>
+  <text x="270" y="109" text-anchor="middle" font-size="13" fill="#5a1800">10m</text>
+
+  <!-- block at bottom (rest) -->
+  <rect x="101" y="195" width="38" height="26" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="1.8"/>
+  <text x="120" y="212" text-anchor="middle" font-size="13" fill="#5a1800">10m</text>
+
+  <!-- ── 60° angle arc: 從鉛直線 往右 掃到繩子 ── -->
+  <!-- 鉛直線上取點 (120, 15+40)=(120,55) -->
+  <!-- 繩上取點 (120+40×sin60, 15+40×cos60)=(155, 35) -->
+  <path d="M 120 55 A 40 40 0 0 1 155 35" fill="none" stroke="#2a5a90" stroke-width="1.8"/>
+  <!-- label at arc midpoint, ~30° from vertical: (120+40×sin30, 15+40×cos30)=(140,50) -->
+  <text x="148" y="57" font-size="13" fill="#2a5a90" font-weight="bold">60°</text>
+
+  <!-- L label on rope -->
+  <text x="200" y="52" font-size="14" fill="#555" font-style="italic">L</text>
+
+  <!-- height h annotation -->
+  <!-- top block center y≈105, bottom block center y≈208 -->
+  <line x1="270" y1="105" x2="320" y2="105" stroke="#287020" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <line x1="120" y1="208" x2="320" y2="208" stroke="#287020" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <line x1="316" y1="105" x2="316" y2="208" stroke="#287020" stroke-width="1.5"/>
+  <line x1="310" y1="105" x2="322" y2="105" stroke="#287020" stroke-width="1.5"/>
+  <line x1="310" y1="208" x2="322" y2="208" stroke="#287020" stroke-width="1.5"/>
+  <text x="332" y="161" font-size="14" fill="#287020" font-style="italic">h</text>
+  <text x="330" y="177" font-size="12" fill="#287020">= L/2</text>
+
+  <!-- h formula -->
+  <text x="40" y="258" font-size="12" fill="#555">h = L(1−cos 60°) = L/2</text>
+
+  <!-- bullet arrow -->
+  <line x1="18" y1="208" x2="98" y2="208" stroke="#c02010" stroke-width="2.2" marker-end="url(#a1)"/>
+  <text x="54" y="198" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="61" y="203" font-size="10" fill="#c02010">0</text>
+  <text x="14" y="225" font-size="12" fill="#c02010">m（子彈）</text>
+
+  <!-- V arrow on bottom block -->
+  <line x1="141" y1="208" x2="180" y2="208" stroke="#c02010" stroke-width="2" marker-end="url(#a1)"/>
+  <text x="160" y="198" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">V</text>
+  <text x="160" y="226" text-anchor="middle" font-size="11" fill="#555">$v_\text{質心}$（合體）</text>
+
+  <!-- ══════════════════════════════════ -->
+  <!-- 右側：最低點受力圖 -->
+  <!-- ══════════════════════════════════ -->
+
+  <!-- divider -->
+  <line x1="370" y1="20" x2="370" y2="300" stroke="#ddd" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- title -->
+  <text x="475" y="22" text-anchor="middle" font-size="13" fill="#444" font-weight="bold">最低點受力圖</text>
+
+  <!-- rope stub above block (pivot implied above) -->
+  <line x1="475" y1="48" x2="475" y2="72" stroke="#777" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <circle cx="475" cy="45" r="3" fill="#555"/>
+
+  <!-- block -->
+  <rect x="452" y="72" width="46" height="30" rx="4" fill="#fde4d0" stroke="#8a3010" stroke-width="2"/>
+  <text x="475" y="91" text-anchor="middle" font-size="13" fill="#5a1800">10m</text>
+
+  <!-- T arrow: upward, LONG (T > mg, so longer arrow) -->
+  <!-- from top of block (y=72) upward 62px to y=10 -->
+  <line x1="475" y1="70" x2="475" y2="16" stroke="#5010a0" stroke-width="2.8" marker-end="url(#aT)"/>
+  <text x="490" y="48" font-size="14" fill="#5010a0" font-style="italic" font-weight="bold">T</text>
+
+  <!-- mg arrow: downward, SHORTER (mg < T) -->
+  <!-- from bottom of block (y=102) downward 38px to y=140 -->
+  <line x1="475" y1="104" x2="475" y2="148" stroke="#1a6a1a" stroke-width="2.5" marker-end="url(#aG)"/>
+  <text x="483" y="134" font-size="13" fill="#1a6a1a" font-style="italic" font-weight="bold">10mg</text>
+
+  <!-- size annotation: T longer than mg -->
+  <text x="430" y="58"  font-size="10" fill="#5010a0">↑ 較長</text>
+  <text x="430" y="140" font-size="10" fill="#1a6a1a">↓ 較短</text>
+  <text x="395" y="100" font-size="10" fill="#888">（T &gt; 10mg）</text>
+
+  <!-- centripetal net upward indicator -->
+  <line x1="530" y1="148" x2="530" y2="16" stroke="#1a4aaa" stroke-width="1.5" stroke-dasharray="4,2"/>
+  <line x1="524" y1="16"  x2="536" y2="16"  stroke="#1a4aaa" stroke-width="1.5"/>
+  <line x1="524" y1="148" x2="536" y2="148" stroke="#1a4aaa" stroke-width="1.5"/>
+  <text x="547" y="88"  font-size="11" fill="#1a4aaa">合力</text>
+  <text x="547" y="101" font-size="11" fill="#1a4aaa">向上</text>
+  <text x="547" y="114" font-size="11" fill="#1a4aaa">（向心）</text>
+
+  <!-- equation -->
+  <rect x="378" y="168" width="192" height="70" rx="5" fill="#eff4fe" stroke="#8ab0d8" stroke-width="1.2"/>
+  <text x="474" y="186" text-anchor="middle" font-size="12" fill="#333">繩張力 − 重力 ＝ 向心力</text>
+  <text x="474" y="202" text-anchor="middle" font-size="12" fill="#333">＝ 質量 × 向心加速度</text>
+  <text x="430" y="222" font-size="13" fill="#5010a0" font-style="italic" font-weight="bold">T</text>
+  <text x="442" y="222" font-size="13" fill="#444"> − </text>
+  <text x="458" y="222" font-size="13" fill="#1a6a1a">10mg</text>
+  <text x="496" y="222" font-size="13" fill="#444"> = </text>
+  <text x="512" y="216" font-size="13" fill="#1a4aaa">10mV²</text>
+  <line x1="512" y1="219" x2="548" y2="219" stroke="#1a4aaa" stroke-width="1.2"/>
+  <text x="527" y="232" font-size="13" fill="#1a4aaa" font-style="italic">L</text>
+
+</svg>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">💡 觀念</div>
+    <div class="cbox">
+      <strong>兩階段分析：</strong><br>
+      ① <strong>碰撞</strong>（極短時間）：子彈射入木塊後合體，<span class="t-p">動量守恆</span>，兩者同速 $v_\text{質心}$。<br>
+      ② <strong>擺動</strong>：(子彈＋木塊) 做擺，<span class="t-ec">力學能守恆</span>，<span class="t-ke">$K_\text{碰後}$</span> 全部轉為<span class="t-pe">重力位能 $(10m)gh$</span>（最高點速度為零）。<br>
+      繩張力最大在<strong>最低點</strong>（速度最大，<span class="t-f">向心加速度</span>最大，合力最大）。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lm">🔍 解題思路</div>
+    <div class="mbox">
+      <div class="step">由擺動（<span class="t-ec">力學能守恆</span>）→ <span class="t-ke">$K_\text{碰後}$</span> ＝ <span class="t-pe">$(10m)gh$</span> → 求 $v_\text{質心}$</div>
+      <div class="step">由碰撞（<span class="t-p">動量守恆</span>）→ 求子彈初速 $v_0$</div>
+      <div class="step">能量損失比率 = $(\class{c-ke}{K_\text{碰前}}-\class{c-ke}{K_\text{碰後}})/\class{c-ke}{K_\text{碰前}}$</div>
+      <div class="step">最低點<span class="t-f">向心力方程</span> → 繩張力 $T$</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lf">📋 公式</div>
+    <div class="fbox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">🟡 力學能守恆（擺動階段）　→　求 $v_\text{質心}$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">碰後最低點的動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{K_\text{碰後}} = \class{c-pe}{U_\text{最高}}$$</span></div>
+          <div class="eq-bridge eb-pe">＝ 擺到最高處的重力位能（$h=L/2$）</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{\tfrac{1}{2}(10m)v_\text{質心}^2} = \class{c-pe}{(10m)g\cdot\tfrac{L}{2}} \;\Rightarrow\; v_\text{質心}=\sqrt{gL}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 動量守恆（碰撞階段）　→　求子彈初速 $v_0$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">子彈碰前動量 ＝ （子彈＋木塊）碰後共同動量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-p}{mv_0}=\class{c-p}{(10m)v_\text{質心}} \;\Rightarrow\; v_0=10v_\text{質心}=10\sqrt{gL}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ke">🔵 能量損失比率</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">（碰前動能 − 碰後動能）÷ 碰前動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\eta=\frac{\class{c-ke}{K_\text{碰前}}-\class{c-ke}{K_\text{碰後}}}{\class{c-ke}{K_\text{碰前}}}=1-\frac{\class{c-ke}{\tfrac{1}{2}(10m)v_\text{質心}^2}}{\class{c-ke}{\tfrac{1}{2}mv_0^2}}=1-\frac{10v_\text{質心}^2}{v_0^2}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-f">🟣 最低點繩張力　→　向心力方程</span>
+        <div class="feq">
+          <div class="eq-bridge eb-f">繩張力 − 重力 ＝ 向心力 ＝ 質量 × 向心加速度</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-f}{T}-\class{c-pe}{10mg}=\frac{\class{c-ke}{(10m)v_\text{質心}^2}}{L}=\class{c-ke}{(10m)}\cdot\frac{v_\text{質心}^2}{L}$$</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl la">✏️ 代入計算</div>
+    <div class="abox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">力學能守恆　→　$v_\text{質心}$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">碰後最低點動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{\tfrac{1}{2}(10m)v_\text{質心}^2}=\class{c-pe}{(10m)g\cdot\tfrac{L}{2}} \;\Rightarrow\; v_\text{質心}=\sqrt{gL}$$</span></div>
+          <div class="eq-bridge eb-pe">＝ 最高點重力位能</div>
+        </div>
+      </div>
+      <div class="eq-row">
+        <span class="eq-label lbl-p">動量守恆　→　$v_0$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">子彈動量 ＝ 碰後系統動量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-p}{mv_0}=\class{c-p}{(10m)\sqrt{gL}} \;\Rightarrow\; v_0=10\sqrt{gL}$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(a)</span><span class="av">$v_0=10\sqrt{gL}$</span></div>
+
+      <div class="eq-row" style="margin-top:10px">
+        <span class="eq-label lbl-ke">能量損失比率</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">代入 $v_\text{質心}=\sqrt{gL}$，$v_0=10\sqrt{gL}$</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\eta=1-\frac{\class{c-ke}{10gL}}{\class{c-ke}{100gL}}=1-\frac{1}{10}=\frac{9}{10}$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(b)</span><span class="av">$90\%$</span></div>
+
+      <div class="eq-row" style="margin-top:10px">
+        <span class="eq-label lbl-f">最低點向心力方程　→　繩張力 $T$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-f">繩張力 − 重力 ＝ 向心力 ＝ 質量 × 向心加速度</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-f}{T}-\class{c-pe}{10mg}=\frac{\class{c-ke}{(10m)v_\text{質心}^2}}{L}=(10m)\cdot\frac{gL}{L}=10mg$$</span></div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-f}{T}=\class{c-pe}{10mg}+\class{c-ke}{10mg}=20mg$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(c)</span><span class="av">$T=20mg$</span></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Q3 ===== -->
+<div class="pb">
+  <div class="pt">
+    <div class="pn">3</div>
+    <div class="ptxt">
+      彈力常數 $k$ 的彈簧一端固定於牆，另一端連接靜止木塊 $3m$。質量 $m$ 的子彈以速率 $v$ 射入木塊後<strong>合體</strong>，求木塊對彈簧的最大壓縮量。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">📐 示意圖</div>
+    <div class="dw">
+<svg viewBox="0 0 560 140" xmlns="http://www.w3.org/2000/svg" font-family="serif">
+  <defs>
+    <marker id="b1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="b2" markerWidth="7" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="7 0,0 3.5,7 7" fill="#287020"/>
+    </marker>
+    <marker id="b3" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0,7 3.5,0 7" fill="#287020"/>
+    </marker>
+  </defs>
+
+  <!-- ── 左：碰前 ── -->
+  <!-- wall -->
+  <rect x="5" y="15" width="14" height="95" fill="#ccc"/>
+  <line x1="19" y1="15" x2="19" y2="110" stroke="#888" stroke-width="1.5"/>
+  <line x1="5" y1="24" x2="19" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="5" y1="39" x2="19" y2="30" stroke="#bbb" stroke-width="1"/>
+  <line x1="5" y1="54" x2="19" y2="45" stroke="#bbb" stroke-width="1"/>
+  <line x1="5" y1="69" x2="19" y2="60" stroke="#bbb" stroke-width="1"/>
+  <line x1="5" y1="84" x2="19" y2="75" stroke="#bbb" stroke-width="1"/>
+  <line x1="5" y1="99" x2="19" y2="90" stroke="#bbb" stroke-width="1"/>
+  <line x1="9" y1="110" x2="19" y2="104" stroke="#bbb" stroke-width="1"/>
+
+  <!-- ground -->
+  <line x1="19" y1="110" x2="260" y2="110" stroke="#aaa" stroke-width="1.2"/>
+
+  <!-- natural-length spring: x=19 to x=95 -->
+  <polyline points="19,68 26,68 29,55 35,81 41,55 47,81 53,55 59,81 65,55 71,81 74,68 80,68"
+    fill="none" stroke="#287020" stroke-width="2" stroke-linejoin="round"/>
+  <text x="50" y="46" text-anchor="middle" font-size="12" fill="#287020" font-style="italic">k</text>
+
+  <!-- block 3m at rest -->
+  <rect x="80" y="50" width="55" height="38" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="1.8"/>
+  <text x="107" y="73" text-anchor="middle" font-size="14" fill="#5a1800">3m</text>
+  <text x="107" y="125" text-anchor="middle" font-size="12" fill="#555">靜止</text>
+
+  <!-- bullet coming -->
+  <line x1="170" y1="69" x2="138" y2="69" stroke="#c02010" stroke-width="2.2" marker-end="url(#b1)"/>
+  <text x="185" y="65" font-size="14" fill="#c02010" font-style="italic">v</text>
+  <text x="205" y="65" font-size="12" fill="#c02010">m（子彈）</text>
+  <text x="193" y="80" font-size="11" fill="#c02010">→</text>
+
+  <!-- label -->
+  <text x="130" y="125" text-anchor="middle" font-size="12" fill="#444">【碰前】</text>
+
+  <!-- divider -->
+  <line x1="270" y1="10" x2="270" y2="130" stroke="#bbb" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ── 右：最大壓縮 ── -->
+  <!-- wall -->
+  <rect x="278" y="15" width="14" height="95" fill="#ccc"/>
+  <line x1="292" y1="15" x2="292" y2="110" stroke="#888" stroke-width="1.5"/>
+  <line x1="278" y1="24" x2="292" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="278" y1="39" x2="292" y2="30" stroke="#bbb" stroke-width="1"/>
+  <line x1="278" y1="54" x2="292" y2="45" stroke="#bbb" stroke-width="1"/>
+  <line x1="278" y1="69" x2="292" y2="60" stroke="#bbb" stroke-width="1"/>
+  <line x1="278" y1="84" x2="292" y2="75" stroke="#bbb" stroke-width="1"/>
+  <line x1="278" y1="99" x2="292" y2="90" stroke="#bbb" stroke-width="1"/>
+  <line x1="282" y1="110" x2="292" y2="104" stroke="#bbb" stroke-width="1"/>
+
+  <line x1="292" y1="110" x2="558" y2="110" stroke="#aaa" stroke-width="1.2"/>
+
+  <!-- compressed spring: x=292 to x=340 (shorter) -->
+  <polyline points="292,68 298,68 300,57 305,79 310,57 315,79 320,57 325,79 328,68 334,68"
+    fill="none" stroke="#287020" stroke-width="2.2" stroke-linejoin="round"/>
+
+  <!-- block (m+3m) at compressed position -->
+  <rect x="334" y="50" width="60" height="38" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="1.8"/>
+  <text x="364" y="70" text-anchor="middle" font-size="13" fill="#5a1800">m+3m</text>
+  <text x="364" y="83" text-anchor="middle" font-size="12" fill="#5a1800">=4m</text>
+  <text x="364" y="125" text-anchor="middle" font-size="12" fill="#555">靜止</text>
+
+  <!-- x_\text{最大} dimension arrow -->
+  <line x1="292" y1="96" x2="334" y2="96" stroke="#287020" stroke-width="1.4" marker-start="url(#b2)" marker-end="url(#b3)"/>
+  <text x="313" y="108" text-anchor="middle" font-size="12" fill="#287020" font-style="italic">x</text>
+  <text x="320" y="112" font-size="10" fill="#287020">m</text>
+
+  <!-- label -->
+  <text x="420" y="125" text-anchor="middle" font-size="12" fill="#444">【最大壓縮，速度=0】</text>
+</svg>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">💡 觀念</div>
+    <div class="cbox">
+      ① 子彈射入木塊後合體，<span class="t-p">動量守恆</span> → 兩者同速 $v_\text{質心}$。<br>
+      ② <strong>壓縮彈簧至靜止</strong>：光滑平面，<span class="t-ec">力學能守恆</span> → <span class="t-ke">$K_\text{碰後}$</span> ＝ <span class="t-spe">$\frac{1}{2}kx_\text{最大}^2$</span>。<br>
+      注意：此題木塊原來靜止，合體後只有一個速度，就是 $v_\text{質心}$，因此 <span class="t-ke">$K_\text{內}=K_\text{碰後}$</span>（質心系中無剩餘動能，碰後動能全部可用於壓縮彈簧）。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lf">📋 公式</div>
+    <div class="fbox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 動量守恆（碰撞階段）　→　$v_\text{質心}$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">子彈碰前動量 ＝ （子彈＋木塊）碰後共同動量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-p}{mv}=\class{c-p}{(m+3m)v_\text{質心}} \;\Rightarrow\; v_\text{質心}=\frac{v}{4}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">🟡 力學能守恆（壓縮階段）　→　壓縮量 $x_\text{最大}$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">碰後共同動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{K_\text{碰後}}=\class{c-spe}{U_\text{彈簧}}$$</span></div>
+          <div class="eq-bridge eb-spe">＝ 彈簧最大壓縮時的彈性位能（此時速度為零）</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{\tfrac{1}{2}(4m)v_\text{質心}^2}=\class{c-spe}{\tfrac{1}{2}kx_\text{最大}^2}$$</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl la">✏️ 代入計算</div>
+    <div class="abox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">① 動量守恆　→　$v_\text{質心}$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">子彈動量全部轉移給系統</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-p}{mv}=\class{c-p}{4m\cdot v_\text{質心}} \;\Rightarrow\; v_\text{質心}=\frac{v}{4}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">② 動能 ＝ 彈性位能　→　壓縮量</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">碰後共同動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{\tfrac{1}{2}(4m)\!\left(\frac{v}{4}\right)^{\!2}}=\class{c-spe}{\tfrac{1}{2}kx_\text{最大}^2} \;\Rightarrow\; \class{c-ke}{\frac{mv^2}{4}}=\class{c-spe}{kx_\text{最大}^2}$$</span></div>
+          <div class="eq-bridge eb-spe">全部轉為彈性位能（光滑面，速度到零）</div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">答</span><span class="av">$x_\text{最大}=\dfrac{v}{2}\sqrt{\dfrac{m}{k}}$</span></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Q4 ===== -->
+<div class="pb">
+  <div class="pt">
+    <div class="pn">4</div>
+    <div class="ptxt">
+      甲球 3 kg 以 2 m/s 向東，乙球 2 kg 以 3 m/s 向西，作正向彈性碰撞，碰後兩球質心速度為何？
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">📐 示意圖</div>
+    <div class="dw">
+<svg viewBox="0 0 480 130" xmlns="http://www.w3.org/2000/svg" font-family="serif">
+  <defs>
+    <marker id="c1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="c1r" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+  </defs>
+  <!-- east label -->
+  <text x="240" y="16" text-anchor="middle" font-size="12" fill="#888">← 西　　　　東 →</text>
+  <!-- ground -->
+  <line x1="20" y1="105" x2="460" y2="105" stroke="#aaa" stroke-width="1.2"/>
+
+  <!-- 甲 (A) going east -->
+  <circle cx="95" cy="72" r="30" fill="#d8eaf8" stroke="#2a5a90" stroke-width="2"/>
+  <text x="95" y="69" text-anchor="middle" font-size="15" fill="#1a3a5a">甲</text>
+  <text x="95" y="86" text-anchor="middle" font-size="12" fill="#1a3a5a">3 kg</text>
+  <!-- v arrow east -->
+  <line x1="127" y1="72" x2="168" y2="72" stroke="#c02010" stroke-width="2.3" marker-end="url(#c1)"/>
+  <text x="148" y="63" text-anchor="middle" font-size="13" fill="#c02010">2 m/s</text>
+
+  <!-- 乙 (B) going west -->
+  <circle cx="380" cy="72" r="30" fill="#fde4d0" stroke="#8a3010" stroke-width="2"/>
+  <text x="380" y="69" text-anchor="middle" font-size="15" fill="#5a1800">乙</text>
+  <text x="380" y="86" text-anchor="middle" font-size="12" fill="#5a1800">2 kg</text>
+  <!-- v arrow west -->
+  <line x1="348" y1="72" x2="310" y2="72" stroke="#c02010" stroke-width="2.3" marker-end="url(#c1r)"/>
+  <text x="329" y="63" text-anchor="middle" font-size="13" fill="#c02010">3 m/s</text>
+
+  <!-- approaching arrows -->
+  <text x="240" y="78" text-anchor="middle" font-size="20" fill="#bbb">↔</text>
+  <text x="240" y="100" text-anchor="middle" font-size="12" fill="#444">即將碰撞</text>
+</svg>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">💡 觀念</div>
+    <div class="cbox">
+      <strong>任何碰撞</strong> → <span class="t-p">總動量守恆</span> → 質心動量守恆 → <strong>質心速度守恆</strong>（碰前 ＝ 碰後）。<br>
+      無論彈性、非彈性，質心速度都不變，直接用碰前數據算出即為答案。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lf">📋 公式</div>
+    <div class="fbox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 動量守恆　→　質心速度（碰前碰後皆相同）</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">質心速度 ＝ 總動量 ÷ 總質量　（取向東為正，向西為負）</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$v_\text{質心}=\frac{\class{c-p}{m_\text{甲}v_\text{甲}+m_\text{乙}v_\text{乙}}}{m_\text{甲}+m_\text{乙}}$$</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl la">✏️ 代入計算</div>
+    <div class="abox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">動量守恆　→　質心速度</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">甲向東（$+$）、乙向西（$-$），代入總動量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$v_\text{質心}=\frac{\class{c-p}{3\times(+2)+2\times(-3)}}{3+2}=\frac{\class{c-p}{6-6}}{5}=0$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">答</span><span class="av">質心速度 $=0$（靜止）</span></div>
+      <div style="font-size:13px;color:#666;margin-top:6px">※ 碰前總動量為零，質心靜止。彈性碰後兩球速度互換，質心依然靜止。</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Q5 ===== -->
+<div class="pb">
+  <div class="pt">
+    <div class="pn">5</div>
+    <div class="ptxt">
+      斜面質量 $M$，物體質量 $m$（$m{<}M$），同置於光滑水平面。物體以速度 $v$ 朝靜止斜面運動，斜面與物體間無摩擦。<br>
+      (1) 物體沿斜面上升的最大高度 $h$　(2) 物體滑下後離開斜面時的速度
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">📐 示意圖（三階段）</div>
+    <div class="dw">
+<svg viewBox="0 0 520 230" xmlns="http://www.w3.org/2000/svg" font-family="serif">
+  <defs>
+    <marker id="d1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="d1r" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto-start-reverse">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="dg" markerWidth="7" markerHeight="7" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0,7 3.5,0 7" fill="#287020"/>
+    </marker>
+    <marker id="dgr" markerWidth="7" markerHeight="7" refX="0" refY="3.5" orient="auto">
+      <polygon points="7 0,0 3.5,7 7" fill="#287020"/>
+    </marker>
+  </defs>
+
+  <!-- 地面 -->
+  <line x1="5" y1="182" x2="515" y2="182" stroke="#aaa" stroke-width="1.3"/>
+
+  <!-- ══════════════════════════════ -->
+  <!-- ① 初始 -->
+  <!-- 斜面：底左(15,182) 底右(95,182) 頂(95,122)，斜邊從左下到右上 -->
+  <polygon points="15,182 95,182 95,122" fill="#e8dfc8" stroke="#6a5020" stroke-width="2"/>
+  <text x="65" y="172" font-size="13" fill="#4a3010" font-style="italic">M</text>
+  <!-- m 在斜面左側地面 -->
+  <rect x="0" y="163" width="20" height="19" rx="2" fill="#d8eaf8" stroke="#2a5a90" stroke-width="1.8"/>
+  <text x="10" y="176" text-anchor="middle" font-size="11" fill="#1a3a5a" font-style="italic">m</text>
+  <!-- v 向右 -->
+  <line x1="21" y1="172" x2="46" y2="172" stroke="#c02010" stroke-width="2.2" marker-end="url(#d1)"/>
+  <text x="33" y="163" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="52" y="202" text-anchor="middle" font-size="11" fill="#444">①初始</text>
+
+  <!-- 分隔線 -->
+  <line x1="112" y1="8" x2="112" y2="218" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ══════════════════════════════ -->
+  <!-- ② 最高點（同速） -->
+  <!-- 斜面：底左(122,182) 底右(202,182) 頂(202,122) -->
+  <polygon points="122,182 202,182 202,122" fill="#e8dfc8" stroke="#6a5020" stroke-width="2"/>
+  <text x="172" y="172" font-size="13" fill="#4a3010" font-style="italic">M</text>
+
+  <!-- m 貼在斜面表面：
+       斜面上接觸點(162,152)，沿法向量(-0.6,-0.8)偏移半個高度9px
+       → m中心在(157,145)，底邊貼在斜面上 -->
+  <g transform="translate(157,145) rotate(-36.87)">
+    <rect x="-11" y="-9" width="22" height="18" rx="2"
+          fill="#d8eaf8" stroke="#2a5a90" stroke-width="1.8"/>
+    <text x="0" y="5" text-anchor="middle" font-size="11"
+          fill="#1a3a5a" font-style="italic">m</text>
+  </g>
+
+  <!-- h 標注：從 m 中心高度(y=152)垂直到地面(y=182)
+       放在斜面左側 x=118，不與m重疊 -->
+  <line x1="118" y1="152" x2="118" y2="182"
+        stroke="#287020" stroke-width="1.5"/>
+  <line x1="113" y1="152" x2="123" y2="152" stroke="#287020" stroke-width="1.5"/>
+  <line x1="113" y1="182" x2="123" y2="182" stroke="#287020" stroke-width="1.5"/>
+  <text x="108" y="171" text-anchor="middle" font-size="13"
+        fill="#287020" font-style="italic">h</text>
+  <!-- 水平虛線從 m 高度到 h 標注 -->
+  <line x1="118" y1="152" x2="155" y2="152"
+        stroke="#287020" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- V共 箭頭：在斜面頂點右上方，整體系統向右 -->
+  <line x1="204" y1="115" x2="236" y2="115"
+        stroke="#c02010" stroke-width="2.2" marker-end="url(#d1)"/>
+  <text x="220" y="107" text-anchor="middle" font-size="12"
+        fill="#c02010" font-style="italic">V</text>
+  <text x="228" y="112" font-size="10" fill="#c02010">共</text>
+
+  <text x="162" y="202" text-anchor="middle" font-size="11" fill="#444">②最高點（同速）</text>
+
+  <!-- 分隔線 -->
+  <line x1="255" y1="8" x2="255" y2="218" stroke="#ccc" stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- ══════════════════════════════ -->
+  <!-- ③ 分離後 -->
+  <!-- 斜面：底左(265,182) 底右(345,182) 頂(345,122) -->
+  <polygon points="265,182 345,182 345,122" fill="#e8dfc8" stroke="#6a5020" stroke-width="2"/>
+  <text x="315" y="172" font-size="13" fill="#4a3010" font-style="italic">M</text>
+
+  <!-- m 回到斜面左側地面 -->
+  <rect x="246" y="163" width="20" height="19" rx="2"
+        fill="#d8eaf8" stroke="#2a5a90" stroke-width="1.8"/>
+  <text x="256" y="176" text-anchor="middle" font-size="11"
+        fill="#1a3a5a" font-style="italic">m</text>
+  <!-- v_m' 向左 -->
+  <line x1="245" y1="172" x2="220" y2="172"
+        stroke="#c02010" stroke-width="2.2" marker-end="url(#d1r)"/>
+  <text x="231" y="163" text-anchor="middle" font-size="12"
+        fill="#c02010" font-style="italic">v</text>
+  <text x="239" y="167" font-size="9" fill="#c02010">m'</text>
+
+  <!-- v_M' 向右（斜面） -->
+  <line x1="347" y1="152" x2="378" y2="152"
+        stroke="#c02010" stroke-width="2.2" marker-end="url(#d1)"/>
+  <text x="363" y="143" text-anchor="middle" font-size="12"
+        fill="#c02010" font-style="italic">v</text>
+  <text x="371" y="148" font-size="9" fill="#c02010">M'</text>
+
+  <text x="305" y="202" text-anchor="middle" font-size="11" fill="#444">③分離後</text>
+
+  <!-- 備注 -->
+  <text x="260" y="220" text-anchor="middle" font-size="10" fill="#666">
+    （等效於 m 以速 v 打靜止的 M，完全彈性碰撞）
+  </text>
+
+</svg>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">💡 觀念</div>
+    <div class="cbox">
+      光滑面 + 無摩擦斜面：全程無耗散，<span class="t-p">水平動量守恆</span> + <span class="t-ec">力學能守恆</span>。<br>
+      最高點時 $m$ 相對斜面速度為零，故兩者同速 = $V_\text{共}$；此時 <span class="t-ke">$K_\text{內}=0$</span>，<span class="t-ke">內動能</span>全部轉為<span class="t-pe">重力位能</span>。<br>
+      整個來回過程等效於 $m$ 以速度 $v$ 與靜止的 $M$ 做<strong>完全彈性碰撞</strong>（因 <span class="t-ke">$K_\text{內}$</span> 最終全部回收，無損失）。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lf">📋 公式</div>
+    <div class="fbox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 動量守恆（求最高點質心速度 $V_\text{共}$）</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">水平方向無外力：碰前 $m$ 的動量 ＝ 最高點（$m$＋$M$）共動量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-p}{mv}=\class{c-p}{(m+M)V_\text{共}} \;\Rightarrow\; V_\text{共}=\frac{mv}{m+M}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">🟡 力學能守恆（求最大高度 $h$）</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">初始動能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-ke}{K_\text{初}}=\class{c-ke}{K_\text{共}}+\class{c-pe}{mgh}$$</span></div>
+          <div class="eq-bridge eb-pe">＝ 最高點共動能 ＋ 物體上升的重力位能</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-pe}{mgh}=\class{c-ke}{\tfrac{1}{2}mv^2}-\class{c-ke}{\tfrac{1}{2}(m+M)V_\text{共}^2}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 分離後速度（等效彈性碰撞）</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">全程無耗散 → 等效於 $m$ 以速 $v$ 打靜止 $M$ 的完全彈性碰撞</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$v_m'=\frac{\class{c-p}{m-M}}{m+M}v, \qquad v_M'=\frac{\class{c-p}{2m}}{m+M}v$$</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl la">✏️ 代入計算</div>
+    <div class="abox">
+
+      <div class="sub"><strong>(1) 最大高度：</strong></div>
+      <div class="eq-row">
+        <span class="eq-label lbl-p">① 動量守恆　→　同速</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">水平動量守恆，代入質量與初速</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$V_\text{共}=\frac{mv}{m+M}$$</span></div>
+        </div>
+      </div>
+      <div class="eq-row">
+        <span class="eq-label lbl-ec">② $K_\text{內}$ 全轉為重力位能</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">初始動能 − 同速動能 ＝ $K_\text{內}$（質心系動能）</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-pe}{mgh}=\class{c-ke}{\tfrac{1}{2}mv^2}-\class{c-ke}{\tfrac{1}{2}(m+M)\cdot\frac{m^2v^2}{(m+M)^2}}=\class{c-ke}{\tfrac{1}{2}mv^2\cdot\frac{M}{m+M}}$$</span></div>
+          <div class="eq-bridge eb-pe">全部轉為重力位能 $mgh$</div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(1)</span><span class="av">$h=\dfrac{Mv^2}{2g(m+M)}$</span></div>
+
+      <div class="sub" style="margin-top:10px"><strong>(2) 離開後 $m$ 的速度：</strong></div>
+      <div class="eq-row">
+        <span class="eq-label lbl-p">③ 等效彈性碰撞公式</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">整個過程 $K_\text{內}$ 全數回收 → 等效彈性碰撞</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$v_m'=\frac{\class{c-p}{m-M}}{m+M}v$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">(2)</span><span class="av">$v_m'=\dfrac{m-M}{m+M}v$（$m{<}M$ 故反向，向左）</span></div>
+      <div style="font-size:12px;color:#888;margin-top:4px;padding-left:8px">※ 斜面速度：$v_M'=\dfrac{2m}{m+M}v$（向右）</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== Q6 ===== -->
+<div class="pb">
+  <div class="pt">
+    <div class="pn">6</div>
+    <div class="ptxt">
+      子彈質量 $m$、速度 $v_0$ 射穿質量 $M$ 的木塊，穿後子彈速度為 $v_0/2$，木塊懸於長 $\ell$ 輕繩下端。$v_0$ 至少需為多少，使木塊能作完整的鉛垂面圓周運動？
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">📐 示意圖</div>
+    <div class="dw">
+<svg viewBox="0 0 330 290" xmlns="http://www.w3.org/2000/svg" font-family="serif">
+  <defs>
+    <marker id="e1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#c02010"/>
+    </marker>
+    <marker id="e2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#2a5a90"/>
+    </marker>
+    <clipPath id="cpclip">
+      <rect x="0" y="0" width="330" height="290"/>
+    </clipPath>
+  </defs>
+
+  <!-- ceiling -->
+  <rect x="130" y="5" width="100" height="10" fill="#999"/>
+  <line x1="130" y1="15" x2="230" y2="15" stroke="#777" stroke-width="1.5"/>
+  <line x1="135" y1="5"  x2="130" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="148" y1="5"  x2="140" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="161" y1="5"  x2="153" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="174" y1="5"  x2="166" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="187" y1="5"  x2="179" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="200" y1="5"  x2="192" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="213" y1="5"  x2="205" y2="15" stroke="#bbb" stroke-width="1"/>
+  <line x1="226" y1="5"  x2="218" y2="15" stroke="#bbb" stroke-width="1"/>
+
+  <!-- pivot O -->
+  <circle cx="180" cy="15" r="4" fill="#444"/>
+  <text x="190" y="14" font-size="13" fill="#444">O</text>
+
+  <!-- rope to bottom block -->
+  <line x1="180" y1="15" x2="180" y2="195" stroke="#666" stroke-width="2"/>
+
+  <!-- ℓ label -->
+  <text x="194" y="110" font-size="14" fill="#555" font-style="italic">ℓ</text>
+
+  <!-- circular path (dashed), clipped to viewport -->
+  <circle cx="180" cy="15" r="180" fill="none" stroke="#2a5a90"
+    stroke-width="1.3" stroke-dasharray="6,4" clip-path="url(#cpclip)"/>
+
+  <!-- block M at bottom -->
+  <rect x="158" y="195" width="44" height="32" rx="3" fill="#fde4d0" stroke="#8a3010" stroke-width="2"/>
+  <text x="180" y="215" text-anchor="middle" font-size="14" fill="#5a1800" font-style="italic">M</text>
+
+  <!-- bullet in -->
+  <line x1="30" y1="211" x2="156" y2="211" stroke="#c02010" stroke-width="2.3" marker-end="url(#e1)"/>
+  <text x="88"  y="201" text-anchor="middle" font-size="14" fill="#c02010" font-style="italic">v</text>
+  <text x="96"  y="206" font-size="10" fill="#c02010">0</text>
+  <text x="25"  y="228" font-size="12" fill="#c02010">m（子彈）</text>
+
+  <!-- bullet out -->
+  <line x1="204" y1="211" x2="305" y2="211" stroke="#c02010" stroke-width="2" marker-end="url(#e1)"/>
+  <text x="254" y="201" text-anchor="middle" font-size="13" fill="#c02010" font-style="italic">v</text>
+  <text x="262" y="206" font-size="10" fill="#c02010">0</text>
+  <text x="265" y="201" font-size="10" fill="#c02010">/2</text>
+  <text x="254" y="228" text-anchor="middle" font-size="11" fill="#c02010">穿後速度</text>
+
+  <!-- V arrow on block -->
+  <line x1="204" y1="222" x2="248" y2="222" stroke="#2a5a90" stroke-width="2" marker-end="url(#e2)"/>
+  <text x="226" y="244" text-anchor="middle" font-size="13" fill="#2a5a90" font-style="italic">V</text>
+  <text x="234" y="249" font-size="10" fill="#2a5a90">M碰後</text>
+  <text x="226" y="263" text-anchor="middle" font-size="11" fill="#2a5a90">木塊碰後速度</text>
+
+</svg>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lc">💡 觀念</div>
+    <div class="cbox">
+      完整鉛垂圓周運動，最低點所需最小速度是背的結論：<strong>$v_\text{底,最小}=\sqrt{5g\ell}$</strong>。<br>
+      本題兩步驟：① 直接套公式得木塊最小初速；② <span class="t-p">動量守恆</span>反推子彈初速 $v_0$。
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl lf">📋 公式</div>
+    <div class="fbox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ke">⭐ 完整鉛垂圓周，最低點最小速度（背）</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">繩長 $\ell$，做完整圓周的最低點最小速度</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$v_\text{底,最小}=\sqrt{5g\ell}$$</span></div>
+          <div class="eq-bridge" style="color:#888;font-size:11.5px">推導：最高點 $T=0$ 時 $v_\text{頂,最小}=\sqrt{g\ell}$，力學能守恆得 $v_\text{底}^2 = v_\text{頂}^2+4g\ell = 5g\ell$</div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">🔴 動量守恆（子彈穿木）</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">子彈穿前動量 ＝ 木塊動量 ＋ 子彈穿後動量</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$\class{c-p}{mv_0}=\class{c-p}{MV_\text{M碰後}}+\class{c-p}{m\cdot\frac{v_0}{2}} \;\Rightarrow\; \frac{mv_0}{2}=MV_\text{M碰後} \;\Rightarrow\; V_\text{M碰後}=\frac{mv_0}{2M}$$</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sl la">✏️ 代入計算</div>
+    <div class="abox">
+
+      <div class="eq-row">
+        <span class="eq-label lbl-ke">① 套公式　→　$V_\text{M碰後}$ 最小值</span>
+        <div class="feq">
+          <div class="eq-bridge eb-ke">直接套背的結論</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$V_\text{M碰後,最小}=\sqrt{5g\ell}$$</span></div>
+        </div>
+      </div>
+
+      <div class="eq-row">
+        <span class="eq-label lbl-p">② 動量守恆　→　反推 $v_0$</span>
+        <div class="feq">
+          <div class="eq-bridge eb-p">代入 $V_\text{M碰後,最小}$，解出 $v_0$</div>
+          <div class="mdw"><span class="mb" onclick="zm(this)">$$V_\text{M碰後}=\frac{mv_0}{2M}\geq\sqrt{5g\ell} \;\Rightarrow\; v_0\geq\frac{2M}{m}\sqrt{5g\ell}$$</span></div>
+        </div>
+      </div>
+      <div class="ai"><span class="al">答</span><span class="av">$v_0$ 至少需為 $\dfrac{2M}{m}\sqrt{5g\ell}$</span></div>
+
+    </div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+function zm(el){
+  var o=document.getElementById('mo'),b=document.getElementById('mb2');
+  b.innerHTML=el.innerHTML;
+  o.classList.add('show');
+  if(window.MathJax) MathJax.typesetPromise([b]);
+}
+function closeMo(e){
+  if(e.target===document.getElementById('mo'))
+    document.getElementById('mo').classList.remove('show');
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') document.getElementById('mo').classList.remove('show');
+});
+</script>
+</body>
+</html>
