@@ -454,10 +454,16 @@ function updatePhysics() {
 
   if (maxK <= 0) { state.current = 0; }
   else {
-    const sat = state.intensity * 0.8;
-    if (state.voltage < -state.stopV) state.current = 0;
-    else if (state.voltage >= 0) state.current = sat;
-    else { const r = (state.voltage + state.stopV) / state.stopV; state.current = sat * r * r * (3 - 2 * r); }
+    const sat  = state.intensity * 0.8;
+    const Vsat = maxK * 0.8;  // 加寬上升段，視覺上更合理（係數可調）
+    if (state.voltage < -state.stopV) {
+      state.current = 0;
+    } else if (state.voltage >= Vsat) {
+      state.current = sat;
+    } else {
+      const r = (state.voltage + state.stopV) / (Vsat + state.stopV);
+      state.current = sat * Math.min(1, r * r * (3 - 2 * r));
+    }
   }
 
   document.getElementById('disp_lambda').innerText    = state.lambda + ' nm';
@@ -488,7 +494,7 @@ function wavelengthToColor(wl) {
   else if (wl >= 510 && wl < 580) { r = (wl-510)/(580-510); g = 1; b = 0; }
   else if (wl >= 580 && wl < 645) { r = 1; g = -(wl-645)/(645-580); b = 0; }
   else if (wl >= 645 && wl <= 780) { r = 1; g = 0; b = 0; }
-  else return 'rgb(148,0,211)'; // 紫外線一律顯示紫色
+  else return 'rgb(60,0,80)'; // 紫外線：深紫近黑（不可見光）
   return `rgb(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)})`;
 }
 
@@ -1206,14 +1212,30 @@ function onFreqChange(f) {
     (f/1e14).toFixed(2) + ' ×10¹⁴ Hz';
   document.getElementById('val_f').textContent = (f/1e14).toFixed(2);
 
-  // 若正在掃描，立刻記錄當前點再停止
+  // 若正在掃描，立刻停止
   if (isSweeping) stopSweepImmediate();
-
-  // 重設靜止計時器
   if (sweepTimer) clearTimeout(sweepTimer);
-  document.getElementById('kfStatus').textContent = '等待量測…';
-  document.getElementById('sweepBarFill').style.width = '0%';
-  sweepTimer = setTimeout(() => startSweep(), 1500);
+
+  const kmax = H_eVs * f - kfMetal;
+  const atMax = f >= fMAX * 0.999;  // 拉到最右端
+
+  if (atMax) {
+    // 最右端：直接記錄結果，不播動畫
+    document.getElementById('sweepBarFill').style.width = '100%';
+    document.getElementById('kfStatus').textContent =
+      `Kmax = ${kmax.toFixed(3)} eV  (f = ${(f/1e14).toFixed(2)}×10¹⁴)`;
+    recordKfPoint(f, kmax, true);
+  } else if (kmax <= 0) {
+    // 低於截止頻率：直接顯示，不等待
+    document.getElementById('sweepBarFill').style.width = '0%';
+    document.getElementById('kfStatus').textContent = '此頻率無法產生光電效應';
+    recordKfPoint(f, 0, false);
+  } else {
+    // 正常：等待 1.5 秒再掃描
+    document.getElementById('kfStatus').textContent = '等待量測…';
+    document.getElementById('sweepBarFill').style.width = '0%';
+    sweepTimer = setTimeout(() => startSweep(), 1500);
+  }
 
   drawKfGraph();
 }
