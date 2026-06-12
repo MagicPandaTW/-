@@ -956,21 +956,21 @@ tabBtns.forEach(btn=>{
     ctxObs.fillStyle = '#ffffff';
     ctxObs.fillRect(0,0,W,H);
 
-    const cx = W/2, cy = H/2;
-    const ZOOM = Math.min(W,H) * 1.4;
+    const cx = W*0.8, cy = H/2;
+    const ZOOM = W;
 
     ctxObs.lineWidth = 1.6;
     for(const w of scriptObsWaves){
       const progB = (scriptTime - w.spawn)/(w.arrival - w.spawn);
       const distEq = 1 - progB;
-      const drawY = cy - distEq*ZOOM;
-      if(drawY > -10 && drawY < H+10){
+      const drawX = cx - distEq*ZOOM;
+      if(drawX > -10 && drawX < W+10){
         const alpha = progB>=1 ? 0.15 : 0.85;
         const colorRgb = w.boom ? COL_BURST_RGB : COL_WAVE_RGB;
         ctxObs.strokeStyle = `rgba(${colorRgb},${alpha})`;
         ctxObs.beginPath();
-        ctxObs.moveTo(W*0.08, drawY);
-        ctxObs.lineTo(W*0.92, drawY);
+        ctxObs.moveTo(drawX, H*0.08);
+        ctxObs.lineTo(drawX, H*0.92);
         ctxObs.stroke();
       }
     }
@@ -1097,27 +1097,34 @@ tabBtns.forEach(btn=>{
     ctxSrc.beginPath();
     ctxSrc.arc(cx, cy, Math.min(W,H)*0.02, 0, Math.PI*2);
     ctxSrc.fill();
+
+    // 頻率數值（小字，不搶視覺重點）
+    ctxSrc.fillStyle = '#9aa4af';
+    ctxSrc.font = `${Math.max(11,Math.min(W,H)*0.045)}px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif`;
+    ctxSrc.textAlign = 'right';
+    ctxSrc.textBaseline = 'alphabetic';
+    ctxSrc.fillText('f = ' + freq.toFixed(1) + ' Hz', W*0.96, H*0.08);
   }
 
-  /* ---------- 左下：觀察者視角（橫線隨時間經過，與第一人稱共用同一份感知波前） ---------- */
+  /* ---------- 左下：觀察者視角（直線由左向右掃過，與第一人稱共用同一份感知波前） ---------- */
   function drawObserver(){
     const {w:W, h:H} = dimsObs;
     ctxObs.fillStyle = '#ffffff';
     ctxObs.fillRect(0,0,W,H);
 
-    const cx = W/2, cy = H/2;
-    const ZOOM = Math.min(W,H) * 1.4;
+    const cx = W*0.8, cy = H/2;
+    const ZOOM = W;
 
     ctxObs.lineWidth = 1.6;
     for(const w of obsWaves){
       const distEq = 1 - w.age/TRAVEL_TIME;
-      const drawY = cy - distEq*ZOOM;
-      if(drawY > -10 && drawY < H+10){
+      const drawX = cx - distEq*ZOOM;
+      if(drawX > -10 && drawX < W+10){
         const alpha = w.hit ? 0.15 : 0.85;
         ctxObs.strokeStyle = `rgba(${COL_WAVE_RGB},${alpha})`;
         ctxObs.beginPath();
-        ctxObs.moveTo(W*0.08, drawY);
-        ctxObs.lineTo(W*0.92, drawY);
+        ctxObs.moveTo(drawX, H*0.08);
+        ctxObs.lineTo(drawX, H*0.92);
         ctxObs.stroke();
       }
     }
@@ -1126,6 +1133,15 @@ tabBtns.forEach(btn=>{
     ctxObs.beginPath();
     ctxObs.arc(cx, cy, Math.min(W,H)*0.02, 0, Math.PI*2);
     ctxObs.fill();
+
+    // 感知頻率數值（小字，不搶視覺重點）
+    const v_s = V_WAVE*(vsMs/V_SOUND_MS), v_o = V_WAVE*(voMs/V_SOUND_MS);
+    const fPrime = freq*(V_WAVE-v_o)/(V_WAVE-v_s);
+    ctxObs.fillStyle = '#9aa4af';
+    ctxObs.font = `${Math.max(11,Math.min(W,H)*0.045)}px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif`;
+    ctxObs.textAlign = 'right';
+    ctxObs.textBaseline = 'alphabetic';
+    ctxObs.fillText("f' = " + fPrime.toFixed(2) + ' Hz', W*0.96, H*0.08);
   }
 
   /* ---------- 右側：第一人稱遊戲視角 ---------- */
