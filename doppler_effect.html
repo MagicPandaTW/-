@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都卜勒效應 - 波長變化</title>
+<style>
+  :root{
+    --src: #e8654a;
+    --obs: #c79100;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; width:100%; height:100%;
+    overflow:hidden;
+    background:#ffffff;
+    font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+  }
+
+  /* ===================== 分頁切換 ===================== */
+  #tabSwitcher{
+    position:absolute; top:1.3vh; left:50%; transform:translateX(-50%);
+    display:flex; gap:0.6vw;
+  }
+  #tabSwitcher button{
+    font-family:inherit;
+    font-size:clamp(12px,1.3vw,22px);
+    font-weight:700;
+    padding:0.55vh 1.6vw;
+    border:2px solid #d9dfe6;
+    border-radius:10px;
+    background:#ffffff;
+    color:#3a4654;
+    cursor:pointer;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  #tabSwitcher button:hover{ background:#f4f6f9; }
+  #tabSwitcher button.active{
+    background:#3a4654; border-color:#3a4654; color:#ffffff;
+  }
+
+  /* ===================== 分頁容器 ===================== */
+  .tabPane{
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    visibility:hidden;
+  }
+  .tabPane.active{ visibility:visible; }
+
+  /* ===================== Tab1：外部視角（既有） ===================== */
+  #stage{ display:block; width:100vw; height:100vh; cursor:pointer; }
+
+  #controls{
+    position:absolute; bottom:2.2vh; left:50%; transform:translateX(-50%);
+    display:flex; gap:1vw;
+  }
+  #controls button{
+    font-family:inherit;
+    font-size:clamp(14px,1.7vw,30px);
+    font-weight:700;
+    padding:0.9vh 1.8vw;
+    border:2px solid #d9dfe6;
+    border-radius:12px;
+    background:#ffffff;
+    color:#3a4654;
+    cursor:pointer;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  #controls button:hover{ background:#f4f6f9; }
+  #controls button.active{
+    background:#e8654a; border-color:#e8654a; color:#ffffff;
+  }
+
+  #hint{
+    position:absolute; top:2vh; right:1.6vw;
+    font-size:clamp(10px,1vw,16px);
+    color:#c3cad3;
+    pointer-events:none;
+  }
+
+  #countdown{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:clamp(70px,16vw,260px);
+    font-weight:800;
+    color:rgba(58,70,84,0.16);
+    pointer-events:none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===================== 共用：暫停按鈕 ===================== */
+  .pauseBtn{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:clamp(38px,4.2vw,64px); height:clamp(38px,4.2vw,64px);
+    border-radius:50%;
+    border:2px solid #d9dfe6;
+    background:#ffffff;
+    color:#3a4654;
+    font-size:clamp(16px,2vw,28px);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    opacity:0.5;
+    transition:opacity .15s, background .15s;
+  }
+  .pauseBtn:hover{ opacity:1; background:#f4f6f9; }
+  #pauseLeft{ left:1.2vw; }
+  #pauseRight{ right:1.2vw; }
+
+  /* ===================== Tab2：第一人稱視角（新） ===================== */
+  #tab2{ display:flex; flex-direction:column; background:#ffffff; }
+
+  #t2-main{ flex:1 1 auto; min-height:0; display:flex; }
+
+  #t2-left{ width:25%; display:flex; flex-direction:column; border-right:2px solid #eef1f5; }
+  .t2-panel{
+    flex:1; position:relative; overflow:hidden;
+    background:#ffffff; cursor:pointer;
+    border:2px solid #eef1f5;
+    transition:border-color .2s, border-width .2s, background .15s;
+  }
+  .t2-panel:hover{ background:#fafbfc; }
+  #t2-source-view{ border-bottom:2px solid #eef1f5; }
+  #t2-source-view.active{ border-color: var(--src); border-width:3px; }
+  #t2-observer-view.active{ border-color: var(--obs); border-width:3px; }
+  .t2-panel canvas{ width:100%; height:100%; display:block; }
+  .t2-label{
+    position:absolute; top:0.8vh; left:0.9vw;
+    color:#c3cad3;
+    font-size:clamp(9px,1vw,15px);
+    pointer-events:none; white-space:nowrap;
+  }
+
+  #t2-game-view{ width:75%; position:relative; background:#ffffff; overflow:hidden; }
+  #t2-game-view canvas{ width:100%; height:100%; display:block; touch-action:none; }
+
+  #t2-controls{
+    flex:0 0 auto;
+    background:#ffffff; border-top:1px solid #d9dfe6;
+    padding:1vh 1.6vw;
+    display:flex; flex-direction:column; gap:0.8vh;
+  }
+  .t2-row{ display:flex; align-items:center; gap:1vw; }
+  .t2-rowLabel{
+    font-size:clamp(14px,1.6vw,28px); font-weight:700;
+    min-width:9.5vw; color:#3a4654;
+  }
+  .t2-rowVal{
+    font-size:clamp(16px,2vw,34px); font-weight:800;
+    min-width:7.5vw; text-align:right;
+    font-variant-numeric: tabular-nums;
+    color:#3a4654;
+  }
+
+  .t2-row input[type=range]{
+    flex:1 1 auto;
+    -webkit-appearance:none; appearance:none;
+    height:clamp(8px,0.9vh,14px);
+    border-radius:999px; outline:none; cursor:pointer;
+    background:#e2e7ed;
+  }
+  .t2-row input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:clamp(24px,2.6vw,42px); height:clamp(24px,2.6vw,42px);
+    border-radius:50%; background:#3a4654;
+    border:3px solid #ffffff;
+    box-shadow:0 1px 4px rgba(0,0,0,.25);
+    cursor:pointer;
+  }
+  .t2-row input[type=range]::-moz-range-thumb{
+    width:clamp(24px,2.6vw,42px); height:clamp(24px,2.6vw,42px);
+    border-radius:50%; background:#3a4654;
+    border:3px solid #ffffff;
+    box-shadow:0 1px 4px rgba(0,0,0,.25);
+    cursor:pointer;
+  }
+  .t2-row input[type=range]:disabled{ opacity:0.4; cursor:not-allowed; }
+  .t2-row input[type=range]:disabled::-webkit-slider-thumb,
+  .t2-row input[type=range]:disabled::-moz-range-thumb{ cursor:not-allowed; }
+
+  .t2-btnRow{ display:flex; gap:0.8vw; margin-top:0.2vh; }
+  .t2-actBtn{
+    font-family:inherit; font-size:clamp(14px,1.7vw,28px); font-weight:700;
+    padding:0.8vh 1.6vw; border:2px solid #d9dfe6; border-radius:12px;
+    background:#ffffff; color:#3a4654; cursor:pointer; flex:1;
+    transition:background .15s;
+  }
+  .t2-actBtn:hover{ background:#f4f6f9; }
+  .t2-actBtn:disabled{
+    color:#c3cad3; border-color:#eef1f5; cursor:not-allowed; background:#fafbfc;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== Tab1：波源 ===================== -->
+<div id="tab1" class="tabPane active">
+  <canvas id="stage"></canvas>
+
+  <div id="controls">
+    <button data-mode="static">靜止</button>
+    <button data-mode="right_sub">向右等速</button>
+    <button data-mode="right_super">向右超音速</button>
+  </div>
+
+  <div id="hint">點擊畫面重新開始本階段</div>
+  <div id="countdown"></div>
+</div>
+
+<!-- ===================== Tab2：整體 ===================== -->
+<div id="tab2" class="tabPane">
+  <div id="t2-main">
+    <div id="t2-left">
+      <div id="t2-source-view" class="t2-panel active">
+        <span class="t2-label" id="t2-label-src">🔊 波源視角・聽波源節奏</span>
+        <canvas id="t2-canvas-source"></canvas>
+      </div>
+      <div id="t2-observer-view" class="t2-panel">
+        <span class="t2-label" id="t2-label-obs">🔈 觀察者視角・聽接收節奏</span>
+        <canvas id="t2-canvas-observer"></canvas>
+      </div>
+    </div>
+    <div id="t2-game-view">
+      <canvas id="t2-canvas-game"></canvas>
+    </div>
+  </div>
+
+  <div id="t2-controls">
+    <div class="t2-row">
+      <span class="t2-rowLabel">波源頻率 f</span>
+      <input type="range" id="t2-freq" min="0.5" max="5" step="0.5" value="2">
+      <span class="t2-rowVal" id="t2-freqVal">2.0 Hz</span>
+    </div>
+    <div class="t2-btnRow">
+      <button id="t2-resetBtn" class="t2-actBtn">恢復原狀</button>
+      <button id="t2-superBtn" class="t2-actBtn">向右超音速</button>
+    </div>
+  </div>
+</div>
+
+<div id="tabSwitcher">
+  <button class="tabBtn active" data-tab="tab1">波源</button>
+  <button class="tabBtn" data-tab="tab2">整體</button>
+</div>
+
+<!-- ===================== 共用：暫停按鈕 ===================== -->
+<button id="pauseLeft" class="pauseBtn" aria-label="暫停畫面">⏸</button>
+<button id="pauseRight" class="pauseBtn" aria-label="暫停畫面">⏸</button>
+
+<script>
+/* =====================================================================
+   全域共用：分頁切換、暫停（兩個分頁的模擬都會持續運作，暫停只凍結畫面）
+   ===================================================================== */
+let paused = false;
+const pauseBtns = document.querySelectorAll('.pauseBtn');
+pauseBtns.forEach(b=>{
+  b.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    paused = !paused;
+    pauseBtns.forEach(x=> x.textContent = paused ? '▶' : '⏸');
+  });
+});
+
+const tabBtns = document.querySelectorAll('#tabSwitcher button');
+const tabPanes = document.querySelectorAll('.tabPane');
+tabBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    tabBtns.forEach(b=>b.classList.toggle('active', b===btn));
+    tabPanes.forEach(p=>p.classList.toggle('active', p.id===btn.dataset.tab));
+  });
+});
+
+/* =====================================================================
+   Tab1：外部視角（既有內容，原樣沿用，僅移除自己的暫停按鈕邏輯）
+   ===================================================================== */
+(function(){
+  /* ===================== 參數設定 ===================== */
+  const V_WAVE  = 0.13;   // 波速（畫面寬度比例 / 秒，降低）
+  const T_EMIT  = 0.5;    // 每隔多少秒發出一個波前（頻率提高，間隔變短）
+  const M_SUB   = 0.6;    // 等速階段：波源速度 = M_SUB * V_WAVE
+  const M_SUPER = 1.5;    // 超音速階段：波源速度 = M_SUPER * V_WAVE
+  const TRACK_Y = 0.5;    // 波源／軌道高度（畫面高度比例）
+  const MAX_R   = 0.65;   // 波前最大半徑（畫面寬度比例），超過即消失
+
+  const MODES = {
+    static:      { label:'靜止',      v: 0,                 start:0.2 },
+    right_sub:   { label:'向右等速',   v:  V_WAVE * M_SUB,   start:0.2 },
+    right_super: { label:'向右超音速', v:  V_WAVE * M_SUPER, start:0.2 },
+  };
+
+  /* ===================== 狀態 ===================== */
+  let currentMode = 'static';
+  let xSource = MODES[currentMode].start;
+  let waves = [];     // { x0, r }
+  let emitAcc = 0;
+  let lastTs = null;
+  let countdown = 0;  // 超音速模式的倒數秒數
+
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const countdownEl = document.getElementById('countdown');
+
+  function resize(){
+    const dpr = window.devicePixelRatio || 1;
+    const w = window.innerWidth, h = window.innerHeight;
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width  = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+
+  function restartStage(){
+    xSource = MODES[currentMode].start;
+    waves = [];
+    emitAcc = 0;
+    countdown = (currentMode === 'right_super') ? 3 : 0;
+  }
+  canvas.addEventListener('click', restartStage);
+
+  /* 切換模式按鈕 */
+  const buttons = document.querySelectorAll('#controls button');
+  const SEAMLESS = new Set(['static','right_sub']); // 這兩個模式間切換不重置
+  buttons.forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const newMode = btn.dataset.mode;
+      const seamless = SEAMLESS.has(currentMode) && SEAMLESS.has(newMode);
+      currentMode = newMode;
+      buttons.forEach(b=>b.classList.toggle('active', b===btn));
+      if(seamless){
+        countdown = 0; // 無縫切換：保留波源位置與既有波前
+      } else {
+        restartStage();
+      }
+    });
+  });
+  buttons[0].classList.add('active');
+
+  /* ===================== 主迴圈 ===================== */
+  function step(ts){
+    if(lastTs === null) lastTs = ts;
+    let dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+    dt = Math.min(dt, 0.05);
+
+    const W = window.innerWidth, H = window.innerHeight;
+    const mode = MODES[currentMode];
+    let v = mode.v;
+
+    // 超音速倒數：倒數期間波源暫不移動
+    if(currentMode === 'right_super' && countdown > 0){
+      countdown = Math.max(0, countdown - dt);
+      v = 0;
+    }
+
+    // 波源移動
+    xSource += v * dt;
+    if(v > 0 && xSource > 1.05){ restartStage(); }
+
+    // 發出波前
+    emitAcc += dt;
+    if(emitAcc >= T_EMIT){
+      emitAcc -= T_EMIT;
+      waves.push({ x0: xSource, r: 0 });
+    }
+
+    // 波前擴張
+    for(const w of waves) w.r += V_WAVE * dt;
+    waves = waves.filter(w => w.r < MAX_R);
+
+    // 以上模擬計算每一格都會執行；以下畫面更新在「暫停畫面」時跳過（凍結畫面）
+    if(!paused){
+      countdownEl.textContent = (currentMode === 'right_super' && countdown > 0)
+        ? Math.ceil(countdown) : '';
+      draw(W, H, mode);
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  /* ===================== 繪圖 ===================== */
+  function draw(W, H, mode){
+    ctx.clearRect(0, 0, W, H);
+    const trackY = TRACK_Y * H;
+
+    // 中央水平參考線
+    ctx.strokeStyle = '#eef1f5';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, trackY);
+    ctx.lineTo(W, trackY);
+    ctx.stroke();
+
+    // 波前圓
+    ctx.lineWidth = 2.4;
+    for(const w of waves){
+      const r = w.r * W;
+      const alpha = Math.max(0, 1 - w.r/MAX_R) * 0.85;
+      ctx.strokeStyle = `rgba(70,130,200,${alpha.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.arc(w.x0 * W, trackY, r, 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    // 馬赫錐（超音速，倒數結束後才出現）
+    if(currentMode === 'right_super' && countdown <= 0){
+      const mu = Math.asin(1/M_SUPER);
+      const sx = xSource*W, sy = trackY;
+      const L = W * 1.3;
+      const backDir = mode.v > 0 ? -1 : 1;
+      [1,-1].forEach(s=>{
+        const dx = backDir*Math.cos(mu);
+        const dy = s*Math.sin(mu);
+        ctx.strokeStyle = 'rgba(216,69,58,0.6)';
+        ctx.lineWidth = 2.6;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(sx + dx*L, sy + dy*L);
+        ctx.stroke();
+      });
+    }
+
+    // 波源
+    if(xSource*W > -30 && xSource*W < W+30){
+      const r = Math.min(W,H) * 0.016;
+      ctx.fillStyle = '#e8654a';
+      ctx.beginPath();
+      ctx.arc(xSource*W, trackY, r, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  /* ===================== 啟動 ===================== */
+  resize();
+  requestAnimationFrame(step);
+})();
+
+/* =====================================================================
+   Tab2：第一人稱視角（新）
+   - 左上：波源視角（同心圓，圓心隨波源平移）
+   - 左下：觀察者視角（橫線隨時間經過，代表波前抵達）
+   - 右側：第一人稱遊戲視角（棋盤步道 + 判定線 + 波前 + 撞擊特效）
+   - 下方：v_s / v_o / f 三個大字體拉桿 + 恢復原狀 + （預留）超音速按鈕
+   ===================================================================== */
+(function(){
+  /* ---------- 顏色（與 CSS 變數對應，canvas 需用實際色碼，配色與 Tab1 一致） ---------- */
+  const COL_SRC     = '#e8654a';          // 波源（與 Tab1 波源同色）
+  const COL_OBS     = '#c79100';          // 觀察者
+  const COL_WAVE_RGB= '70,130,200';       // 波前（與 Tab1 波前同色）
+  const COL_BURST_RGB = '216,69,58';      // 撞擊特效（與 Tab1 馬赫錐同色系）
+  const COL_BLOCK_A = '#4682c8';          // 路緣色塊（藍，與波前同色系）
+  const COL_BLOCK_B = '#e8654a';          // 路緣色塊（橘，與波源同色系）
+
+  /* ---------- 物理基準（沿用 Tab1 的 V_WAVE，同一個世界、不同視角） ---------- */
+  const V_WAVE     = 0.13;   // 波速（世界單位 / 秒），與 Tab1 相同
+  const V_SOUND_MS = 340;    // 用於將 m/s 換算成內部世界單位
+  const MAX_R      = 0.5;    // 波前最大半徑（世界單位，左上視角用），超過即消失
+  const RESET_BOUND= 1.4;    // 波源偏移超過此值就重置（只影響左上視角）
+  const TRAVEL_TIME= 1.5;    // 觀察者端「感知波前」從出現到抵達判定線所花的時間（純視覺，與物理無關）
+
+  /* ---------- 超音速腳本（固定演出，不做即時物理運算） ---------- */
+  const M_SUPER_SCRIPT  = 1.5;  // 與 Tab1 的 M_SUPER 相同
+  const SCRIPT_ACCEL    = 3;    // 第3秒：波源開始向右超音速前進
+  const SCRIPT_PASS     = 6;    // 第6秒：波源通過觀察者
+  const SCRIPT_BOOM     = 7;    // 第7秒：音爆通過觀察者
+  const SCRIPT_SWITCH   = 5;    // 第5秒：聲音由「聽波源」切換成「聽觀察者」
+  const SCRIPT_VIEW_DELAY = 3;  // 第一人稱視角比世界時間晚 3 秒看到事件
+  const SCRIPT_TOTAL    = 10;   // 腳本總長（第一人稱視角看到音爆的時刻）
+  const SCRIPT_FLASH_DECAY = 0.4; // 大爆鳴閃光衰減時間
+  const TRAVEL_BOOM     = 0.3;  // 左下視角：音爆波前的「抵達」時間（比一般 TRAVEL_TIME 短很多，營造急促感）
+  const N_BOOM_WAVES    = 8;    // 左下視角：音爆期間（1秒內）密集抵達的波前數量
+
+  // 第一人稱視角的高潮段（約第9~10秒）：波源從前方逼近並穿過鏡頭，
+  // 接著一串密集紅色波前掃過，最後在第10秒爆鳴
+  const PASS_FX_START = 8.7;   // 波源逼近特效開始
+  const PASS_FX_DUR   = 0.8;   // 持續時間（dist 從 1 線性變化到 -0.5，中途穿過 0＝掠過鏡頭）
+  const PASS_FX_K     = 320;   // 投影縮放係數，dist 越負，圓越大（越靠近鏡頭）
+  const SWEEP_START   = 9.2;   // 密集紅色波前開始時間
+  const SWEEP_GAP     = 0.11;  // 每道波前的起始間隔
+  const SWEEP_DUR     = 0.25;  // 每道波前的飛行時間（與 drawWavefrontLine 的 dist 範圍對應）
+  const N_SWEEPS      = 6;     // 密集波前數量
+
+  /* ---------- 狀態 ---------- */
+  let vsMs = 0, voMs = 0, freq = 2;
+  let xSrc = 0;
+  let waves = [];          // 波源端真實波前 { x0, r }（左上視角用）
+  let emitAcc = 0;
+  let obsWaves = [];       // 觀察者端「感知波前」 { age, hit }（左下＋第一人稱共用，已同步）
+  let obsEmitAcc = 0;
+  let tileScroll = 0;
+  let burst = [];          // 撞擊特效粒子
+  let soundMode = 'source';
+  let cooldown = 0;
+  let lastTs = null;
+
+  /* ---------- 超音速腳本狀態 ---------- */
+  let scriptMode = false;
+  let scriptTime = 0;
+  let scriptBoomTriggered = false;
+  let scriptXSrc = 0;
+  let scriptWavesTop = [];     // 左上視角用，結構同 waves：{ x0, r }
+  let scriptEmitAcc = 0;
+  let scriptObsWaves = [];     // [{ spawn, arrival, boom, crossedB, crossedG }]
+  let scriptBoomSweeps = [];   // 第一人稱高潮段：[{ start, crossed }]
+  let scriptFlash = 0;         // 0~1，大爆鳴閃光強度
+
+  /* ---------- DOM ---------- */
+  const cSrc  = document.getElementById('t2-canvas-source');
+  const cObs  = document.getElementById('t2-canvas-observer');
+  const cGame = document.getElementById('t2-canvas-game');
+  const ctxSrc  = cSrc.getContext('2d');
+  const ctxObs  = cObs.getContext('2d');
+  const ctxGame = cGame.getContext('2d');
+
+  const panelSrc = document.getElementById('t2-source-view');
+  const panelObs = document.getElementById('t2-observer-view');
+  const labelSrc = document.getElementById('t2-label-src');
+  const labelObs = document.getElementById('t2-label-obs');
+
+  const freqSlider = document.getElementById('t2-freq');
+  const freqVal = document.getElementById('t2-freqVal');
+  const resetBtn = document.getElementById('t2-resetBtn');
+  const superBtn = document.getElementById('t2-superBtn');
+  const tab2Pane = document.getElementById('tab2');
+
+  let dimsSrc={w:0,h:0}, dimsObs={w:0,h:0}, dimsGame={w:0,h:0};
+
+  /* ---------- 畫布尺寸 ---------- */
+  function resizeCanvas(canvas, ctx){
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w,h};
+  }
+  function resizeAll(){
+    dimsSrc  = resizeCanvas(cSrc, ctxSrc);
+    dimsObs  = resizeCanvas(cObs, ctxObs);
+    dimsGame = resizeCanvas(cGame, ctxGame);
+  }
+  window.addEventListener('resize', resizeAll);
+
+  /* ---------- 音效（敲擊音，節奏快慢才是重點） ---------- */
+  let audioCtx = null;
+  let playHitCallCount = 0;  // 嘗試播放次數（診斷用）
+  let fireHitCount = 0;      // 實際送出音效節點次數（診斷用）
+  function initAudio(){
+    if(!audioCtx){
+      try{
+        audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      }catch(e){
+        console.error('AudioContext 建立失敗：', e);
+      }
+    }
+  }
+  function fireHit(){
+    if(!audioCtx) return;
+    try{
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now+0.07);
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now+0.07);
+      osc.start(now);
+      osc.stop(now+0.08);
+      fireHitCount++;
+    }catch(e){
+      console.error('playHit 播放失敗：', e);
+    }
+  }
+  function playHit(){
+    // Tab2 不在前景時不發出聲音（物理仍持續運作，但避免在「波源」分頁背景發出聲響）
+    if(!tab2Pane.classList.contains('active')) return;
+    playHitCallCount++;
+    initAudio();
+    if(!audioCtx) return;
+    // 兩次敲擊間隔較長時，瀏覽器可能已自動把 context 切回 suspended；
+    // 此時不能直接放棄這一次，要 resume() 完成後再補上這個音
+    if(audioCtx.state === 'running'){
+      fireHit();
+    }else{
+      audioCtx.resume().then(fireHit).catch(e=>console.error('AudioContext resume 失敗：', e));
+    }
+  }
+
+  /* ---------- 拉桿填色（顯示目前數值對應的填滿比例） ---------- */
+  function fillSlider(input, color){
+    const min = parseFloat(input.min), max = parseFloat(input.max), val = parseFloat(input.value);
+    const pct = (val-min)/(max-min)*100;
+    input.style.background =
+      `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #e2e7ed ${pct}%, #e2e7ed 100%)`;
+  }
+
+  function updateLabels(){
+    freqVal.textContent = freq.toFixed(1) + ' Hz';
+    fillSlider(freqSlider, '#3a4654');
+  }
+
+  freqSlider.addEventListener('input', ()=>{ freq = parseFloat(freqSlider.value); updateLabels(); });
+
+  /* ---------- 鎖定／解鎖控制（超音速腳本播放期間，只剩恢復原狀可用） ---------- */
+  function setControlsLocked(locked){
+    freqSlider.disabled = locked;
+    superBtn.disabled = locked;
+    panelSrc.style.pointerEvents = locked ? 'none' : '';
+    panelObs.style.pointerEvents = locked ? 'none' : '';
+  }
+
+  /* ---------- 恢復原狀（也用來中止超音速腳本） ---------- */
+  function resetWorld(){
+    scriptMode = false;
+    scriptTime = 0;
+    scriptBoomTriggered = false;
+    scriptFlash = 0;
+    setControlsLocked(false);
+
+    xSrc = 0;
+    waves = []; emitAcc = 0;
+    obsWaves = []; obsEmitAcc = 0;
+    burst = []; tileScroll = 0;
+    cooldown = 0;
+    vsMs = 0; voMs = 0; freq = 2;
+    freqSlider.value = 2;
+    soundMode = 'source';
+    updateLabels();
+    updateSoundUI();
+  }
+  resetBtn.addEventListener('click', resetWorld);
+
+  /* ---------- 聆聽對象切換（點擊左側面板） ---------- */
+  function updateSoundUI(){
+    panelSrc.classList.toggle('active', soundMode==='source');
+    panelObs.classList.toggle('active', soundMode==='observer');
+    labelSrc.textContent = (soundMode==='source'?'🔊 ':'🔈 ') + '波源視角・聽波源節奏';
+    labelObs.textContent = (soundMode==='observer'?'🔊 ':'🔈 ') + '觀察者視角・聽接收節奏';
+  }
+  function setSoundMode(mode){
+    if(scriptMode) return; // 腳本播放期間，聆聽對象由腳本自動切換
+    initAudio();
+    if(mode === soundMode){ return; }
+    soundMode = mode;
+    cooldown = 0.12; // 切換瞬間短暫冷卻，避免新舊模式同時敲擊（不要佔掉一整個週期）
+    updateSoundUI();
+  }
+  panelSrc.addEventListener('click', ()=> setSoundMode('source'));
+  panelObs.addEventListener('click', ()=> setSoundMode('observer'));
+
+  /* ---------- 上方速度儀表：版面（繪製與拖曳判定共用） ---------- */
+  function gaugeLayout(){
+    const {w:W, h:H} = dimsGame;
+    return {
+      halfW: Math.min(W*0.13, H*0.5),
+      y: H*0.20,
+      xVs: W*0.22,
+      xVo: W*0.78
+    };
+  }
+
+  /* ---------- 上方速度儀表：左右拖曳即可直接調整 v_s／v_o（取代下方拉桿） ---------- */
+  let dragGauge = null; // 'vs' | 'vo' | null
+  function gaugePointerPos(e){
+    const rect = cGame.getBoundingClientRect();
+    return { x: e.clientX-rect.left, y: e.clientY-rect.top };
+  }
+  function gaugeHit(px, py, g){
+    if(Math.abs(py-g.y) > g.halfW*0.7) return null;
+    if(Math.abs(px-g.xVs) <= g.halfW*1.25) return 'vs';
+    if(Math.abs(px-g.xVo) <= g.halfW*1.25) return 'vo';
+    return null;
+  }
+  function applyGaugeDrag(px){
+    const g = gaugeLayout();
+    const cx = dragGauge==='vs' ? g.xVs : g.xVo;
+    let frac = (px-cx) / g.halfW;
+    frac = Math.max(-1, Math.min(1, frac));
+    const val = Math.round(frac*200/20)*20;
+    if(dragGauge==='vs') vsMs = val; else voMs = val;
+  }
+  cGame.addEventListener('pointerdown', e=>{
+    if(scriptMode) return;
+    const {x,y} = gaugePointerPos(e);
+    const hit = gaugeHit(x,y,gaugeLayout());
+    if(!hit) return;
+    dragGauge = hit;
+    cGame.setPointerCapture(e.pointerId);
+    applyGaugeDrag(x);
+    e.preventDefault();
+  });
+  cGame.addEventListener('pointermove', e=>{
+    const {x,y} = gaugePointerPos(e);
+    if(dragGauge){ applyGaugeDrag(x); e.preventDefault(); return; }
+    const hit = !scriptMode && gaugeHit(x,y,gaugeLayout());
+    cGame.style.cursor = hit ? 'ew-resize' : 'default';
+  });
+  cGame.addEventListener('pointerup', e=>{
+    if(dragGauge){ cGame.releasePointerCapture(e.pointerId); dragGauge=null; }
+  });
+  cGame.addEventListener('pointercancel', ()=>{ dragGauge=null; });
+  cGame.addEventListener('pointerleave', ()=>{ if(!dragGauge) cGame.style.cursor='default'; });
+
+  /* ---------- 撞擊特效 ---------- */
+  function spawnBurst(){
+    const cx = dimsGame.w*0.5;
+    const judgeY = dimsGame.h*0.85;
+    for(let i=0;i<10;i++){
+      burst.push({
+        x: cx + (Math.random()-0.5)*dimsGame.w*0.3,
+        y: judgeY,
+        vx: (Math.random()-0.5)*3,
+        vy: -(Math.random()*2+0.5),
+        alpha: 1,
+        len: Math.random()*8+4
+      });
+    }
+  }
+
+  /* ---------- 超音速腳本：建立資料、觸發大爆鳴、啟動 ---------- */
+  function buildScriptObsWaves(curFreq){
+    const arr = [];
+    let t = 0;
+    // 音爆前（世界時間 0~6 秒）：正常節奏的感知波前
+    while(t + TRAVEL_TIME < SCRIPT_PASS){
+      arr.push({ spawn:t, arrival:t+TRAVEL_TIME, boom:false, crossedB:false, crossedG:false });
+      t += 1/curFreq;
+    }
+    // 音爆（世界時間 6~7 秒）：密集波前快速掃過
+    for(let i=0;i<N_BOOM_WAVES;i++){
+      const arrival = SCRIPT_PASS + i/N_BOOM_WAVES;
+      arr.push({ spawn:arrival-TRAVEL_BOOM, arrival, boom:true, crossedB:false, crossedG:false });
+    }
+    return arr;
+  }
+
+  function triggerBoom(){
+    scriptFlash = 1;
+    // 極短時間內重複播放聲音＝大爆鳴
+    for(let i=0;i<6;i++){
+      setTimeout(()=>{ if(scriptMode) playHit(); }, i*45);
+    }
+  }
+
+  function startScript(){
+    if(scriptMode) return;
+    scriptMode = true;
+    scriptTime = 0;
+    scriptBoomTriggered = false;
+    scriptFlash = 0;
+    scriptXSrc = 0;
+    scriptWavesTop = [];
+    scriptEmitAcc = 0;
+    scriptObsWaves = buildScriptObsWaves(freq);
+    scriptBoomSweeps = Array.from({length:N_SWEEPS},(_,i)=>(
+      { start: SWEEP_START + i*SWEEP_GAP, crossed:false }
+    ));
+    soundMode = 'source';
+    initAudio();
+    updateSoundUI();
+    setControlsLocked(true);
+  }
+  superBtn.addEventListener('click', startScript);
+
+  /* ---------- 主迴圈 ---------- */
+  function step(ts){
+    if(lastTs===null) lastTs=ts;
+    let dt = (ts-lastTs)/1000;
+    lastTs = ts;
+    dt = Math.min(dt, 0.05);
+
+    // 暫停時：物理與音效一併停止（不像 Tab1 只凍結畫面）
+    if(paused){
+      requestAnimationFrame(step);
+      return;
+    }
+
+    if(scriptMode){
+      stepScript(dt);
+      requestAnimationFrame(step);
+      return;
+    }
+
+    const v_s = V_WAVE * (vsMs / V_SOUND_MS);
+    const v_o = V_WAVE * (voMs / V_SOUND_MS);
+    const T_EMIT = 1/freq;
+
+    xSrc += v_s*dt;
+    // 觀察者面向左方（畫面深處）；v_o 為正＝向右＝相對於面向方向是「後退」，
+    // 後退時路緣色塊應該往地平線方向遠離，所以用負號
+    tileScroll -= v_o*dt;
+
+    if(cooldown>0) cooldown = Math.max(0, cooldown-dt);
+
+    // 波源端：真實波前（左上視角用），發出時即代表「波源自身的節奏」
+    emitAcc += dt;
+    if(emitAcc >= T_EMIT){
+      emitAcc -= T_EMIT;
+      waves.push({ x0:xSrc, r:0 });
+      if(soundMode==='source' && cooldown<=0) playHit();
+    }
+    for(const w of waves) w.r += V_WAVE*dt;
+    waves = waves.filter(w => w.r < MAX_R);
+    if(waves.length > 40) waves.splice(0, waves.length-40);
+
+    // 觀察者端：感知波前（左下＋第一人稱共用，已同步）
+    // 次音速都卜勒公式：f' = f * (V_WAVE - v_o) / (V_WAVE - v_s)
+    // v_s、v_o 都在次音速範圍內，分母恆正，f' 恆為有限正值
+    const fPrime = freq * (V_WAVE - v_o) / (V_WAVE - v_s);
+    const T_PERCEIVED = 1/fPrime;
+    obsEmitAcc += dt;
+    if(obsEmitAcc >= T_PERCEIVED){
+      obsEmitAcc -= T_PERCEIVED;
+      obsWaves.push({ age:0, hit:false });
+    }
+    for(const w of obsWaves){
+      w.age += dt;
+      if(!w.hit && w.age >= TRAVEL_TIME){
+        w.hit = true;
+        if(soundMode==='observer' && cooldown<=0) playHit();
+        spawnBurst();
+      }
+    }
+    obsWaves = obsWaves.filter(w => w.age < TRAVEL_TIME*1.05);
+    if(obsWaves.length > 60) obsWaves.splice(0, obsWaves.length-60);
+
+    // 撞擊特效更新
+    burst.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.alpha-=0.04; });
+    burst = burst.filter(p=>p.alpha>0);
+
+    // 波源偏移過大就重置左上視角（避免座標無限增長，不影響觀察者端）
+    if(Math.abs(xSrc) > RESET_BOUND){
+      xSrc = 0; waves = []; emitAcc = 0;
+    }
+
+    if(!paused){
+      drawSource();
+      drawObserver();
+      drawGame();
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- 超音速腳本主迴圈（固定演出，scriptTime 為唯一時間軸） ---------- */
+  function stepScript(dt){
+    if(scriptTime < SCRIPT_TOTAL + SCRIPT_FLASH_DECAY){
+      scriptTime += dt;
+    }
+
+    // 左上視角：世界時間即時演出（第3秒起向右超音速）
+    scriptXSrc = scriptTime <= SCRIPT_ACCEL ? 0
+               : (M_SUPER_SCRIPT*V_WAVE) * (scriptTime - SCRIPT_ACCEL);
+    const T_EMIT = 1/freq;
+    scriptEmitAcc += dt;
+    if(scriptEmitAcc >= T_EMIT){
+      scriptEmitAcc -= T_EMIT;
+      scriptWavesTop.push({ x0:scriptXSrc, r:0 });
+      if(scriptTime < SCRIPT_SWITCH) playHit(); // 左上波前產生時，聲音同步
+    }
+    for(const w of scriptWavesTop) w.r += V_WAVE*dt;
+    scriptWavesTop = scriptWavesTop.filter(w => w.r < MAX_R);
+    if(scriptWavesTop.length > 40) scriptWavesTop.splice(0, scriptWavesTop.length-40);
+
+    // 聲音模式：世界時間第5秒自動切換（前5秒聽波源，後5秒聽觀察者）
+    const newMode = scriptTime < SCRIPT_SWITCH ? 'source' : 'observer';
+    if(newMode !== soundMode){ soundMode = newMode; updateSoundUI(); }
+
+    // 左下／第一人稱共用同一份感知波前；第一人稱的時間參考比世界時間晚3秒
+    // （音爆專用的密集波前改由 scriptBoomSweeps 在第一人稱端獨立演出，這裡只處理一般波前）
+    const gameT = scriptTime - SCRIPT_VIEW_DELAY;
+    for(const w of scriptObsWaves){
+      const progB = (scriptTime - w.spawn)/(w.arrival - w.spawn);
+      if(!w.crossedB && progB >= 1){
+        w.crossedB = true;
+        if(soundMode==='observer' && !w.boom) playHit();
+      }
+      if(w.boom) continue;
+      const progG = (gameT - w.spawn)/(w.arrival - w.spawn);
+      if(!w.crossedG && progG >= 1){
+        w.crossedG = true;
+        spawnBurst();
+        if(soundMode==='observer') playHit();
+      }
+    }
+
+    // 第一人稱高潮段：密集紅色波前掃過，每道穿越判定線時觸發撞擊特效
+    for(const s of scriptBoomSweeps){
+      if(scriptTime < s.start) continue;
+      const dist = 1 - (scriptTime-s.start)/SWEEP_DUR*1.05;
+      if(!s.crossed && dist <= 0){
+        s.crossed = true;
+        spawnBurst();
+      }
+    }
+
+    // 撞擊特效更新
+    burst.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.alpha-=0.04; });
+    burst = burst.filter(p=>p.alpha>0);
+
+    // 第10秒（第一人稱看到音爆）：大爆鳴
+    if(scriptTime >= SCRIPT_TOTAL && !scriptBoomTriggered){
+      scriptBoomTriggered = true;
+      triggerBoom();
+    }
+    if(scriptFlash > 0) scriptFlash = Math.max(0, scriptFlash - dt/SCRIPT_FLASH_DECAY);
+
+    drawScriptSource();
+    drawScriptObserver();
+    drawScriptGame();
+  }
+
+  /* ---------- 超音速腳本：左上（波源視角，世界時間即時） ---------- */
+  function drawScriptSource(){
+    const {w:W, h:H} = dimsSrc;
+    ctxSrc.fillStyle = '#ffffff';
+    ctxSrc.fillRect(0,0,W,H);
+
+    const cx = W/2, cy = H/2;
+    const ZOOM = Math.min(W,H) * 2.4;
+
+    ctxSrc.lineWidth = 1.6;
+    for(const w of scriptWavesTop){
+      const r = w.r * ZOOM;
+      const ox = cx + (w.x0 - scriptXSrc) * ZOOM;
+      const alpha = 0.85 * Math.max(0, 1 - w.r/MAX_R);
+      ctxSrc.strokeStyle = `rgba(${COL_WAVE_RGB},${alpha.toFixed(3)})`;
+      ctxSrc.beginPath();
+      ctxSrc.arc(ox, cy, r, 0, Math.PI*2);
+      ctxSrc.stroke();
+    }
+
+    // 超音速後：馬赫錐（波源向右移動，波前在左側堆疊）
+    if(scriptTime > SCRIPT_ACCEL){
+      const mu = Math.asin(1/M_SUPER_SCRIPT);
+      const L = Math.max(W,H) * 1.5;
+      ctxSrc.strokeStyle = `rgba(${COL_BURST_RGB},0.6)`;
+      ctxSrc.lineWidth = 2.6;
+      [1,-1].forEach(s=>{
+        ctxSrc.beginPath();
+        ctxSrc.moveTo(cx, cy);
+        ctxSrc.lineTo(cx - Math.cos(mu)*L, cy + s*Math.sin(mu)*L);
+        ctxSrc.stroke();
+      });
+    }
+
+    ctxSrc.fillStyle = COL_SRC;
+    ctxSrc.beginPath();
+    ctxSrc.arc(cx, cy, Math.min(W,H)*0.02, 0, Math.PI*2);
+    ctxSrc.fill();
+  }
+
+  /* ---------- 超音速腳本：左下（觀察者視角，世界時間即時） ---------- */
+  function drawScriptObserver(){
+    const {w:W, h:H} = dimsObs;
+    ctxObs.fillStyle = '#ffffff';
+    ctxObs.fillRect(0,0,W,H);
+
+    const cx = W/2, cy = H/2;
+    const ZOOM = Math.min(W,H) * 1.4;
+
+    ctxObs.lineWidth = 1.6;
+    for(const w of scriptObsWaves){
+      const progB = (scriptTime - w.spawn)/(w.arrival - w.spawn);
+      const distEq = 1 - progB;
+      const drawY = cy - distEq*ZOOM;
+      if(drawY > -10 && drawY < H+10){
+        const alpha = progB>=1 ? 0.15 : 0.85;
+        const colorRgb = w.boom ? COL_BURST_RGB : COL_WAVE_RGB;
+        ctxObs.strokeStyle = `rgba(${colorRgb},${alpha})`;
+        ctxObs.beginPath();
+        ctxObs.moveTo(W*0.08, drawY);
+        ctxObs.lineTo(W*0.92, drawY);
+        ctxObs.stroke();
+      }
+    }
+
+    ctxObs.fillStyle = COL_OBS;
+    ctxObs.beginPath();
+    ctxObs.arc(cx, cy, Math.min(W,H)*0.02, 0, Math.PI*2);
+    ctxObs.fill();
+  }
+
+  /* ---------- 超音速腳本：右側（第一人稱，時間參考比世界時間晚3秒） ---------- */
+  function drawScriptGame(){
+    const {w:W, h:H} = dimsGame;
+    const horizonY = H*HORIZON;
+    const judgeY = H*JUDGE;
+    const cx = W/2;
+    const roadHalfW = W*0.16;
+
+    ctxGame.fillStyle = '#ffffff';
+    ctxGame.fillRect(0,0,W,H);
+    ctxGame.strokeStyle = '#eef1f5';
+    ctxGame.lineWidth = 1.5;
+    ctxGame.beginPath();
+    ctxGame.moveTo(0, horizonY);
+    ctxGame.lineTo(W, horizonY);
+    ctxGame.stroke();
+
+    ctxGame.strokeStyle = '#d9dfe6';
+    ctxGame.lineWidth = 2;
+    ctxGame.beginPath();
+    ctxGame.moveTo(cx-roadHalfW, H);
+    ctxGame.lineTo(cx, horizonY);
+    ctxGame.moveTo(cx+roadHalfW, H);
+    ctxGame.lineTo(cx, horizonY);
+    ctxGame.stroke();
+
+    // 觀察者靜止，路緣色塊不捲動
+    drawRoadBlocks(W,H,horizonY,cx,roadHalfW,0);
+
+    ctxGame.strokeStyle = COL_OBS;
+    ctxGame.lineWidth = 4;
+    ctxGame.beginPath();
+    ctxGame.moveTo(W*0.1, judgeY);
+    ctxGame.lineTo(W*0.9, judgeY);
+    ctxGame.stroke();
+
+    // 迎面而來的感知波前（第一人稱時間 = 世界時間 - 3 秒；音爆專用波前改由下方 scriptBoomSweeps 處理）
+    const gameT = scriptTime - SCRIPT_VIEW_DELAY;
+    for(const w of scriptObsWaves){
+      if(w.boom) continue;
+      const progG = (gameT - w.spawn)/(w.arrival - w.spawn);
+      const dist = 1 - progG;
+      drawWavefrontLine(dist,W,H,horizonY,cx,roadHalfW,COL_WAVE_RGB);
+    }
+
+    // 撞擊特效粒子
+    ctxGame.lineWidth = 2.4;
+    burst.forEach(p=>{
+      ctxGame.strokeStyle = `rgba(${COL_BURST_RGB},${Math.max(0,p.alpha).toFixed(3)})`;
+      ctxGame.beginPath();
+      ctxGame.moveTo(p.x, p.y);
+      ctxGame.lineTo(p.x+p.len, p.y);
+      ctxGame.stroke();
+    });
+
+    // 約第9秒：波源本體從前方（地平線）逼近、穿過判定線、掠過鏡頭
+    if(scriptTime >= PASS_FX_START && scriptTime <= PASS_FX_START+PASS_FX_DUR){
+      const p = (scriptTime-PASS_FX_START)/PASS_FX_DUR; // 0..1
+      const dist = 1 - p*1.5; // 1（地平線）→ -0.5（已穿過鏡頭）
+      const scale = FOV/(dist*PASS_FX_K+FOV);
+      const y = horizonY + (H-horizonY)*scale;
+      const r = H*0.18*scale;
+      const alpha = Math.sin(Math.PI*p)*0.85;
+      if(alpha > 0.01){
+        ctxGame.fillStyle = `rgba(232,101,74,${alpha.toFixed(3)})`;
+        ctxGame.beginPath();
+        ctxGame.arc(cx, y, Math.max(2,r), 0, Math.PI*2);
+        ctxGame.fill();
+      }
+    }
+
+    // 第一人稱高潮段：密集紅色波前掃過
+    for(const s of scriptBoomSweeps){
+      if(scriptTime < s.start) continue;
+      const dist = 1 - (scriptTime-s.start)/SWEEP_DUR*1.05;
+      drawWavefrontLine(dist,W,H,horizonY,cx,roadHalfW,COL_BURST_RGB);
+    }
+
+    // 上方儀表（腳本演出，波源已達超音速、觀察者靜止；鎖定中不可拖曳）
+    const g = gaugeLayout();
+    const dispVs = scriptTime > SCRIPT_ACCEL ? Math.round(M_SUPER_SCRIPT*V_SOUND_MS) : 0;
+    drawGauge(g.xVs, g.y, g.halfW, dispVs, 200, COL_SRC,
+      'vₛ ≈ ' + (dispVs>0?'+':'') + dispVs + ' m/s', false);
+    drawGauge(g.xVo, g.y, g.halfW, 0, 200, COL_OBS, 'vₒ = 0 m/s', false);
+
+    // 大爆鳴：全畫面閃光
+    if(scriptFlash > 0){
+      ctxGame.fillStyle = `rgba(255,255,255,${(scriptFlash*0.85).toFixed(3)})`;
+      ctxGame.fillRect(0,0,W,H);
+    }
+  }
+
+  /* ---------- 左上：波源視角（同心圓，圓心隨波源平移） ---------- */
+  function drawSource(){
+    const {w:W, h:H} = dimsSrc;
+    ctxSrc.fillStyle = '#ffffff';
+    ctxSrc.fillRect(0,0,W,H);
+
+    const cx = W/2, cy = H/2;
+    const ZOOM = Math.min(W,H) * 2.4;
+
+    ctxSrc.lineWidth = 1.6;
+    for(const w of waves){
+      const r = w.r * ZOOM;
+      const ox = cx + (w.x0 - xSrc) * ZOOM;
+      const alpha = 0.85 * Math.max(0, 1 - w.r/MAX_R);
+      ctxSrc.strokeStyle = `rgba(${COL_WAVE_RGB},${alpha.toFixed(3)})`;
+      ctxSrc.beginPath();
+      ctxSrc.arc(ox, cy, r, 0, Math.PI*2);
+      ctxSrc.stroke();
+    }
+
+    ctxSrc.fillStyle = COL_SRC;
+    ctxSrc.beginPath();
+    ctxSrc.arc(cx, cy, Math.min(W,H)*0.02, 0, Math.PI*2);
+    ctxSrc.fill();
+  }
+
+  /* ---------- 左下：觀察者視角（橫線隨時間經過，與第一人稱共用同一份感知波前） ---------- */
+  function drawObserver(){
+    const {w:W, h:H} = dimsObs;
+    ctxObs.fillStyle = '#ffffff';
+    ctxObs.fillRect(0,0,W,H);
+
+    const cx = W/2, cy = H/2;
+    const ZOOM = Math.min(W,H) * 1.4;
+
+    ctxObs.lineWidth = 1.6;
+    for(const w of obsWaves){
+      const distEq = 1 - w.age/TRAVEL_TIME;
+      const drawY = cy - distEq*ZOOM;
+      if(drawY > -10 && drawY < H+10){
+        const alpha = w.hit ? 0.15 : 0.85;
+        ctxObs.strokeStyle = `rgba(${COL_WAVE_RGB},${alpha})`;
+        ctxObs.beginPath();
+        ctxObs.moveTo(W*0.08, drawY);
+        ctxObs.lineTo(W*0.92, drawY);
+        ctxObs.stroke();
+      }
+    }
+
+    ctxObs.fillStyle = COL_OBS;
+    ctxObs.beginPath();
+    ctxObs.arc(cx, cy, Math.min(W,H)*0.02, 0, Math.PI*2);
+    ctxObs.fill();
+  }
+
+  /* ---------- 右側：第一人稱遊戲視角 ---------- */
+  const FOV = 220;
+  const HORIZON = 0.28;
+  const JUDGE = 0.85;
+  const TILE_Z = 60;
+  const N_BLOCKS = 14;
+  const Z_PER_UNIT = 2200;
+  const SCROLL_SCALE = 3000;
+  // dist=0（抵達）對齊到判定線（JUDGE），而不是畫面最下緣，
+  // 這樣「撞擊特效／音效」與「畫面上波前穿過黃線」才會是同一瞬間
+  const SCALE_AT_JUDGE = (JUDGE-HORIZON)/(1-HORIZON);
+  const Z_OFFSET = FOV*(1-SCALE_AT_JUDGE)/SCALE_AT_JUDGE;
+
+  /* 沿路緣導引線排列的色塊（藍／橘交錯） */
+  function drawRoadBlocks(W,H,horizonY,cx,roadHalfW,tileScrollVal){
+    let scrollZ = (tileScrollVal*SCROLL_SCALE) % TILE_Z;
+    if(scrollZ < 0) scrollZ += TILE_Z;
+    for(let i=0;i<N_BLOCKS;i++){
+      let z = i*TILE_Z - scrollZ;
+      if(z <= 0) z += N_BLOCKS*TILE_Z;
+      const scale = FOV/(z+FOV);
+      const y = horizonY + (H-horizonY)*scale;
+      const halfW = roadHalfW*scale;
+      const size = Math.max(2, 16*scale);
+      const cycle = Math.floor((z+scrollZ)/TILE_Z);
+      ctxGame.fillStyle = (cycle%2===0) ? COL_BLOCK_A : COL_BLOCK_B;
+      ctxGame.fillRect(cx-halfW-size/2, y-size/2, size, size);
+      ctxGame.fillRect(cx+halfW-size/2, y-size/2, size, size);
+    }
+  }
+
+  /* 迎面而來的波前線：dist=1 出現在地平線（基本亮度/粗度），dist=0 抵達判定線（最亮最粗），
+     dist<0 時投影 scale 會超過 1，畫面外自然消失＝崩潰動畫 */
+  function drawWavefrontLine(dist,W,H,horizonY,cx,roadHalfW,colorRgb){
+    if(dist <= -0.05 || dist >= 1.2) return;
+    const z = dist*Z_PER_UNIT + Z_OFFSET;
+    const scale = FOV/(z+FOV);
+    const y = horizonY + (H-horizonY)*scale;
+    if(y < horizonY-2 || y > H+10) return;
+    const alpha = Math.max(0.4, scale*0.9);
+    const lw = Math.max(2.5, scale*6+1.8);
+    const halfW = (roadHalfW + W*0.07) * scale;
+    ctxGame.strokeStyle = `rgba(${colorRgb},${alpha.toFixed(3)})`;
+    ctxGame.lineWidth = lw;
+    ctxGame.beginPath();
+    ctxGame.moveTo(cx-halfW, y);
+    ctxGame.lineTo(cx+halfW, y);
+    ctxGame.stroke();
+  }
+
+  /* 小儀表：圓點代表波源／觀察者本體，箭頭代表速度的大小與方向 */
+  function drawGauge(cx, cy, halfW, value, maxAbs, color, label, interactive){
+    ctxGame.save();
+    // 參考軸線（顯示可動範圍）
+    ctxGame.strokeStyle = '#eef1f5';
+    ctxGame.lineWidth = 3;
+    ctxGame.beginPath();
+    ctxGame.moveTo(cx-halfW, cy);
+    ctxGame.lineTo(cx+halfW, cy);
+    ctxGame.stroke();
+
+    // 可拖曳調整：兩端把手提示
+    if(interactive){
+      ctxGame.fillStyle = '#cfd6dd';
+      [cx-halfW, cx+halfW].forEach(x=>{
+        ctxGame.beginPath();
+        ctxGame.arc(x, cy, Math.max(2.5, halfW*0.035), 0, Math.PI*2);
+        ctxGame.fill();
+      });
+    }
+
+    const frac = Math.max(-1, Math.min(1, value/maxAbs));
+    const dotR = Math.max(5, halfW*0.09);
+
+    // 箭頭：速度方向與大小（從圓點邊緣延伸出去）
+    if(Math.abs(frac) > 0.03){
+      const dir = frac>0 ? 1 : -1;
+      const len = Math.abs(frac)*(halfW-dotR);
+      const tipX = cx + dir*(dotR+len);
+      ctxGame.strokeStyle = color;
+      ctxGame.lineWidth = 4;
+      ctxGame.beginPath();
+      ctxGame.moveTo(cx+dir*dotR, cy);
+      ctxGame.lineTo(tipX, cy);
+      ctxGame.stroke();
+      ctxGame.beginPath();
+      ctxGame.moveTo(tipX, cy);
+      ctxGame.lineTo(tipX-dir*10, cy-6);
+      ctxGame.lineTo(tipX-dir*10, cy+6);
+      ctxGame.closePath();
+      ctxGame.fillStyle = color;
+      ctxGame.fill();
+    }
+
+    // 圓點：代表波源／觀察者本體
+    ctxGame.fillStyle = color;
+    ctxGame.beginPath();
+    ctxGame.arc(cx, cy, dotR, 0, Math.PI*2);
+    ctxGame.fill();
+
+    // 文字標籤
+    ctxGame.fillStyle = color;
+    ctxGame.font = `bold ${Math.max(12, halfW*0.13)}px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif`;
+    ctxGame.textAlign = 'center';
+    ctxGame.textBaseline = 'alphabetic';
+    ctxGame.fillText(label, cx, cy-16);
+
+    // 可拖曳調整：提示文字
+    if(interactive){
+      ctxGame.fillStyle = '#9aa4af';
+      ctxGame.font = `${Math.max(10, halfW*0.095)}px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif`;
+      ctxGame.fillText('（左右拖曳調整）', cx, cy+halfW*0.32);
+    }
+    ctxGame.restore();
+  }
+
+  function drawGame(){
+    const {w:W, h:H} = dimsGame;
+    const horizonY = H*HORIZON;
+    const judgeY = H*JUDGE;
+    const cx = W/2;
+    const roadHalfW = W*0.16;
+
+    // 白底，地平線用淡灰參考線（與 Tab1 一致）
+    ctxGame.fillStyle = '#ffffff';
+    ctxGame.fillRect(0,0,W,H);
+    ctxGame.strokeStyle = '#eef1f5';
+    ctxGame.lineWidth = 1.5;
+    ctxGame.beginPath();
+    ctxGame.moveTo(0, horizonY);
+    ctxGame.lineTo(W, horizonY);
+    ctxGame.stroke();
+
+    // 路緣導引線：兩側收斂到地平線中點
+    ctxGame.strokeStyle = '#d9dfe6';
+    ctxGame.lineWidth = 2;
+    ctxGame.beginPath();
+    ctxGame.moveTo(cx-roadHalfW, H);
+    ctxGame.lineTo(cx, horizonY);
+    ctxGame.moveTo(cx+roadHalfW, H);
+    ctxGame.lineTo(cx, horizonY);
+    ctxGame.stroke();
+
+    // 沿導引線排列的色塊（藍／橘交錯，捲動量只跟觀察者自身移動有關）
+    drawRoadBlocks(W,H,horizonY,cx,roadHalfW,tileScroll);
+
+    // 判定線（觀察者的色彩，代表「這裡接收聲音」）
+    ctxGame.strokeStyle = COL_OBS;
+    ctxGame.lineWidth = 4;
+    ctxGame.beginPath();
+    ctxGame.moveTo(W*0.1, judgeY);
+    ctxGame.lineTo(W*0.9, judgeY);
+    ctxGame.stroke();
+
+    // 迎面而來的感知波前（與左下視角共用同一份資料，已同步）
+    // 一出現在地平線就有基本亮度與粗度，抵達判定線時最亮最粗，過線即崩潰消失
+    for(const w of obsWaves){
+      const dist = 1 - w.age/TRAVEL_TIME;
+      drawWavefrontLine(dist,W,H,horizonY,cx,roadHalfW,COL_WAVE_RGB);
+    }
+
+    // 撞擊特效粒子
+    ctxGame.lineWidth = 2.4;
+    burst.forEach(p=>{
+      ctxGame.strokeStyle = `rgba(${COL_BURST_RGB},${Math.max(0,p.alpha).toFixed(3)})`;
+      ctxGame.beginPath();
+      ctxGame.moveTo(p.x, p.y);
+      ctxGame.lineTo(p.x+p.len, p.y);
+      ctxGame.stroke();
+    });
+
+    // 上方儀表：左＝波源速度 v_s、右＝觀察者速度 v_o（可直接拖曳調整，取代下方拉桿）
+    const g = gaugeLayout();
+    drawGauge(g.xVs, g.y, g.halfW, vsMs, 200, COL_SRC,
+      'vₛ = ' + (vsMs>0?'+':'') + vsMs + ' m/s', true);
+    drawGauge(g.xVo, g.y, g.halfW, voMs, 200, COL_OBS,
+      'vₒ = ' + (voMs>0?'+':'') + voMs + ' m/s', true);
+
+    // ---- 暫時診斷資訊（排查音效問題用，之後可移除） ----
+    {
+      const v_s = V_WAVE*(vsMs/V_SOUND_MS), v_o = V_WAVE*(voMs/V_SOUND_MS);
+      const fP = freq*(V_WAVE-v_o)/(V_WAVE-v_s);
+      const TP = 1/fP;
+      const nextSpawn = Math.max(0, TP - obsEmitAcc).toFixed(2);
+      let nextHit = '—';
+      if(obsWaves.length){
+        const maxAge = Math.max(...obsWaves.map(w=>w.age));
+        nextHit = Math.max(0, TRAVEL_TIME - maxAge).toFixed(2);
+      }
+      const audioState = audioCtx ? audioCtx.state : 'none';
+      const dbg = `音效:${audioState} 嘗試:${playHitCallCount} 發聲:${fireHitCount}　|　T'=${TP.toFixed(2)}s 下次抵達:${nextHit}s 下次產生:${nextSpawn}s　|　cooldown:${cooldown.toFixed(2)} 波前數:${obsWaves.length}`;
+      ctxGame.fillStyle = '#9aa4af';
+      ctxGame.font = `${Math.max(10,H*0.022)}px "Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif`;
+      ctxGame.textAlign = 'left';
+      ctxGame.textBaseline = 'alphabetic';
+      ctxGame.fillText(dbg, W*0.02, H-8);
+    }
+  }
+
+  /* ---------- 啟動 ---------- */
+  updateLabels();
+  updateSoundUI();
+  resizeAll();
+  requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
