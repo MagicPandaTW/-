@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<title>焦平面成像模擬</title>
+<style>
+  html,body{margin:0;padding:0;width:100%;height:100dvh;overflow:hidden;background:#eef1f5;font-family:"Microsoft JhengHei","PingFang TC",sans-serif;
+    --fs-title:clamp(13px,2.2dvh,22px);
+    --fs-body:clamp(11px,1.9dvh,19px);
+    --fs-small:clamp(10px,1.6dvh,16px);
+    --fs-mini:clamp(9px,1.35dvh,14px);
+  }
+  #stage{width:100vw;height:100dvh;position:relative;background:#f7f8fa;overflow:hidden;}
+
+  /* ---- Top bar: dropdown for element type + compact mode toggle ---- */
+  #topbar{position:absolute;top:0;left:0;width:100%;height:6.8dvh;display:flex;align-items:center;gap:1.6dvw;background:#dfe6ee;border-bottom:2px solid #b9c4d1;z-index:20;padding:0 2dvw;box-sizing:border-box;}
+  #typeSelect{flex:0 0 auto;font-size:var(--fs-body);font-weight:700;color:#1c4e8a;background:#fff;border:1.5px solid #2f6fc4;border-radius:8px;padding:.5dvh 1.6dvw;min-height:5dvh;}
+  #modeBar{flex:1 1 auto;display:flex;gap:1.4dvw;height:100%;align-items:center;}
+  .mode-btn{flex:1 1 0;font-size:var(--fs-mini);font-weight:700;padding:.4dvh .6dvw;border-radius:8px;border:1.5px solid #2f6fc4;background:#fff;color:#2f6fc4;cursor:pointer;transition:.15s;min-height:5dvh;line-height:1.15;}
+  .mode-btn.active{background:#2f6fc4;color:#fff;}
+
+  /* ---- Canvas area ---- */
+  #cvwrap{position:absolute;top:6.8dvh;left:0;width:100%;height:58dvh;}
+  canvas{display:block;width:100%;height:100%;}
+
+  /* ---- Sliders bar: replaces the draggable circular widget ---- */
+  #slidersbar{position:absolute;top:64.8dvh;left:0;width:100%;height:13.2dvh;display:flex;flex-direction:column;justify-content:center;gap:.4dvh;background:#eef2f6;border-top:1.5px solid #c7d0db;border-bottom:2px solid #b9c4d1;z-index:20;padding:.6dvh 3dvw;box-sizing:border-box;}
+  .slider-row{display:flex;align-items:center;gap:2dvw;width:100%;}
+  .slider-label{flex:0 0 auto;font-size:var(--fs-small);font-weight:700;color:#5b6b80;min-width:19dvw;}
+  .slider-row input[type=range]{flex:1 1 auto;height:5dvh;}
+  .slider-value{flex:0 0 auto;font-size:var(--fs-small);font-weight:700;min-width:13dvw;text-align:right;}
+
+  /* ---- Bottom bar ---- */
+  #bottombar{position:absolute;bottom:0;left:0;width:100%;height:22dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6dvh;background:#dfe6ee;border-top:2px solid #b9c4d1;z-index:20;padding:.8dvh 2dvw;box-sizing:border-box;}
+  #specialBtnGroup{display:flex;gap:1.6dvw;flex-wrap:wrap;align-items:center;justify-content:center;width:100%;row-gap:.6dvh;}
+  .special-btn{font-size:var(--fs-body);font-weight:700;padding:.7dvh 2.6dvw;min-height:5dvh;border-radius:10px;border:none;cursor:pointer;color:#fff;transition:.15s;box-shadow:0 2px 4px rgba(0,0,0,.15);opacity:0.55;}
+  .special-btn:active{transform:translateY(1px);}
+  .special-btn.on{opacity:1;box-shadow:0 0 0 3px rgba(0,0,0,.18) inset, 0 2px 4px rgba(0,0,0,.15);}
+  .special-btn:disabled{opacity:0.22;cursor:not-allowed;background:#9aa3ad !important;}
+  #bottomRow1{display:flex;align-items:center;justify-content:center;gap:1.6dvw;flex-wrap:wrap;width:100%;}
+  .act-btn{font-size:var(--fs-body);font-weight:700;padding:.7dvh 2.6dvw;min-height:5dvh;border-radius:10px;border:none;cursor:pointer;color:#fff;transition:.15s;box-shadow:0 2px 4px rgba(0,0,0,.15);}
+  .act-btn:active{transform:translateY(1px);}
+  #btnEmit{background:#b8860b;}
+  #btnEmit.on{background:#6e4e07;}
+  #btnAnswer{background:#c0392b;}
+  #btnAnswer.on{background:#7a2218;}
+  #btnReset{background:#8b8f99;}
+  .hint{font-size:var(--fs-small);color:#5b6b80;width:100%;text-align:center;line-height:1.3;}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="topbar">
+    <select id="typeSelect">
+      <option value="convexLens">凸透鏡</option>
+      <option value="concaveLens">凹透鏡</option>
+      <option value="concaveMirror">凹面鏡</option>
+      <option value="convexMirror">凸面鏡</option>
+    </select>
+    <div id="modeBar">
+      <button class="mode-btn active" data-mode="1">模式一<br>拖動平行光</button>
+      <button class="mode-btn" data-mode="2">模式二<br>設定入射光判斷</button>
+    </div>
+  </div>
+  <div id="cvwrap">
+    <canvas id="cv"></canvas>
+  </div>
+  <div id="slidersbar">
+    <div class="slider-row">
+      <span class="slider-label" id="slider1Label">寬度</span>
+      <input type="range" id="slider1" min="0" max="100" value="50">
+      <span class="slider-value" id="slider1Value"></span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label" id="slider2Label">角度</span>
+      <input type="range" id="slider2" min="-80" max="80" value="0">
+      <span class="slider-value" id="slider2Value"></span>
+    </div>
+  </div>
+  <div id="bottombar">
+    <div id="bottomRow1">
+      <div id="specialBtnGroup"></div>
+      <button class="act-btn" id="btnEmit" style="display:none;">顯示平行光</button>
+      <button class="act-btn" id="btnAnswer" style="display:none;">顯示正解路徑</button>
+      <button class="act-btn" id="btnReset">重設</button>
+    </div>
+    <span class="hint" id="modeHint"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+let W=0,H=0;
+function resize(){
+  const wrap = document.getElementById('cvwrap');
+  W = cv.width = wrap.clientWidth;
+  H = cv.height = wrap.clientHeight;
+  draw();
+  syncSlidersFromState();
+}
+window.addEventListener('resize', resize);
+
+/* ============================================================
+   CONSTANTS / TYPE TABLES
+   ============================================================ */
+const TYPES = ['convexLens','concaveLens','concaveMirror','convexMirror'];
+const TYPE_LABEL = {convexLens:'凸透鏡',concaveLens:'凹透鏡',concaveMirror:'凹面鏡',convexMirror:'凸面鏡'};
+const TYPE_KIND = {convexLens:'lens',concaveLens:'lens',concaveMirror:'mirror',convexMirror:'mirror'};
+const TYPE_CONVERGE = {convexLens:true, concaveLens:false, concaveMirror:true, convexMirror:false}; // true = real convergence, false = virtual
+// Signed focal length convention: convex lens / concave mirror (both real-converging) = +f;
+// concave lens / convex mirror (both virtual-diverging) = -f.
+const TYPE_FSIGN = {convexLens:1, concaveLens:-1, concaveMirror:1, convexMirror:-1};
+
+// Special-ray definitions per type. Each ray is independent of the draggable parallel beam's
+// angle (theta) -- these are the fixed, textbook-standard construction rays.
+// short: brief rule text shown next to the button label as the floating on-canvas annotation.
+const SPECIAL_RAY_DEFS = {
+  convexLens: [
+    {id:'parallel', label:'①平行主軸', color:'#2f6fc4', desc:'平行主軸入射 → 折射後過鏡後焦點 F', short:'→過F'},
+    {id:'focal',    label:'②過前焦點', color:'#1f8a4c', desc:'過鏡前焦點入射 → 折射後平行主軸', short:'→平行主軸'},
+    {id:'center',   label:'③過鏡心',  color:'#d4860a', desc:'過鏡心入射 → 不偏折，直線前進', short:'→不偏折'},
+  ],
+  concaveLens: [
+    {id:'parallel', label:'①平行主軸', color:'#2f6fc4', desc:'平行主軸入射 → 折射後反向虛延長線發散自鏡前焦點', short:"→虛延自F'"},
+    {id:'focal',    label:'②瞄準後焦點', color:'#1f8a4c', desc:'瞄準鏡後焦點方向入射 → 折射後平行主軸', short:'→平行主軸'},
+    {id:'center',   label:'③過鏡心',  color:'#d4860a', desc:'過鏡心入射 → 不偏折，直線前進', short:'→不偏折'},
+  ],
+  concaveMirror: [
+    {id:'parallel', label:'①平行主軸', color:'#2f6fc4', desc:'平行主軸入射 → 反射後過鏡前焦點 F', short:'→過F'},
+    {id:'focal',    label:'②過前焦點', color:'#1f8a4c', desc:'過鏡前焦點入射 → 反射後平行主軸', short:'→平行主軸'},
+    {id:'vertex',   label:'③過鏡心',  color:'#d4860a', desc:'入射於鏡心(頂點) → 入射角＝反射角，對稱主軸反射', short:'→入射角=反射角'},
+    {id:'center',   label:'④過圓心C', color:'#7b4fa3', desc:'過曲率中心 C 入射 → 沿原路徑垂直返回', short:'→原路徑返回'},
+  ],
+  convexMirror: [
+    {id:'parallel', label:'①平行主軸', color:'#2f6fc4', desc:'平行主軸入射 → 反射後反向虛延長線發散自鏡後焦點', short:'→虛延自F'},
+    {id:'focal',    label:'②瞄準後焦點', color:'#1f8a4c', desc:'瞄準鏡後焦點方向入射 → 反射後平行主軸', short:'→平行主軸'},
+    {id:'vertex',   label:'③過鏡心',  color:'#d4860a', desc:'入射於鏡心(頂點) → 入射角＝反射角，對稱主軸反射', short:'→入射角=反射角'},
+    {id:'center',   label:'④過圓心C', color:'#7b4fa3', desc:'瞄準曲率中心 C 入射 → 沿原路徑垂直返回', short:'→原路徑返回'},
+  ],
+};
+
+let state = {
+  type:'convexLens',
+  mode:1,
+  // mode1: beam reference point is fixed at the left edge (W*0.04, axisY); handleAngle/
+  // handleRadius (controls the parallel beam's half-width) are driven by sliders, not dragging.
+  handleAngle: 0, // radians, same convention as before (positive = travels up-right); starts at 0 so "平行主軸" is valid initially
+  handleRadius: null, // px, set on init/resize relative to canvas size; driven by slider1 in mode1
+  // mode2: sourcePos.x is fixed at originX-2.5f (see sourceX()); sourcePos.y is driven by
+  // slider1, srcHandleAngle by slider2.
+  sourcePos: null, // {x,y} -- x is overwritten by sourceX() every layout(), y is slider-driven
+  srcHandleAngle: -12*Math.PI/180, // gentle default angle: keeps the ray on-target for both lenses (larger halfH) and the smaller-halfH mirror in portrait
+  emitted:false,   // mode2: has user pressed "產生平行光"
+  showAnswer:false,
+  specialOn:{},    // map of rayId -> boolean, which special rays are toggled on
+};
+
+let f = 90; // focal length in px; recomputed in layout() so the visible half-span (origin to
+            // canvas edge) is always exactly 3.5x the focal length, keeping proportions linked.
+let originX, axisY;
+
+function layout(){
+  originX = W*0.5;
+  axisY = H*0.5;
+  f = (W*0.5)/3; // half-span W/2 = 3*f  =>  f = (W/2)/3 (compressed from 3.5f for mobile)
+  if(state.handleRadius===null){
+    state.handleRadius = Math.min(W,H)*0.10;
+  }
+  if(!state.sourcePos){
+    state.sourcePos = {x:0, y:H*0.5};
+  }
+  state.sourcePos.x = sourceX(); // always re-derive: fixed at originX-2.5f, tracks f if it changes
+}
+
+function radiusBounds(){
+  const m = Math.min(W,H);
+  return { min:m/12, max:m*0.5 };
+}
+
+const MIRROR_ARC_HALF_ANGLE = 28*Math.PI/180; // fixed, moderate angular half-span for mirror arcs
+const LENS_HEIGHT_RATIO = 0.95; // lens half-height as a multiple of f, keeps proportions sane at any aspect ratio
+function elementHalfHeight(){
+  if(TYPE_KIND[state.type]==='mirror'){
+    const R = 2*f;
+    return R*Math.sin(MIRROR_ARC_HALF_ANGLE);
+  }
+  return Math.min(f*LENS_HEIGHT_RATIO, H*0.42); // lens: scales with f, capped so it never
+  // overflows the canvas vertically on unusually short/squat viewports
+}
+function beamHalfWidth(){
+  // Mode1: user-adjustable via the control widget's radius handle, capped at the element's
+  // physical size. Mode2: no width-adjustment UI exists, so use the element's full physical
+  // half-height directly, ensuring the beam is wide enough to cover the special rays' likely
+  // range at typical angles.
+  if(state.mode===1) return Math.min(state.handleRadius, elementHalfHeight());
+  return elementHalfHeight();
+}
+
+/* ============================================================
+   LANDMARK POINTS
+   ============================================================ */
+function landmarks(){
+  const kind = TYPE_KIND[state.type];
+  const fsign = TYPE_FSIGN[state.type];
+  if(kind==='lens'){
+    return { Fback: originX+fsign*f, Ffront: originX-fsign*f };
+  } else {
+    return { F: originX-fsign*f, C: originX-fsign*2*f };
+  }
+}
+
+/* ============================================================
+   TAB / MODE SWITCH
+   ============================================================ */
+document.getElementById('typeSelect').addEventListener('change', (e)=>{
+  state.type = e.target.value;
+  resetInteraction();
+  rebuildSpecialButtons();
+  updateModeUI();
+  syncSlidersFromState();
+  draw();
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = parseInt(btn.dataset.mode);
+    resetInteraction();
+    updateModeUI();
+    syncSlidersFromState();
+    draw();
+  });
+});
+
+function resetInteraction(){
+  state.handleAngle = 0;
+  state.handleRadius = Math.min(W,H)*0.10;
+  state.srcHandleAngle = -12*Math.PI/180;
+  state.sourcePos = {x:sourceX(), y:H*0.5};
+  state.emitted = false;
+  state.showAnswer = false;
+  state.specialOn = {};
+}
+
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  resetInteraction();
+  rebuildSpecialButtons();
+  updateModeUI();
+  syncSlidersFromState();
+  draw();
+});
+
+function updateModeUI(){
+  const hint = document.getElementById('modeHint');
+  const btnEmit = document.getElementById('btnEmit');
+  const btnAnswer = document.getElementById('btnAnswer');
+  if(state.mode===1){
+    btnEmit.style.display='none';
+    btnAnswer.style.display='none';
+    hint.textContent = '用下方拉桿調整光束寬度與角度';
+  } else {
+    btnEmit.style.display='inline-block';
+    btnAnswer.style.display='inline-block';
+    btnEmit.textContent = state.emitted ? '隱藏平行光' : '顯示平行光';
+    btnEmit.classList.toggle('on', state.emitted);
+    hint.textContent = '用下方拉桿調整光源位置與入射角';
+  }
+}
+
+/* ============================================================
+   SPECIAL RAY BUTTONS (dynamic per type)
+   ============================================================ */
+function rebuildSpecialButtons(){
+  const group = document.getElementById('specialBtnGroup');
+  group.innerHTML = '';
+  const defs = SPECIAL_RAY_DEFS[state.type];
+  defs.forEach(def=>{
+    const btn = document.createElement('button');
+    btn.className = 'special-btn';
+    btn.textContent = def.label;
+    btn.style.background = def.color;
+    btn.dataset.rayId = def.id;
+    btn.addEventListener('click', ()=>{
+      state.specialOn[def.id] = !state.specialOn[def.id];
+      btn.classList.toggle('on', !!state.specialOn[def.id]);
+      draw();
+    });
+    group.appendChild(btn);
+  });
+  updateSpecialButtonValidity();
+}
+
+function updateSpecialButtonValidity(){
+  const group = document.getElementById('specialBtnGroup');
+  const defs = SPECIAL_RAY_DEFS[state.type];
+  defs.forEach(def=>{
+    const valid = isSpecialRayValid(def.id);
+    const btn = group.querySelector(`[data-ray-id="${def.id}"]`);
+    if(!btn) return;
+    btn.disabled = !valid;
+    if(!valid && state.specialOn[def.id]){
+      state.specialOn[def.id] = false;
+      btn.classList.remove('on');
+    }
+  });
+}
+
+// Compute the entry height h (positive = above axis) such that the bundle ray at the given
+// theta, passing through point (Px, axisY) on the axis, crosses the element plane there.
+function heightThroughAxisPoint(Px, theta){
+  const yAtElem = axisY - Math.tan(theta)*(originX-Px);
+  return axisY - yAtElem;
+}
+
+const PARALLEL_TOLERANCE_RAD = 1.5*Math.PI/180; // ~1.5 degrees snap tolerance for "theta ≈ 0"
+
+// Returns the entry height h for a given special ray under the CURRENT theta, or null if that
+// ray doesn't exist within the current beam (so its button should be disabled).
+function specialRayHeightFor(rayId){
+  const theta = currentAngle();
+  const kind = TYPE_KIND[state.type];
+  const lm = landmarks();
+  const apHalf = beamHalfWidth();
+
+  if(rayId==='parallel'){
+    if(Math.abs(theta) > PARALLEL_TOLERANCE_RAD) return null;
+    return 0; // when theta≈0, every ray is "parallel to axis"; use the central (h=0) ray
+  }
+  if(rayId==='center' && kind==='lens'){
+    return 0; // ray through optical center always exists (h=0)
+  }
+  if(rayId==='vertex'){
+    return 0; // ray through the mirror's vertex/pole always exists (h=0)
+  }
+  if(rayId==='focal'){
+    const target = kind==='lens' ? lm.Ffront : lm.F;
+    const h = heightThroughAxisPoint(target, theta);
+    return Math.abs(h) <= apHalf ? h : null;
+  }
+  if(rayId==='center' && kind==='mirror'){
+    const h = heightThroughAxisPoint(lm.C, theta);
+    return Math.abs(h) <= apHalf ? h : null;
+  }
+  return null;
+}
+
+function isSpecialRayValid(rayId){
+  return specialRayHeightFor(rayId) !== null;
+}
+
+/* ============================================================
+   SLIDER CONTROLS (replaces the draggable circular widget)
+   Mode1: slider1 = beam half-width (handleRadius), slider2 = angle (handleAngle).
+   Mode2: slider1 = point-source vertical position (sourcePos.y), slider2 = incident angle
+   (srcHandleAngle). sourcePos.x is fixed at originX-2.5f (not user-adjustable).
+   ============================================================ */
+const SOURCE_X_FACTOR = 2.5; // mode2 point source is fixed at originX - 2.5*f
+
+function sourceX(){ return originX - SOURCE_X_FACTOR*f; }
+
+// Returns the current beam/incident-ray angle in radians for whichever mode is active.
+// Replaces the old widgetAngle() now that there's no draggable widget.
+function currentAngle(){
+  return state.mode===1 ? state.handleAngle : state.srcHandleAngle;
+}
+
+function angleDeg(){
+  return Math.round(currentAngle()*180/Math.PI);
+}
+
+const slider1 = document.getElementById('slider1');
+const slider2 = document.getElementById('slider2');
+const slider1Label = document.getElementById('slider1Label');
+const slider2Label = document.getElementById('slider2Label');
+const slider1Value = document.getElementById('slider1Value');
+const slider2Value = document.getElementById('slider2Value');
+
+function syncSlidersFromState(){
+  const rb = radiusBounds();
+  if(state.mode===1){
+    slider1Label.textContent = '寬度';
+    slider1.min = Math.round(rb.min); slider1.max = Math.round(rb.max);
+    slider1.value = Math.round(state.handleRadius);
+    slider1Value.textContent = Math.round(state.handleRadius)+'px';
+    slider2Label.textContent = '角度';
+    slider2.min = -80; slider2.max = 80;
+    slider2.value = angleDeg();
+    slider2Value.textContent = angleDeg()+'°';
+  } else {
+    slider1Label.textContent = '上下位置';
+    const b = sourceYBounds();
+    slider1.min = Math.round(b.min); slider1.max = Math.round(b.max);
+    slider1.value = Math.round(state.sourcePos.y);
+    slider1Value.textContent = '';
+    slider2Label.textContent = '入射角';
+    slider2.min = -80; slider2.max = 80;
+    slider2.value = angleDeg();
+    slider2Value.textContent = angleDeg()+'°';
+  }
+}
+
+function sourceYBounds(){
+  return { min:H*0.12, max:H*0.88 };
+}
+
+slider1.addEventListener('input', ()=>{
+  if(state.mode===1){
+    state.handleRadius = clampRadius(parseFloat(slider1.value));
+    slider1Value.textContent = Math.round(state.handleRadius)+'px';
+  } else {
+    state.sourcePos.y = parseFloat(slider1.value);
+    state.showAnswer = false;
+  }
+  draw();
+});
+slider2.addEventListener('input', ()=>{
+  const theta = parseFloat(slider2.value)*Math.PI/180;
+  if(state.mode===1){
+    state.handleAngle = theta;
+  } else {
+    state.srcHandleAngle = theta;
+    state.showAnswer = false;
+  }
+  slider2Value.textContent = Math.round(parseFloat(slider2.value))+'°';
+  draw();
+});
+
+function clampRadius(r){
+  const rb = radiusBounds();
+  return Math.max(rb.min, Math.min(rb.max, r));
+}
+
+// Small fixed markers (no longer draggable) showing where the beam/source reference point is,
+// for visual context only.
+function drawSourceMarker(){
+  const isMode1 = state.mode===1;
+  const dotR = Math.max(16, Math.min(W,H)*0.022);
+  const x = isMode1 ? W*0.04 : sourceX();
+  const y = isMode1 ? axisY : state.sourcePos.y;
+  const color = isMode1 ? '#8b8f99' : '#c0392b';
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x,y,dotR,0,Math.PI*2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle='#fff';
+  ctx.lineWidth=2;
+  ctx.stroke();
+  if(!isMode1){
+    ctx.fillStyle='#fff';
+    ctx.font=`bold ${dotR*0.85}px sans-serif`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('光', x, y+1);
+    ctx.textBaseline='alphabetic';
+  }
+  ctx.restore();
+}
+
+document.getElementById('btnEmit').addEventListener('click', (e)=>{
+  state.emitted = !state.emitted;
+  e.target.textContent = state.emitted ? '隱藏平行光' : '顯示平行光';
+  e.target.classList.toggle('on', state.emitted);
+  draw();
+});
+
+document.getElementById('btnAnswer').addEventListener('click', (e)=>{
+  state.showAnswer = !state.showAnswer;
+  e.target.classList.toggle('on', state.showAnswer);
+  draw();
+});
+
+/* ============================================================
+   GENERIC DRAW HELPERS
+   ============================================================ */
+function drawDashedLine(x1,y1,x2,y2,color,width){
+  ctx.save();
+  ctx.setLineDash([7,6]);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=width||1.5;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  ctx.stroke();
+  ctx.restore();
+}
+function drawSolidLine(x1,y1,x2,y2,color,width){
+  ctx.save();
+  ctx.strokeStyle=color;
+  ctx.lineWidth=width||2;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+  ctx.stroke();
+  ctx.restore();
+}
+function drawArrowHead(x,y,angle,color,size){
+  size = size||9;
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(angle);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(-size,-size*0.42);
+  ctx.lineTo(-size,size*0.42);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+// Compute the length L such that the point (x0+dx*L, y0+dy*L) lies just beyond the canvas
+// bounds, so a ray drawn from (x0,y0) in direction (dx,dy) for length L visibly extends off
+// screen (used for special rays and the mode-2 "correct path", which should run to the edge
+// of the diagram rather than stop at an arbitrary fixed length).
+function extendLengthToEdge(x0,y0,dx,dy,margin){
+  margin = margin===undefined ? 40 : margin;
+  const candidates = [];
+  if(dx>1e-9) candidates.push((W+margin-x0)/dx);
+  else if(dx<-1e-9) candidates.push((-margin-x0)/dx);
+  if(dy>1e-9) candidates.push((H+margin-y0)/dy);
+  else if(dy<-1e-9) candidates.push((-margin-y0)/dy);
+  const positive = candidates.filter(t=>t>0 && isFinite(t));
+  return positive.length ? Math.min(...positive) : W; // fallback: W if direction is degenerate
+}
+// Direction of light travel (always +x, i.e. moving rightward toward the element) for a ray
+// whose line passes through (Px, axisY) and (originX, hitY).
+function travelDirThroughPoint(Px, hitY){
+  let dx = originX-Px, dy = hitY-axisY;
+  if(dx<0){ dx=-dx; dy=-dy; }
+  const n = Math.hypot(dx,dy)||1;
+  return [dx/n, dy/n];
+}
+
+/* ============================================================
+   DRAW OPTICAL ELEMENT
+   ============================================================ */
+function drawElement(){
+  const kind = TYPE_KIND[state.type];
+  const halfH = elementHalfHeight();
+  if(kind==='lens'){
+    const lw = state.type==='convexLens' ? 20 : 14;
+    ctx.save();
+    ctx.fillStyle='rgba(140,190,235,0.32)';
+    ctx.strokeStyle='#2f6fc4';
+    ctx.lineWidth=2.5;
+    ctx.beginPath();
+    if(state.type==='convexLens'){
+      ctx.moveTo(originX, axisY-halfH);
+      ctx.quadraticCurveTo(originX+lw, axisY, originX, axisY+halfH);
+      ctx.quadraticCurveTo(originX-lw, axisY, originX, axisY-halfH);
+    } else {
+      ctx.moveTo(originX-lw*0.55, axisY-halfH);
+      ctx.lineTo(originX+lw*0.55, axisY-halfH);
+      ctx.quadraticCurveTo(originX-lw*0.55, axisY, originX+lw*0.55, axisY+halfH);
+      ctx.lineTo(originX-lw*0.55, axisY+halfH);
+      ctx.quadraticCurveTo(originX+lw*0.55, axisY, originX-lw*0.55, axisY-halfH);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  } else {
+    // Mirror: arc of a circle with radius of curvature R=2f, centered at the optical center of
+    // curvature C. The vertex (pole) of the mirror sits exactly on the axis at (originX, axisY).
+    // IMPORTANT: ctx.arc(cx,cy,r,...) takes the CIRCLE'S CENTER (C), not the vertex -- the
+    // vertex is simply the point on the circle closest to/along the axis from C. Getting this
+    // backwards (e.g. passing the vertex as the arc center) is the classic bug to avoid here.
+    const R = 2*f;
+    const angleHalf = MIRROR_ARC_HALF_ANGLE;
+    ctx.save();
+    ctx.strokeStyle='#2f6fc4';
+    ctx.lineWidth=5;
+    ctx.beginPath();
+    if(state.type==='concaveMirror'){
+      // concave: center of curvature C is in FRONT of the mirror (left side, toward the
+      // incoming light), at cx = originX - R. The vertex (originX,axisY) lies on the circle at
+      // angle 0 relative to C (i.e. directly to C's right, since C is R to the left of vertex).
+      const cx = originX - R;
+      ctx.arc(cx, axisY, R, -angleHalf, angleHalf, false);
+    } else {
+      // convex: center of curvature C is BEHIND the mirror (right side), at cx = originX + R.
+      // The vertex lies at angle PI relative to C (directly to C's left).
+      const cx = originX + R;
+      ctx.arc(cx, axisY, R, Math.PI-angleHalf, Math.PI+angleHalf, false);
+    }
+    ctx.stroke();
+
+    // hatching (back-surface shading ticks) along the arc, evenly spaced by angle
+    ctx.strokeStyle='#9aa6b5';
+    ctx.lineWidth=1.3;
+    const n=10;
+    for(let i=0;i<=n;i++){
+      const a = -angleHalf + (2*angleHalf*i/n);
+      let xx, yy, backDir;
+      if(state.type==='concaveMirror'){
+        const cx = originX - R;
+        xx = cx + R*Math.cos(a);
+        yy = axisY + R*Math.sin(a);
+        backDir = 1;
+      } else {
+        const cx = originX + R;
+        xx = cx - R*Math.cos(a);
+        yy = axisY + R*Math.sin(a);
+        backDir = -1;
+      }
+      ctx.beginPath();
+      ctx.moveTo(xx,yy);
+      ctx.lineTo(xx+backDir*14, yy);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* ============================================================
+   DRAW AXIS, FOCAL PLANE, LABELS
+   ============================================================ */
+function drawAxisAndFocalPlanes(){
+  drawSolidLine(W*0.02, axisY, W*0.98, axisY, '#b0b8c2', 1.5);
+
+  const kind = TYPE_KIND[state.type];
+  const fsign = TYPE_FSIGN[state.type];
+  const spanFrac = 0.32; // half-span of the dashed focal-plane line, as a fraction of H
+  const labelY = axisY - H*spanFrac;
+
+  function drawOneFocalPlane(fx, labelText, labelYOverride){
+    drawDashedLine(fx, axisY-H*spanFrac, fx, axisY+H*spanFrac, '#999', 1.3);
+    ctx.fillStyle='#444';
+    ctx.font=`bold ${Math.max(14,H/28)}px sans-serif`;
+    ctx.textAlign='center';
+    ctx.fillText('焦平面', fx, (labelYOverride!==undefined?labelYOverride:labelY)-6);
+    ctx.beginPath();
+    ctx.arc(fx, axisY, 4.5, 0, Math.PI*2);
+    ctx.fillStyle='#c4622f';
+    ctx.fill();
+    ctx.font=`bold ${Math.max(16,H/22)}px sans-serif`;
+    ctx.fillStyle='#c4622f';
+    ctx.fillText(labelText, fx, axisY+22);
+  }
+
+  if(kind==='lens'){
+    const fBack = originX + fsign*f;   // 鏡後焦點 F
+    const fFront = originX - fsign*f;  // 鏡前焦點 F'
+    drawOneFocalPlane(fFront, "F'", labelY);
+    drawOneFocalPlane(fBack, 'F', labelY - H*0.05);
+  } else {
+    const fx = originX - fsign*f;
+    drawOneFocalPlane(fx, 'F', labelY);
+
+    // mark the center of curvature C (2x focal length), since mirrors only have one focal
+    // plane drawn above but C is an important second landmark on the axis. Placed BELOW the
+    // axis (unlike F, which is above) so the two labels never compete for the same horizontal
+    // band even when f is small and C/F end up close together (as in narrow portrait canvases).
+    const cx = originX - fsign*2*f;
+    ctx.beginPath();
+    ctx.arc(cx, axisY, 4.5, 0, Math.PI*2);
+    ctx.fillStyle='#7b4fa3';
+    ctx.fill();
+    placeLabel({x:cx, y:axisY+22+Math.max(16,H/22)+6}, 'C（2f）', '#7b4fa3', 'center');
+  }
+}
+
+/* ============================================================
+   FOCAL-PLANE CONVERGENCE POINT (for the draggable parallel beam)
+   ============================================================ */
+function focalConvergencePoint(theta){
+  const kind = TYPE_KIND[state.type];
+  const fsign = TYPE_FSIGN[state.type];
+  if(kind==='lens'){
+    const fx = originX + fsign*f;
+    const dx = fx - originX;
+    const py = axisY - Math.tan(theta)*dx;
+    return {x:fx, y:py};
+  } else {
+    const fx = originX - fsign*f;
+    const dx = fx - originX;
+    const py = axisY - Math.tan(theta)*(-dx);
+    return {x:fx, y:py};
+  }
+}
+
+/* ============================================================
+   MODE 1 / MODE 2 SHARED: dense parallel beam rendering
+   ============================================================ */
+function drawParallelBeam(theta, alphaScale, refPoint){
+  // alphaScale: 1 = normal opacity, <1 = faded (when special rays are highlighted)
+  // refPoint: optional {x,y} that the CENTER ray of the bundle passes through. Defaults to a
+  // point on the axis at the left edge (the historical mode-1 behavior). The bundle is built by
+  // offsetting perpendicular to the travel direction, which stays well-behaved at any angle
+  // (unlike offsetting vertically at a fixed entry x, which can shear the whole bundle off-screen
+  // at steep angles).
+  const kind = TYPE_KIND[state.type];
+  const converges = TYPE_CONVERGE[state.type];
+  const P = focalConvergencePoint(theta);
+  const apHalf = beamHalfWidth();
+  const N = 27;
+  const ref = refPoint || {x:W*0.04, y:axisY};
+  const cosT = Math.cos(theta), sinT = Math.sin(theta);
+  const perpX = sinT, perpY = cosT; // perpendicular to travel direction (cosT,-sinT)
+
+  ctx.save();
+  for(let i=0;i<N;i++){
+    const t = (i/(N-1))*2-1;
+    const s = t*apHalf;
+    const srcX = ref.x + s*perpX, srcY = ref.y + s*perpY;
+    // advance along travel direction until reaching the element plane x=originX
+    if(Math.abs(cosT) < 1e-6) continue; // degenerate (ray exactly vertical), skip
+    const travelT = (originX - srcX)/cosT;
+    if(travelT <= 0) continue; // element is behind this ray's start, skip
+    const yAtElem = srcY - travelT*sinT;
+    if(Math.abs(yAtElem-axisY) > elementHalfHeight()) continue; // misses the element's visible extent
+
+    const alpha = 0.8*alphaScale;
+    ctx.strokeStyle = `rgba(255,193,7,${alpha})`;
+    ctx.lineWidth = 1.4;
+
+    ctx.beginPath();
+    ctx.moveTo(srcX, srcY);
+    ctx.lineTo(originX, yAtElem);
+    ctx.stroke();
+
+    if(kind==='lens'){
+      if(converges){
+        const dirx = P.x-originX, diry = P.y-yAtElem;
+        const norm = Math.hypot(dirx,diry)||1;
+        const ux=dirx/norm, uy=diry/norm;
+        const extraLen = W*0.12; // extend a bit further past the convergence point
+        const endX = P.x+ux*extraLen, endY = P.y+uy*extraLen;
+        ctx.beginPath();
+        ctx.moveTo(originX,yAtElem);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      } else {
+        const dirx = originX-P.x, diry = yAtElem-P.y;
+        const norm = Math.hypot(dirx,diry)||1;
+        const ux=dirx/norm, uy=diry/norm;
+        const outLen = W*0.55;
+        ctx.beginPath();
+        ctx.moveTo(originX,yAtElem);
+        ctx.lineTo(originX+ux*outLen, yAtElem+uy*outLen);
+        ctx.stroke();
+        drawDashedLine(originX, yAtElem, P.x, P.y, `rgba(160,160,160,${alpha*0.55})`, 1);
+      }
+    } else {
+      if(converges){
+        const dirx = P.x-originX, diry = P.y-yAtElem;
+        const norm = Math.hypot(dirx,diry)||1;
+        const ux=dirx/norm, uy=diry/norm;
+        const extraLen = W*0.12;
+        const endX = P.x+ux*extraLen, endY = P.y+uy*extraLen;
+        ctx.beginPath();
+        ctx.moveTo(originX,yAtElem);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      } else {
+        const dirx = originX-P.x, diry = yAtElem-P.y;
+        const norm = Math.hypot(dirx,diry)||1;
+        const ux=dirx/norm, uy=diry/norm;
+        const outLen = W*0.4;
+        ctx.beginPath();
+        ctx.moveTo(originX,yAtElem);
+        ctx.lineTo(originX+ux*outLen, yAtElem+uy*outLen);
+        ctx.stroke();
+        drawDashedLine(originX, yAtElem, P.x, P.y, `rgba(160,160,160,${alpha*0.55})`, 1);
+      }
+    }
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(P.x,P.y,5.5,0,Math.PI*2);
+  ctx.fillStyle = converges ? '#1f8a4c' : '#b14a4a';
+  ctx.globalAlpha = Math.max(alphaScale,0.4);
+  ctx.fill();
+  ctx.restore();
+  placeLabel({x:P.x+60, y:P.y-8}, converges?'真實會聚點':'虛擬會聚點', converges ? '#1f8a4c' : '#b14a4a', 'left');
+
+  return P;
+}
+
+/* ============================================================
+   SPECIAL RAYS (fixed, independent constructions)
+   ============================================================ */
+function anySpecialOn(){
+  return Object.values(state.specialOn).some(v=>v);
+}
+
+/* ============================================================
+   LABEL COLLISION AVOIDANCE (shared across special rays + control widget)
+   ============================================================ */
+let placedLabels = [];
+function resetLabelLayout(){ placedLabels = []; }
+function placeLabel(pt, text, color, align){
+  align = align || 'center';
+  const fontPx = Math.max(14,H/28);
+  const estWidth = text.length * fontPx * 0.92; // rough but safe overestimate for CJK-heavy text
+  const margin = W*0.03;
+  let x = pt.x, y = Math.min(Math.max(pt.y, H*0.07), H*0.95);
+  // clamp x so the FULL rendered text stays within [margin, W-margin], not just the anchor point
+  if(align==='left'){
+    x = Math.min(Math.max(x, margin), W-margin-estWidth);
+  } else if(align==='right'){
+    x = Math.max(Math.min(x, W-margin), margin+estWidth);
+  } else { // center
+    x = Math.min(Math.max(x, margin+estWidth/2), W-margin-estWidth/2);
+  }
+  let p = {x, y};
+  const lineH = fontPx*1.3;
+  const collisionDist = fontPx*4.5; // scales with font size so dense labels still separate cleanly
+  let guard = 0;
+  while(placedLabels.some(L=>Math.hypot(L.x-p.x,L.y-p.y) < collisionDist) && guard < 8){
+    p = {x:p.x, y:p.y + lineH};
+    guard++;
+  }
+  placedLabels.push(p);
+  ctx.save();
+  ctx.font=`bold ${fontPx}px sans-serif`;
+  ctx.textAlign = align;
+  ctx.fillStyle = color;
+  ctx.fillText(text, p.x, p.y);
+  ctx.restore();
+}
+
+function drawSpecialRays(){
+  const defs = SPECIAL_RAY_DEFS[state.type];
+  const kind = TYPE_KIND[state.type];
+  const converges = TYPE_CONVERGE[state.type];
+  const theta = currentAngle();
+  const P = focalConvergencePoint(theta);
+
+  defs.forEach(def=>{
+    if(!state.specialOn[def.id]) return;
+    const h = specialRayHeightFor(def.id);
+    if(h===null) return; // shouldn't happen (button would be disabled), but stay safe
+
+    const hitY = axisY - h;
+    const hit = {x:originX, y:hitY};
+
+    ctx.save();
+    ctx.strokeStyle = def.color;
+    ctx.fillStyle = def.color;
+    ctx.lineWidth = 2.8;
+
+    // incoming segment: straight line at the bundle's angle theta, through the hit point,
+    // extended off the left edge of the canvas (direction is (-cos theta, sin theta), i.e.
+    // backward along the travel direction).
+    const inDirX = -Math.cos(theta), inDirY = Math.sin(theta);
+    const inLen = extendLengthToEdge(hit.x, hit.y, inDirX, inDirY);
+    const entryPt = {x: hit.x+inDirX*inLen, y: hit.y+inDirY*inLen};
+    drawSolidLine(entryPt.x, entryPt.y, hit.x, hit.y, def.color, 2.8);
+    drawArrowHead(hit.x, hit.y, Math.atan2(-inDirY,-inDirX), def.color, 9);
+
+    // outgoing segment: same rule as the main parallel beam (reuse focalConvergencePoint P),
+    // extended until it visibly exits the canvas.
+    let outEnd;
+    if(converges){
+      const dirx=P.x-originX, diry=P.y-hitY;
+      const norm=Math.hypot(dirx,diry)||1, ux=dirx/norm, uy=diry/norm;
+      const L = extendLengthToEdge(hit.x,hit.y,ux,uy);
+      outEnd = {x:hit.x+ux*L, y:hit.y+uy*L};
+      drawSolidLine(hit.x,hit.y, outEnd.x, outEnd.y, def.color, 2.8);
+      drawArrowHead(hit.x+ux*L*0.5, hit.y+uy*L*0.5, Math.atan2(uy,ux), def.color, 9);
+    } else {
+      const dirx=originX-P.x, diry=hitY-P.y;
+      const norm=Math.hypot(dirx,diry)||1, ux=dirx/norm, uy=diry/norm;
+      const L = extendLengthToEdge(hit.x,hit.y,ux,uy);
+      outEnd = {x:hit.x+ux*L, y:hit.y+uy*L};
+      drawSolidLine(hit.x,hit.y, outEnd.x, outEnd.y, def.color, 2.8);
+      drawArrowHead(hit.x+ux*L*0.5, hit.y+uy*L*0.5, Math.atan2(uy,ux), def.color, 9);
+      drawDashedLine(hit.x,hit.y,P.x,P.y, def.color, 1.8);
+    }
+
+    placeLabel({x:outEnd.x, y:outEnd.y-14}, def.label+def.short, def.color);
+    ctx.restore();
+  });
+}
+
+/* ============================================================
+   MODE 1: draggable parallel beam + special rays
+   ============================================================ */
+function drawMode1(){
+  const hasSpecial = anySpecialOn();
+  drawParallelBeam(state.handleAngle, hasSpecial ? 0.45 : 1);
+  if(hasSpecial) drawSpecialRays();
+  drawSourceMarker();
+}
+
+/* ============================================================
+   MODE 2: single set incident ray, judge refraction/reflection
+   ============================================================ */
+function drawMode2(){
+  const kind = TYPE_KIND[state.type];
+  const converges = TYPE_CONVERGE[state.type];
+  const theta = state.srcHandleAngle;
+
+  const srcX = sourceX();
+  const srcY = state.sourcePos.y;
+
+  const yAtElem = srcY - Math.tan(theta)*(originX-srcX);
+  const hasSpecial = anySpecialOn();
+  const hitsElement = Math.abs(yAtElem-axisY) <= elementHalfHeight();
+
+  // "顯示/隱藏平行光": state.emitted now acts as a toggle for the parallel-beam bundle,
+  // independent of the single incident ray which is always visible.
+  if(state.emitted){
+    drawParallelBeam(theta, hasSpecial ? 0.45 : 0.85, {x:srcX, y:srcY});
+  }
+
+  if(!hitsElement){
+    ctx.save();
+    ctx.fillStyle='#b14a4a';
+    ctx.font=`bold ${Math.max(14,H/28)}px sans-serif`;
+    ctx.textAlign='center';
+    ctx.fillText('入射光未命中鏡面，請調整角度', W/2, H*0.22);
+    ctx.restore();
+  }
+
+  drawSolidLine(srcX, srcY, originX, yAtElem, '#c0392b', 2.4);
+  drawArrowHead(originX, yAtElem, Math.atan2(yAtElem-srcY, originX-srcX), '#c0392b', 9);
+  drawSourceMarker();
+
+  if(state.showAnswer && hitsElement){
+    const P = focalConvergencePoint(theta);
+    ctx.save();
+    if(kind==='lens'){
+      if(converges){
+        const dirx=P.x-originX, diry=P.y-yAtElem;
+        const norm=Math.hypot(dirx,diry)||1, ux=dirx/norm, uy=diry/norm;
+        const L = extendLengthToEdge(originX,yAtElem,ux,uy);
+        drawSolidLine(originX,yAtElem, originX+ux*L, yAtElem+uy*L, '#c0392b', 2.4);
+        drawArrowHead(originX+ux*L*0.5, yAtElem+uy*L*0.5, Math.atan2(uy,ux), '#c0392b', 10);
+      } else {
+        const dirx=originX-P.x, diry=yAtElem-P.y;
+        const norm=Math.hypot(dirx,diry)||1, ux=dirx/norm, uy=diry/norm;
+        const L = extendLengthToEdge(originX,yAtElem,ux,uy);
+        drawSolidLine(originX,yAtElem, originX+ux*L, yAtElem+uy*L, '#c0392b', 2.4);
+        drawArrowHead(originX+ux*L*0.5, yAtElem+uy*L*0.5, Math.atan2(uy,ux), '#c0392b', 10);
+        drawDashedLine(originX,yAtElem,P.x,P.y,'rgba(177,74,74,0.6)',1.8);
+      }
+    } else {
+      if(converges){
+        const dirx=P.x-originX, diry=P.y-yAtElem;
+        const norm=Math.hypot(dirx,diry)||1, ux=dirx/norm, uy=diry/norm;
+        const L = extendLengthToEdge(originX,yAtElem,ux,uy);
+        drawSolidLine(originX,yAtElem, originX+ux*L, yAtElem+uy*L, '#c0392b', 2.4);
+        drawArrowHead(originX+ux*L*0.5, yAtElem+uy*L*0.5, Math.atan2(uy,ux), '#c0392b', 10);
+      } else {
+        const dirx=originX-P.x, diry=yAtElem-P.y;
+        const norm=Math.hypot(dirx,diry)||1, ux=dirx/norm, uy=diry/norm;
+        const L = extendLengthToEdge(originX,yAtElem,ux,uy);
+        drawSolidLine(originX,yAtElem, originX+ux*L, yAtElem+uy*L, '#c0392b', 2.4);
+        drawArrowHead(originX+ux*L*0.5, yAtElem+uy*L*0.5, Math.atan2(uy,ux), '#c0392b', 10);
+        drawDashedLine(originX,yAtElem,P.x,P.y,'rgba(177,74,74,0.6)',1.8);
+      }
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(P.x,P.y,5.5,0,Math.PI*2);
+    ctx.fillStyle = '#c0392b';
+    ctx.fill();
+    ctx.font=`bold ${Math.max(14,H/28)}px sans-serif`;
+    ctx.fillStyle = '#c0392b';
+    ctx.textAlign='left';
+    ctx.fillText(converges?'會聚於焦平面':'虛延長交焦平面', P.x+10, P.y-8);
+    ctx.restore();
+  }
+
+  if(hasSpecial) drawSpecialRays();
+}
+
+/* ============================================================
+   MAIN DRAW
+   ============================================================ */
+function draw(){
+  if(!W||!H) return;
+  ctx.clearRect(0,0,W,H);
+  layout();
+  resetLabelLayout();
+  updateSpecialButtonValidity();
+  drawAxisAndFocalPlanes();
+  drawElement();
+  ctx.save();
+  ctx.fillStyle='#1c4e8a';
+  ctx.font=`bold ${Math.max(16,H/22)}px sans-serif`;
+  ctx.textAlign='left';
+  ctx.fillText(TYPE_LABEL[state.type], W*0.02, H*0.07);
+  ctx.restore();
+
+  if(state.mode===1){
+    drawMode1();
+  } else {
+    drawMode2();
+  }
+}
+
+rebuildSpecialButtons();
+updateModeUI();
+resize();
+})();
+</script>
+</body>
+</html>
