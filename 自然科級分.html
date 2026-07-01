@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學測自然科級分分布（113-115學年度）｜電子白板版</title>
+<style>
+  :root{
+    --fs-title: clamp(20px, 2.2vw, 42px);
+    --fs-body:  clamp(16px, 1.7vw, 34px);
+    --fs-small: clamp(13px, 1.3vw, 26px);
+    --fs-mini:  clamp(11px, 1.05vw, 21px);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    width:100vw;height:100vh;
+    overflow:hidden;
+    background:#0f1117;
+    color:#eee;
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  body{display:flex;flex-direction:column;}
+
+  header{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:1.4vh 2vw 0.8vh 2vw;
+  }
+  header h1{
+    margin:0;
+    font-size:var(--fs-title);
+    font-weight:700;
+    color:#fafafa;
+    letter-spacing:1px;
+  }
+  header .sub{
+    font-size:var(--fs-small);
+    color:#8a92a3;
+  }
+
+  .tabs{
+    display:flex;
+    flex-shrink:0;
+    margin:0 2vw;
+    background:#181b24;
+    border-radius:12px;
+    padding:0.6vh;
+    gap:0.6vw;
+  }
+  .tab{
+    flex:1;
+    text-align:center;
+    padding:1.1vh 0;
+    font-size:var(--fs-body);
+    font-weight:600;
+    color:#9aa3b5;
+    border-radius:9px;
+    transition:all .15s ease;
+    cursor:pointer;
+  }
+  .tab.active{
+    background:linear-gradient(135deg,#4fc3f7,#2d8fd6);
+    color:#0f1117;
+  }
+
+  .main{
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    gap:1.4vw;
+    padding:1.4vh 2vw 1.6vh 2vw;
+  }
+
+  .chart-panel{
+    flex:0 0 68%;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    background:#14171f;
+    border-radius:14px;
+    padding:1.2vh 1.2vw;
+  }
+  .peak-note{
+    flex-shrink:0;
+    text-align:center;
+    font-size:var(--fs-small);
+    color:#f4c542;
+    margin-bottom:0.4vh;
+  }
+  .chart-wrap{
+    flex:1;
+    min-height:0;
+    position:relative;
+  }
+  canvas{width:100%;height:100%;display:block;}
+
+  .side-panel{
+    flex:0 0 30%;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:1.2vh;
+    overflow:hidden;
+  }
+
+  .card-block{
+    background:#14171f;
+    border-radius:14px;
+    padding:1.2vh 1.2vw;
+  }
+  .card-block h2{
+    margin:0 0 1vh 0;
+    font-size:var(--fs-small);
+    color:#8a92a3;
+    font-weight:600;
+  }
+
+  .standards{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:0.6vw;
+  }
+  .std-card{
+    background:#1e2230;
+    border-radius:8px;
+    padding:1vh 0.3vw;
+    text-align:center;
+  }
+  .std-card .name{
+    font-size:var(--fs-mini);
+    color:#8a92a3;
+  }
+  .std-card .val{
+    font-size:var(--fs-body);
+    font-weight:700;
+    margin-top:0.3vh;
+    color:#fafafa;
+  }
+
+  .jiuji-row{
+    margin-top:1vh;
+    background:#1e2230;
+    border-radius:8px;
+    padding:1vh 1vw;
+    display:flex;
+    align-items:baseline;
+    gap:0.5vw;
+    flex-wrap:wrap;
+  }
+  .jiuji-label{
+    font-size:var(--fs-small);
+    color:#8a92a3;
+    white-space:nowrap;
+  }
+  .jiuji-val{
+    font-size:var(--fs-title);
+    font-weight:700;
+    color:#4fc3f7;
+  }
+  .jiuji-unit{
+    font-size:var(--fs-mini);
+    color:#5a6070;
+  }
+
+  .legend{
+    display:flex;
+    flex-direction:column;
+    gap:0.8vh;
+  }
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:0.7vw;
+    font-size:var(--fs-small);
+    color:#c7cdd9;
+  }
+  .swatch{
+    width:1.6vw;height:1.6vw;
+    min-width:16px;min-height:16px;
+    border-radius:4px;
+    flex-shrink:0;
+  }
+
+  .source-note{
+    margin-top:auto;
+    font-size:var(--fs-mini);
+    color:#5a6070;
+    line-height:1.5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>學測自然科　級分人數百分比分布</h1>
+  <div class="sub">近三學年度比較（113 / 114 / 115 學年度）</div>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="main">
+  <div class="chart-panel">
+    <div class="peak-note" id="peakNote"></div>
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="card-block">
+      <h2>五標成績標準</h2>
+      <div class="standards" id="standards"></div>
+      <div class="jiuji-row">
+        <span class="jiuji-label">本年度自然科級距</span>
+        <span class="jiuji-val" id="jiujiVal">—</span>
+        <span class="jiuji-unit">分／級　（滿分128分，取前1%平均÷15）</span>
+      </div>
+      <div class="jiuji-row" style="margin-top:0.6vh;">
+        <span class="jiuji-label">自然科到考人數</span>
+        <span class="jiuji-val" id="totalVal">—</span>
+        <span class="jiuji-unit">人</span>
+      </div>
+      <div class="jiuji-row" style="margin-top:0.6vh;">
+        <span class="jiuji-label">每 10% ≈</span>
+        <span class="jiuji-val" id="tenPctVal">—</span>
+        <span class="jiuji-unit">人　（圖表橫軸每格實際人數參考）</span>
+      </div>
+    </div>
+    <div class="card-block" style="flex:1;display:flex;flex-direction:column;">
+      <h2>級距色帶</h2>
+      <div class="legend" id="legend"></div>
+      <div class="source-note">五標定義：頂標88百分位／前標75／均標50／後標25／底標12百分位。<br>資料來源：大考中心「113/114/115學年度學測各科級分人數百分比累計表」正式公告。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 資料來源：大考中心「各科級分人數百分比累計表」正式公告（113/114/115學年度學測自然考科）
+const DATA = {
+  "113": {
+    values: [0.01,0.01,0.36,2.63,5.74,7.84,8.71,9.05,9.62,9.94,9.80,9.78,8.85,8.06,6.12,3.48],
+    standards: {頂標:13, 前標:12, 均標:9, 後標:6, 底標:5},
+    peak: 9,
+    jiuji: 8.039,
+    total: 75680
+  },
+  "114": {
+    values: [0.00,0.01,0.25,2.09,5.17,7.18,8.32,8.61,9.31,9.38,10.02,10.37,10.00,8.99,6.84,3.46],
+    standards: {頂標:13, 前標:12, 均標:9, 後標:7, 底標:5},
+    peak: 11,
+    jiuji: 7.875,
+    total: 77520
+  },
+  "115": {
+    values: [0.01,0.02,0.50,3.14,5.66,6.79,7.46,8.08,9.16,10.17,11.27,11.01,10.07,8.06,5.61,2.99],
+    standards: {頂標:13, 前標:12, 均標:9, 後標:7, 底標:5},
+    peak: 10,
+    jiuji: 7.905,
+    total: 78382
+  }
+};
+// 級距色帶（由低到高）
+const BANDS = [
+  {label:"底標以下",   color:"#3a3f4d"},
+  {label:"底標～後標",  color:"#4a5578"},
+  {label:"後標～均標",  color:"#3f7ca6"},
+  {label:"均標～前標",  color:"#3fa693"},
+  {label:"前標～頂標",  color:"#e0b23f"},
+  {label:"頂標以上",   color:"#e0653f"}
+];
+
+let current = "115";
+const years = ["113","114","115"];
+
+const tabsEl = document.getElementById("tabs");
+years.forEach(y=>{
+  const d = document.createElement("div");
+  d.className = "tab" + (y===current?" active":"");
+  d.textContent = y + "學年度";
+  d.dataset.year = y;
+  d.onclick = ()=>{ current=y; render(); };
+  tabsEl.appendChild(d);
+});
+
+function bandIndex(level, std){
+  if(level >= std.頂標) return 5;
+  if(level >= std.前標) return 4;
+  if(level >= std.均標) return 3;
+  if(level >= std.後標) return 2;
+  if(level >= std.底標) return 1;
+  return 0;
+}
+
+function render(){
+  [...tabsEl.children].forEach(c=>{
+    c.classList.toggle("active", c.dataset.year===current);
+  });
+
+  const d = DATA[current];
+  document.getElementById("peakNote").textContent =
+    "★ 人數高峰：" + d.peak + " 級分（" + d.values[d.peak].toFixed(2) + "%）";
+
+  const legendEl = document.getElementById("legend");
+  legendEl.innerHTML = "";
+  BANDS.forEach(b=>{
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = '<span class="swatch" style="background:'+b.color+'"></span>' + b.label;
+    legendEl.appendChild(item);
+  });
+
+  const stEl = document.getElementById("standards");
+  stEl.innerHTML = "";
+  const order = ["頂標","前標","均標","後標","底標"];
+  order.forEach(name=>{
+    const card = document.createElement("div");
+    card.className = "std-card";
+    card.innerHTML = '<div class="name">'+name+'</div><div class="val">'+d.standards[name]+'</div>';
+    stEl.appendChild(card);
+  });
+
+  document.getElementById("jiujiVal").textContent = d.jiuji.toFixed(3);
+  document.getElementById("totalVal").textContent = d.total.toLocaleString();
+  document.getElementById("tenPctVal").textContent = Math.round(d.total * 0.1).toLocaleString();
+
+  drawChart(d);
+}
+
+function drawChart(d){
+  const canvas = document.getElementById("chart");
+  const wrap = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = wrap.clientWidth;
+  const cssH = wrap.clientHeight;
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  // 電子白板canvas文字規範：標題級 Math.max(16,H/22)、內文級 Math.max(14,H/28)
+  const titleFont = Math.max(16, cssH/22);
+  const bodyFont  = Math.max(14, cssH/28);
+
+  const values = d.values;
+  const maxVal = Math.max(...values);
+  const n = values.length; // 0~15 => 16
+
+  const padLeft = cssW*0.06;
+  const padRight = cssW*0.015;
+  const padTop = cssH*0.12;
+  const padBottom = cssH*0.11;
+  const plotW = cssW - padLeft - padRight;
+  const plotH = cssH - padTop - padBottom;
+
+  const barGap = plotW / n * 0.18;
+  const barW = plotW / n - barGap;
+
+  // y grid
+  ctx.strokeStyle = "#242836";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "#5a6070";
+  ctx.font = bodyFont + "px sans-serif";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  const gridStep = maxVal > 8 ? 2 : 1;
+  for(let g=0; g<=Math.ceil(maxVal)+1; g+=gridStep){
+    const y = padTop + plotH - (g/ (Math.ceil(maxVal)+1)) * plotH;
+    ctx.beginPath();
+    ctx.moveTo(padLeft, y);
+    ctx.lineTo(cssW-padRight, y);
+    ctx.stroke();
+    ctx.fillText(g+"%", padLeft-6, y);
+  }
+
+  // bars
+  for(let i=0;i<n;i++){
+    const level = i;
+    const v = values[i];
+    const x = padLeft + i*(barW+barGap) + barGap/2;
+    const h = (v/(Math.ceil(maxVal)+1)) * plotH;
+    const y = padTop + plotH - h;
+    const bi = bandIndex(level, d.standards);
+    ctx.fillStyle = BANDS[bi].color;
+    ctx.fillRect(x, y, barW, h);
+
+    if(level === d.peak){
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, barW, h);
+    }
+
+    ctx.fillStyle = "#dfe3ea";
+    ctx.font = bodyFont*0.85 + "px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(v.toFixed(1), x+barW/2, y-3);
+
+    ctx.fillStyle = "#9aa3b5";
+    ctx.font = bodyFont + "px sans-serif";
+    ctx.textBaseline = "top";
+    ctx.fillText(level, x+barW/2, padTop+plotH+6);
+  }
+
+  ctx.fillStyle = "#5a6070";
+  ctx.font = bodyFont + "px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("級分", padLeft+plotW/2, cssH-4);
+
+  // 五標 vertical marker lines
+  const stdNames = ["底標","後標","均標","前標","頂標"];
+  ctx.textBaseline = "alphabetic";
+  const drawnLevels = {};
+  stdNames.forEach((name)=>{
+    const lvl = d.standards[name];
+    const x = padLeft + lvl*(barW+barGap) + barGap/2 + barW/2;
+    ctx.strokeStyle = "rgba(255,255,255,0.55)";
+    ctx.setLineDash([4,4]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, padTop*0.2);
+    ctx.lineTo(x, padTop+plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if(!drawnLevels[lvl]) drawnLevels[lvl] = [];
+    drawnLevels[lvl].push(name);
+  });
+  ctx.textAlign = "center";
+  ctx.font = "bold " + titleFont*0.62 + "px sans-serif";
+  Object.keys(drawnLevels).forEach(lvl=>{
+    const level = parseInt(lvl);
+    const x = padLeft + level*(barW+barGap) + barGap/2 + barW/2;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(drawnLevels[lvl].join("/"), x, padTop*0.62);
+  });
+}
+
+render();
+window.addEventListener("resize", render);
+</script>
+</body>
+</html>
