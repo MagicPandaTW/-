@@ -140,35 +140,40 @@
     color:#fafafa;
   }
 
-  .jiuji-row{
-    margin-top:1vh;
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:0.5vw;
+    margin-top:0.8vh;
+  }
+  .stat-cell{
     background:#1e2230;
     border-radius:8px;
-    padding:1vh 1vw;
-    display:flex;
-    align-items:baseline;
-    gap:0.5vw;
-    flex-wrap:wrap;
+    padding:1.2vh 0.4vw;
+    text-align:center;
   }
-  .jiuji-label{
-    font-size:var(--fs-small);
+  .stat-cell .s-label{
+    font-size:var(--fs-mini);
     color:#8a92a3;
     white-space:nowrap;
   }
-  .jiuji-val{
-    font-size:var(--fs-title);
+  .stat-cell .s-val{
+    font-size:clamp(18px, 2.1vw, 40px);
     font-weight:700;
     color:#4fc3f7;
+    margin-top:0.3vh;
+    line-height:1.1;
   }
-  .jiuji-unit{
+  .stat-cell .s-unit{
     font-size:var(--fs-mini);
     color:#5a6070;
+    margin-top:0.1vh;
   }
 
   .legend{
-    display:flex;
-    flex-direction:column;
-    gap:0.8vh;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0.6vh 0.4vw;
   }
   .legend-item{
     display:flex;
@@ -213,26 +218,28 @@
     <div class="card-block">
       <h2>五標成績標準</h2>
       <div class="standards" id="standards"></div>
-      <div class="jiuji-row">
-        <span class="jiuji-label">本年度自然科級距</span>
-        <span class="jiuji-val" id="jiujiVal">—</span>
-        <span class="jiuji-unit">分／級　（滿分128分，取前1%平均÷15）</span>
-      </div>
-      <div class="jiuji-row" style="margin-top:0.6vh;">
-        <span class="jiuji-label">自然科到考人數</span>
-        <span class="jiuji-val" id="totalVal">—</span>
-        <span class="jiuji-unit">人</span>
-      </div>
-      <div class="jiuji-row" style="margin-top:0.6vh;">
-        <span class="jiuji-label">每 10% ≈</span>
-        <span class="jiuji-val" id="tenPctVal">—</span>
-        <span class="jiuji-unit">人　（圖表橫軸每格實際人數參考）</span>
+      <div class="stat-grid">
+        <div class="stat-cell">
+          <div class="s-label">自然科級距</div>
+          <div class="s-val" id="jiujiVal">—</div>
+          <div class="s-unit">分／級</div>
+        </div>
+        <div class="stat-cell">
+          <div class="s-label">到考人數</div>
+          <div class="s-val" id="totalVal">—</div>
+          <div class="s-unit">人</div>
+        </div>
+        <div class="stat-cell">
+          <div class="s-label">每 10% ≈</div>
+          <div class="s-val" id="tenPctVal">—</div>
+          <div class="s-unit">人</div>
+        </div>
       </div>
     </div>
-    <div class="card-block" style="flex:1;display:flex;flex-direction:column;">
+    <div style="flex:1;min-height:1.5vh;"></div>
+    <div class="card-block">
       <h2>級距色帶</h2>
       <div class="legend" id="legend"></div>
-      <div class="source-note">五標定義：頂標88百分位／前標75／均標50／後標25／底標12百分位。<br>資料來源：大考中心「113/114/115學年度學測各科級分人數百分比累計表」正式公告。</div>
     </div>
   </div>
 </div>
