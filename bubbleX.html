@@ -98,7 +98,7 @@
   <div class="tool mute" id="tMute" tabindex="0"><span class="ico" id="muteIco">🔊</span></div>
 </div>
 
-<footer>手機平板：左右<b>拖曳</b>調整角度，放開就發射（點一下不會亂跳）<br>清到剩三顆以下觸發 🔥 獎勵時間 · 按住可連射 · ⏸ 隨時暫停拿密碼
+<footer>手機平板：左右<b>拖曳</b>調整角度，放開就發射（點一下不會亂跳）<br>清到剩三顆以下觸發 🔥 獎勵時間 · 音樂每八小節就會自己變化
 
 <script>
 (function(){
@@ -116,6 +116,7 @@ const COLS = 11, R = 20, D = 40;
 const ROWH = D*Math.sqrt(3)/2;
 const TOP = 10, DEATH = 462;
 const MAGMAX = 6, SLOTMAX = 5;               // 轉盤與功能格上限
+const PIERCE_COOL = 24;                      // 穿透彈的無視碰撞子步數（飛約 53px，足以穿出第一層）
 const STEPA = () => Math.PI*2/save.magCap;
 const WHEEL = {x:W/2, y:552, r:36, rim:58};  // 轉輪
 const SHOOTER = {x:W/2, y:WHEEL.y-WHEEL.r};  // 裝填口＝最上方彈室
@@ -135,6 +136,11 @@ const AUDIO = (function(){
   let root=60, scale=[0,2,4,7,9], prog=[], chordIdx=-1;
   let drumK=[], drumS=[], bassP=[], leadDens=.5, arpOrder=[];
   let combo=0, tension=0, padType='triangle', leadType='triangle', baseBpm=96;
+  // 生成式演化用的狀態
+  let bar=0, swing=0, arpEvery=2, feel='straight';
+  let form='groove', formLeft=99, padVoice='pad', leadVoice='bell', bassVoice='saw';
+  let scaleName='', modCount=0, onKey=null;
+  let mutCount=0;
 
   const mtof = m => 440*Math.pow(2,(m-69)/12);
   const rnd  = a => a[(Math.random()*a.length)|0];
@@ -265,40 +271,310 @@ const AUDIO = (function(){
     }
   }
 
+  /* ── 追加音色，讓變異時能整個換掉聲音的性格 ── */
+  function pluck(t,f,dur,peak,dest){
+    const o=ctx.createOscillator(), fl=ctx.createBiquadFilter(), g=ctx.createGain();
+    o.type='sawtooth'; o.frequency.value=f;
+    fl.type='bandpass'; fl.frequency.value=f*2.2; fl.Q.value=3;
+    env(g,t,.004,dur*.7,peak);
+    o.connect(fl).connect(g).connect(dest||master); o.start(t); o.stop(t+dur+.1);
+  }
+  function marimba(t,f,dur,peak,dest){
+    tone(t,f,dur*.5,'sine',peak,dest);
+    tone(t,f*2,dur*.22,'sine',peak*.45,dest);
+    tone(t,f*3.01,dur*.12,'sine',peak*.18,dest);
+  }
+  function organ(t,f,dur,peak,dest){
+    [1,2,3,4].forEach((h,i)=> tone(t,f*h,dur,'sine',peak/(i+1.4),dest,i*3));
+  }
+  function choir(t,f,dur,peak,dest){
+    const o=ctx.createOscillator(), fl=ctx.createBiquadFilter(), g=ctx.createGain();
+    const lfo=ctx.createOscillator(), lg=ctx.createGain();
+    o.type='sawtooth'; o.frequency.value=f;
+    fl.type='lowpass'; fl.frequency.value=f*3.2; fl.Q.value=1.2;
+    lfo.frequency.value=5.2; lg.gain.value=4; lfo.connect(lg).connect(o.detune);
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(peak,t+dur*.35);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(fl).connect(g).connect(dest||master);
+    o.start(t); lfo.start(t); o.stop(t+dur+.1); lfo.stop(t+dur+.1);
+  }
+  const VOICE = {
+    bell, pluck, marimba, organ, choir,
+    tri:(t,f,d,p,dest)=>tone(t,f,d,'triangle',p,dest),
+    sqr:(t,f,d,p,dest)=>tone(t,f,d,'square',p*.8,dest)
+  };
+  const VOICE_KEYS = Object.keys(VOICE);
+
+  /* ══════════════════════════════════════════════════════════
+     生成式編曲 — 事件注入「音樂特性」與「音樂元素」，
+     兩者的當下狀態決定這一小節長什麼樣子。沒有事件就慢慢回歸基準。
+     ──────────────────────────────────────────────────────────
+     七種特性（0..1，緩慢回歸）：
+       bright 明亮 → 調式選擇、八度、音色偏亮
+       density 密度 → 琶音細分、旋律出現率、hi-hat
+       weight 厚重 → 大鼓密度、低音八度、律動
+       tension 張力 → 不協和音、警示音、合唱襯底
+       chaos  混亂 → 失諧量、離拍重音、走音機率
+       shine  光澤 → 高頻點綴、delay 回聲量
+       groove 律動 → 搖擺量、切分
+     七種元素（0..1，參與度，會較快消退）：
+       oompah 小丑蹦恰 ／ bubbles 氣泡音 ／ pinball 彈珠敲擊
+       choir 合唱 ／ marimba 木琴跑動 ／ brass 銅管重音 ／ taiko 太鼓
+     ══════════════════════════════════════════════════════════ */
+  const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const TRAIT0 = {bright:.50, density:.50, weight:.40, tension:.15, chaos:.12, shine:.35, groove:.28};
+  let TR = Object.assign({}, TRAIT0);
+  let EL = {oompah:0, bubbles:0, pinball:0, choir:0, marimba:0, brass:0, taiko:0};
+  let modPress = 0;
+
+  /* 六種顏色各自的音樂性格：消掉哪一色，音樂就往那個方向長 */
+  const COLOR_TRAITS = [
+    {weight:.055, tension:.030, taiko:.05},                 // 0 紅：厚重、逼迫
+    {bright:.055, shine:.015, marimba:.05},                 // 1 綠：明亮、木質
+    {shine:.065, bright:.020, choir:.045},                  // 2 藍：空靈、回聲
+    {density:.055, groove:.030, marimba:.055},              // 3 黃：密集、跳躍
+    {tension:.055, bright:-.045, choir:.065},               // 4 紫：陰暗、人聲
+    {groove:.055, weight:.030, brass:.070}                  // 5 橘：切分、銅管
+  ];
+
+  const BRIGHT_SCALES = SCALES.filter(x => /大調|Lydian|Mixolydian|琉球/.test(x.n));
+  const DARK_SCALES   = SCALES.filter(x => /小調|都節|Dorian/.test(x.n));
+
+  /* ══ 特殊和弦：覆蓋當前和聲若干小節，整個編曲一起改 ══ */
+  const CHORD_FX = {
+    clown:    [0,4,8,14],      // 增和弦加九度 —— 馬戲團的詭異感
+    surge:    [0,5,10,17],     // 四度堆疊 —— 漂浮、往上飄
+    scramble: [0,1,6,7],       // 半音叢集加三全音 —— 混亂
+    bright:   [0,4,7,11,14],   // 大九和弦 —— 開闊明亮
+    dark:     [0,3,7,13],      // 小三加降九 —— 陰暗逼迫
+    lift:     [0,7,12,19]      // 純五空五度 —— 空曠、抬升
+  };
+  let chordOv = null;                       // {ints, left}
+  function setChord(name, bars){
+    if (!CHORD_FX[name]) return;
+    chordOv = {ints:CHORD_FX[name], left:(bars||2)};
+  }
+
+  /* ══ 插入樂句：對齊下一個小節線才進場，一小節長 ══ */
+  let riff = null, riffPend = null;
+  function sdeg(k){                          // 音階第 k 級（可跨八度）
+    const L = scale.length;
+    return scale[((k % L) + L) % L] + 12 * Math.floor(k / L);
+  }
+  const RIFFS = {
+    // 道具
+    fire:   () => Array.from({length:12},(_,k)=>({i:k,     deg:sdeg(k),    dur:.10, v:'sqr',     g:.10, o:12})),
+    bomb:   () => Array.from({length:8}, (_,k)=>({i:k*2,   deg:sdeg(7-k),  dur:.16, v:'organ',   g:.11, o:0})),
+    bowl:   () => Array.from({length:8}, (_,k)=>({i:k*2,   deg:0,          dur:.18, v:'pluck',   g:.12, o:-12})),
+    rain:   () => Array.from({length:16},(_,k)=>({i:k,     deg:sdeg(k),    dur:.12, v:'bell',    g:.09, o:12})),
+    magnet: () => Array.from({length:6}, (_,k)=>({i:k*2,   deg:sdeg(5-k),  dur:.14, v:'tri',     g:.11, o:24})),
+    pierce: () => [0,3,6,9,12].map((i,k)=>      ({i,       deg:sdeg(k),    dur:.09, v:'sqr',     g:.10, o:12})),
+    purge:  () => [0,4,8].map((i,k)=>           ({i,       deg:sdeg(k*2),  dur:.55, v:'organ',   g:.14, o:0})),
+    scope:  () => Array.from({length:8}, (_,k)=>({i:k*2,   deg:sdeg(k*2),  dur:.20, v:'bell',    g:.08, o:24})),
+    lift:   () => Array.from({length:6}, (_,k)=>({i:k*2,   deg:sdeg(k),    dur:.16, v:'marimba', g:.11, o:12})),
+    // 事件
+    clown:  () => [0,4,8,12].map((i,k)=>        ({i, deg:[0,4,8,4][k],     dur:.20, v:'sqr',     g:.13, o:12})),
+    surge:  () => Array.from({length:8}, (_,k)=>({i:k*2, deg:[0,5,10,15][k%4], dur:.18, v:'bell', g:.09, o:12})),
+    scram:  () => Array.from({length:10},(_,k)=>({i:(k*3)%16, deg:(Math.random()*13)|0, dur:.09, v:'tri', g:.09, o:24})),
+    fanfare:() => [0,2,4,6,8].map((i,k)=>       ({i, deg:[0,4,7,11,12][k],  dur:.30, v:'sqr',    g:.13, o:12}))
+  };
+  const RIFF_FOR = {fire:'fire', bomb:'bomb', bowl:'bowl', rain:'rain', magnet:'magnet',
+                    pierce:'pierce', purge:'purge', scope:'scope', lift:'lift'};
+  function playRiff(name){
+    if (!RIFFS[name]) name = 'fanfare';
+    riffPend = name;                          // 等下一個小節線
+  }
+
+  function bump(o){
+    if (!ctx) return;
+    for (const k in o){
+      if (k in TR) TR[k] = Math.max(0, Math.min(1, TR[k] + o[k]));
+      else if (k in EL) EL[k] = Math.max(0, Math.min(1, EL[k] + o[k]));
+    }
+  }
+  function decayTraits(){
+    for (const k in TR) TR[k] += (TRAIT0[k] - TR[k]) * 0.042;   // 回歸基準
+    for (const k in EL) EL[k] *= 0.930;                          // 元素退場
+  }
+
+  /* 明亮度跨過門檻才換調式，避免來回跳（帶遲滯） */
+  function reconsiderScale(){
+    const isDark = DARK_SCALES.some(x => x.n === scaleName);
+    if (TR.bright < .34 && !isDark){
+      const sc = rnd(DARK_SCALES); scale = sc.s; scaleName = sc.n; announceKey();
+    } else if (TR.bright > .68 && isDark){
+      const sc = rnd(BRIGHT_SCALES); scale = sc.s; scaleName = sc.n; announceKey();
+    }
+  }
+  function announceKey(){
+    if (onKey) onKey(NOTE_NAMES[((root % 12) + 12) % 12] + ' ' + scaleName);
+  }
+  function modulate(){
+    root += rnd([5, 7, -5, 2, -3, 9, -7]);
+    while (root > 70) root -= 12;
+    while (root < 52) root += 12;
+    modCount++; announceKey();
+  }
+
+  /* 每小節依當下特性重算編曲參數 */
+  function deriveBar(){
+    arpEvery = TR.density > .74 ? 1 : TR.density > .50 ? 2 : TR.density > .30 ? 3 : 4;
+    swing    = TR.groove * 0.22;
+    leadDens = 0.18 + TR.density * 0.72;
+    feel     = TR.weight > .70 ? 'driving' : TR.weight < .26 ? 'sparse'
+             : TR.weight > .55 ? 'straight' : 'halftime';
+    // 主奏音色由最突出的特性決定
+    const cand = [['shine','bell'],['bright','marimba'],['tension','choir'],
+                  ['weight','organ'],['chaos','sqr'],['groove','pluck'],['density','tri']];
+    cand.sort((x,y) => TR[y[0]] - TR[x[0]]);
+    leadVoice = cand[0][1];
+    padVoice  = (TR.tension > .55 || EL.choir > .30) ? 'choir'
+              : (TR.weight  > .65) ? 'organ' : 'pad';
+    bassVoice = TR.weight > .62 ? 'saw' : TR.groove > .55 ? 'pluck' : 'organ';
+    // 鼓組跟著厚重度換：越重挑打點越多的型
+    const kw = KICKS.map(k => k.reduce((a,b)=>a+b,0));
+    const want = TR.weight > .6 ? Math.max(...kw) : TR.weight < .3 ? Math.min(...kw) : null;
+    if (want != null){
+      const pool = KICKS.filter((k,i) => kw[i] === want);
+      if (pool.length && !pool.includes(drumK)) drumK = rnd(pool);
+    }
+    // 和弦進行：張力高就換一組（每小節 12% 機率，避免太黏）
+    if (TR.tension > .5 && Math.random() < .12){ prog = rnd(PROGS); }
+    reconsiderScale();
+    mixTraits();
+  }
+  /* 光澤直接控制回聲量與高頻軌 */
+  function mixTraits(){
+    if (!ctx) return;
+    if (delayBus) delayBus.gain.setTargetAtTime(on ? (.20 + TR.shine*.65) : 0, ctx.currentTime, .2);
+  }
+
   /* ── 節拍排程（lookahead scheduler）── */
   function s16(){ return 60/bpm/4; }
   function schedule(){
     if (!ctx) return;
-    while (nextT < ctx.currentTime + .13){ tick(step, nextT); step++; nextT += s16(); }
+    while (nextT < ctx.currentTime + .13){
+      const sw = (step % 2 === 1) ? swing * s16() : 0;   // 反拍後推＝搖擺
+      tick(step, nextT + sw);
+      step++; nextT += s16();
+    }
   }
   function tick(st,t){
     const i = st % 16;
-    if (i === 0){ chordIdx = (chordIdx+1) % prog.length; }
+    if (i === 0){
+      bar++;
+      chordIdx = (chordIdx+1) % prog.length;
+      decayTraits();
+      if (chordOv){ if (chordOv.left <= 0) chordOv = null; else chordOv.left--; }
+      if (riffPend){ riff = {notes:RIFFS[riffPend](), left:1}; riffPend = null; }
+      else if (riff && --riff.left <= 0) riff = null;
+      // build 段結束 → 若壓力夠就轉調
+      if (form === 'build' && --formLeft <= 0){
+        form = 'groove'; formLeft = 99;
+        if (modPress >= 1){ modulate(); modPress = 0; }
+      } else if (form === 'breakdown' && --formLeft <= 0){
+        form = 'groove'; formLeft = 99;
+      } else if (form === 'groove' && modPress >= 1){
+        form = 'build'; formLeft = 2;                  // 轉調前先堆疊
+      }
+      deriveBar();
+    }
     const ch = prog[chordIdx<0?0:chordIdx];
-    const tones = CH[ch[1]].map(x => root + ch[0] + x);
+    const tones = chordOv ? chordOv.ints.map(x => root + x)
+                          : CH[ch[1]].map(x => root + ch[0] + x);
+    const chRoot = chordOv ? chordOv.ints[0] : ch[0];
+    const quiet = (form === 'breakdown');
+    const building = (form === 'build');
+    const det = () => rr(-20,20) * TR.chaos;           // 混亂 → 失諧
 
-    if (drumK[i]) kick(t);
-    if (drumS[i]) snare(t);
-    if (i%2===1) hat(t, .13 + (i%4===3?.05:0));
-    if (bassP[i]) bassNote(t, mtof(root+ch[0]-24), s16()*3);
-    if (i === 0) padChord(t, tones.slice(0,3), 60/bpm*3.6);
-
-    // 琶音軌
-    if (i%2===0){
-      const k = arpOrder[(st/2|0) % arpOrder.length];
-      bell(t, mtof(tones[k%tones.length] + 12*(k>=tones.length?1:0)), .32, .18, L.arp);
+    // ── 鼓：厚重度決定型態 ──
+    if (!quiet){
+      if (feel === 'halftime'){ if (i===0 || i===8) kick(t); }
+      else if (feel === 'driving'){ if (drumK[i] || i%4===0) kick(t); }
+      else if (feel === 'sparse'){ if (i===0) kick(t); }
+      else if (drumK[i]) kick(t);
+      if (drumS[i] && feel !== 'sparse') snare(t, .30 + TR.weight*.12);
+      if (i%2===1 || (TR.density > .8 && i%1===0))
+        hat(t, .06 + TR.density*.14 + (i%4===3?.04:0));
+      // 混亂 → 離拍重音
+      if (TR.chaos > .45 && Math.random() < TR.chaos*.12) hat(t + s16()*.5, .10);
     }
-    // 主旋律軌（程序化隨機，避免重複同音）
-    if (i%4===0 && Math.random() < leadDens){
+    // ── 低音：厚重度決定八度與音色 ──
+    if (!quiet && bassP[i]){
+      const oct = TR.weight > .62 ? -24 : -12;
+      const bf = mtof(root + chRoot + oct);
+      if (bassVoice === 'pluck')      pluck(t, bf*2, s16()*2.4, .20, master);
+      else if (bassVoice === 'organ') organ(t, bf, s16()*3, .12, master);
+      else                            bassNote(t, bf, s16()*3);
+    }
+    // ── 襯底和聲：張力高就疊小九度 ──
+    if (i === 0){
+      const ns = tones.slice(0,3);
+      if (TR.tension > .50 && !chordOv) ns.push(root + chRoot + 13);
+      if (padVoice === 'pad' || quiet) padChord(t, ns, 60/bpm*3.6);
+      else ns.forEach((m,k) =>
+        VOICE[padVoice](t + k*0.02, mtof(m), 60/bpm*3.2, quiet ? .15 : .09, L.pad));
+    }
+    // ── 琶音 ──
+    if (i % arpEvery === 0){
+      const k = arpOrder[((st/arpEvery)|0) % arpOrder.length];
+      const f = mtof(tones[k%tones.length] + 12*(k>=tones.length?1:0) + (TR.bright>.7?12:0));
+      const V = VOICE[leadVoice === 'organ' ? 'bell' : leadVoice];
+      V(t, f * (1 + det()/1200), .32, quiet ? .24 : .18, L.arp);
+    }
+    // ── 插入樂句（有樂句時主旋律讓位）──
+    if (riff){
+      for (const nt of riff.notes)
+        if (nt.i === i) VOICE[nt.v](t, mtof(root + nt.o + nt.deg), nt.dur, nt.g, L.lead);
+    }
+    // ── 主旋律 ──
+    if (!riff && !quiet && i%4===0 && Math.random() < leadDens){
       const deg = scale[(Math.random()*scale.length)|0];
-      const oct = Math.random()<.3 ? 24 : 12;
-      tone(t, mtof(root+deg+oct), .42, leadType, .17, L.lead, rr(-6,6));
+      const oct = (TR.bright > .6 ? 24 : 12) + (Math.random()<.25 ? 12 : 0);
+      VOICE[leadVoice](t, mtof(root+deg+oct) * (1 + det()/1200), .42, .16, L.lead);
     }
-    // 高頻點綴
-    if (i%8===0 && Math.random()<.5) bell(t, mtof(root+rnd(scale)+24), .5, .12, L.spark);
-    // 隨機過門
-    if (i>=12 && (st/16|0)%8===7 && Math.random()<.4) snare(t, .2);
-    // 危險警示
+    // ── 高頻點綴：光澤度控制 ──
+    if (i%8===0 && Math.random() < .25 + TR.shine*.6)
+      bell(t, mtof(root+rnd(scale)+24), .5, .07 + TR.shine*.12, L.spark);
+
+    /* ══ 音樂元素的參與 ══ */
+    if (EL.oompah > .28){                              // 🤡 小丑：蹦──恰
+      const v = EL.oompah;
+      if (i===0 || i===8) bassNote(t, mtof(root+chRoot-24), s16()*1.8);
+      if (i===4 || i===12) tones.slice(0,3).forEach(m => pluck(t, mtof(m+12), .16, .10*v, master));
+      if (i%8===6 && Math.random() < .40*v)            // 故意走音
+        tone(t, mtof(root+13), .18, 'square', .10*v, master, 25);
+    }
+    if (EL.bubbles > .28){                             // 🫧 逆流：咕嚕咕嚕
+      const v = EL.bubbles;
+      if (Math.random() < .30*v) noise(t, .06, 'bandpass', 500+Math.random()*2400, .09*v, master, 7);
+      if (i%4===2 && Math.random() < .55*v)
+        tone(t, mtof(root+24+rnd(scale)), .13, 'sine', .08*v, L.spark);
+    }
+    if (EL.pinball > .28 && Math.random() < .32*EL.pinball)   // 💫 亂彈：金屬敲擊
+      tone(t, mtof(root+29+((Math.random()*13)|0)), .09, 'triangle', .07*EL.pinball, L.spark);
+    if (EL.taiko > .28 && (i===0 || i===6)){           // 太鼓
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(96,t); o.frequency.exponentialRampToValueAtTime(52,t+.16);
+      env(g,t,.005,.24,.30*EL.taiko); o.connect(g).connect(master); o.start(t); o.stop(t+.35);
+    }
+    if (EL.brass > .28 && (i===6 || i===14))           // 銅管切分重音
+      tones.slice(0,3).forEach(m => VOICE.sqr(t, mtof(m-12), .15, .07*EL.brass, master));
+    if (EL.marimba > .28 && i%2===1)                   // 木琴跑動
+      marimba(t, mtof(tones[((i/2)|0)%tones.length]+12), .18, .08*EL.marimba, L.arp);
+    if (EL.choir > .28 && i===0)                       // 合唱襯底
+      tones.slice(0,3).forEach(m => choir(t, mtof(m-12), 60/bpm*3.4, .06*EL.choir, L.pad));
+
+    // ── build 段 ──
+    if (building){
+      if (i%2===0) snare(t, .10 + (2-formLeft)*0.08);
+      if (i===0) noise(t, 60/bpm*2, 'highpass', 2200 + (2-formLeft)*1800, .11);
+    }
+    // ── 過門 ──
+    if (!quiet && i>=12 && bar%8===7 && Math.random() < .25 + TR.density*.3) snare(t, .2);
+    // ── 危險警示 ──
     if (tension>.5 && i===0) tone(t, mtof(root+1-12), .5, 'square', .10*tension, master);
   }
 
@@ -340,6 +616,76 @@ const AUDIO = (function(){
   }
 
   return {
+    onKeyChange(fn){ onKey = fn; },
+    /* ══ 遊戲事件 → 音樂特性／元素 ══
+       每個事件推動的是「音樂往哪個方向長」，不是隨機擲骰。 */
+    event(kind, n, ci){
+      if (!ctx) return;
+      n = (n == null) ? 1 : n;
+      switch (kind){
+        case 'pop': {                                  // ci = 顏色索引
+          const m = COLOR_TRAITS[((ci|0) % 6 + 6) % 6];
+          const d = {};
+          for (const k in m) d[k] = m[k] * n;
+          bump(d);
+          // 競爭性正規化：把所有特性拉回基準一點，
+          // 這樣向量表達的是「哪個顏色佔優」而不是「打了多少」。
+          for (const k in TR) TR[k] += (TRAIT0[k] - TR[k]) * 0.07 * n;
+          modPress += .020 * n; break;
+        }
+        case 'drop':                                   // 墜落＝華麗、明亮
+          bump({density:.035*n, shine:.050*n, groove:.020*n, marimba:.04*n});
+          modPress += .060 * n; break;
+        case 'chain':
+          bump({density:.05*n, groove:.05*n, shine:.03*n}); modPress += .04*n; break;
+        case 'special':
+          bump({chaos:.08, density:.06, brass:.20});
+          if (Math.random() < .4) playRiff('fanfare');
+          modPress += .12; break;
+        case 'descend':                                // 壓力來自遊戲本身
+          bump({weight:.055, tension:.045, taiko:.14}); modPress += .05; break;
+        case 'gift':
+          bump({shine:.13, bright:.09, marimba:.22}); modPress += .15; break;
+        case 'item':                                   // ci 這裡帶的是道具代號
+          bump({shine:.08, chaos:.05, brass:.16});
+          playRiff(RIFF_FOR[ci] || 'fanfare');
+          if (ci === 'purge') setChord('dark', 1);
+          else if (ci === 'lift') setChord('lift', 2);
+          else if (ci === 'rain') setChord('bright', 1);
+          break;
+        case 'settle':
+          bump({chaos:.03*n, pinball:.12*n}); break;
+        case 'miss':
+          bump({density:-.012, shine:-.010}); break;
+        case 'clear':                                  // 全部清光
+          bump({shine:.40, bright:.28, density:.20, marimba:.4});
+          setChord('bright', 3); playRiff('fanfare');
+          modPress += 1; break;
+        case 'stage':
+          bump({shine:.3, bright:.2, density:.15});
+          setChord('bright', 2); playRiff('fanfare');
+          modulate(); modPress = 0; break;
+        case 'rescue':                                 // 快死了：音樂變陰暗
+          bump({tension:.55, bright:-.40, weight:.25, taiko:.55, choir:.4});
+          setChord('dark', 3);
+          form = 'breakdown'; formLeft = 2; break;
+        /* 三種壞禮物各自帶進一個音樂元素 */
+        case 'clown':                                  // 增和弦摻進來，整段變馬戲團
+          bump({oompah:.95, chaos:.35, bright:.12, groove:.25});
+          setChord('clown', 4); playRiff('clown');
+          form = 'breakdown'; formLeft = 2; break;
+        case 'surge':                                  // 四度堆疊，聽起來一直往上飄
+          bump({bubbles:.95, tension:.28, bright:-.20, shine:.15});
+          setChord('surge', 4); playRiff('surge');
+          form = 'breakdown'; formLeft = 3; break;
+        case 'scramble':                               // 半音叢集，一小節的混亂
+          bump({pinball:.95, chaos:.50, weight:.12});
+          setChord('scramble', 1); playRiff('scram');
+          modPress += .3; break;
+      }
+    },
+    /* 除錯／指示器用：目前的特性與元素狀態 */
+    musicState(){ return {traits:Object.assign({},TR), elements:Object.assign({},EL), modPress}; },
     setPalette(ci){
       if (ci==null) return;
       padType  = ['triangle','sine','triangle','sawtooth','sine','triangle'][ci%6];
@@ -365,6 +711,14 @@ const AUDIO = (function(){
       leadType = rnd(['triangle','square','sine']);
       leadDens = rr(.35,.7);
       arpOrder = [0,1,2,3,4,5].sort(()=>Math.random()-.5).slice(0,4);
+      scaleName = sc.n;
+      bar = 0; swing = 0; arpEvery = 2;
+      TR = Object.assign({}, TRAIT0);
+      for (const k in EL) EL[k] = 0;
+      modPress = 0;
+      feel = 'straight'; form = 'groove'; formLeft = 99;
+      padVoice = 'pad'; leadVoice = rnd(['bell','marimba','pluck','tri']);
+      bassVoice = 'saw';
       bpm = 88 + Math.min(lv,12)*1.6 + rr(-3,3); baseBpm = bpm;
       combo = 0; tension = 0; mix();
       return sc.n;
@@ -613,9 +967,9 @@ const ITEMS = {
   bowl  :{ico:'🎳', name:'保齡球',kind:'shot',    lv:1, w:10, tip:'無色重球撞飛泡泡，亂彈三次才黏回去'},
   rain  :{ico:'🌈', name:'百搭',  kind:'shot',    lv:3, w:9,  tip:'配任意顏色'},
   magnet:{ico:'🧲', name:'磁吸',  kind:'shot',    lv:5, w:8,  tip:'自動導向最佳落點'},
-  pierce:{ico:'⚡', name:'穿透',  kind:'shot',    lv:7, w:7,  tip:'穿過第一層卡進後排'},
+  pierce:{ico:'⚡', name:'穿透',  kind:'shot',    lv:7, w:7,  tip:'無視打不掉的泡泡，只在能消除的地方停下'},
   purge :{ico:'🌀', name:'消色',  kind:'instant', lv:8, w:6,  tip:'清除場上最多的一色'},
-  scope :{ico:'🔭', name:'透視',  kind:'instant', lv:9, w:6,  tip:'看見下一列五發'},
+  dye   :{ico:'🎨', name:'染色刷',kind:'shot',    lv:9, w:6,  tip:'穿過雜色，撞到同色就把周圍全部染成同色（不消除）'},
   lift  :{ico:'⬆️', name:'上推',  kind:'instant', lv:2, w:9,  tip:'把泡泡牆往上推一列'},
   wheel :{ico:'⊕',  name:'轉盤+1',kind:'grow',   lv:1, w:0,   tip:'彈倉多一格'},
   slot  :{ico:'⊞',  name:'格位+1',kind:'grow',   lv:1, w:0,   tip:'功能格多一格'}
@@ -658,9 +1012,9 @@ const B32 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // 去掉 I O 0 1 避免抄錯
    退役道具保留佔位，載入時由 RETIRED 映射到現行道具。
    位元配置同樣凍結：階段10 / 轉盤3 / 功能格3 / 道具5×4 / 分數12 / 泡泡6 / 檢查碼6 = 60 bits。 */
 const ITEMKEYS = ['fire','bomb','moves','rain','shield','magnet','hammer','pierce','purge','scope',
-                  'freeze','lift','bowl'];
+                  'freeze','lift','bowl','dye'];
 // 退役道具：位置永久保留，載入舊接關碼時映射到現行道具
-const RETIRED  = {moves:'bowl', freeze:'bowl', shield:'lift', hammer:'bomb'};
+const RETIRED  = {moves:'bowl', freeze:'bowl', shield:'lift', hammer:'bomb', scope:'dye'};
 // 舊存檔裡的退役道具在這裡才做遷移（必須晚於 RETIRED 宣告）
 save.slots = save.slots.map(k => RETIRED[k] || k).filter(k => ITEMS[k]);
 function pushBits(a,v,n){ for(let i=n-1;i>=0;i--) a.push((v>>i)&1); }
@@ -731,7 +1085,7 @@ function awardSticker(){
 /* ══════════ 狀態 ══════════ */
 let grid, nextRow, angle, shots, mag, wheelA, dropIn, dropEvery, rowsDropped, score, baseScore,
     chain, particles, falling, floaters, state, armed, level, shakeT,
-    scopeLeft, gifts, giftMeter, rescueLeft, turnCounts, dropOff = 0,
+    gifts, giftMeter, rescueLeft, turnCounts, dropOff = 0,
     bonus = null, bonusCool = 0, holding = false, loose, bowl = null, rise = [], shocks = [],
     clownLeft = 0,
     tensionLv = 0, fxPos = {x:220,y:260};
@@ -806,11 +1160,12 @@ function buildLevel(L, keepGear){
   angle = -Math.PI/2;
   mag = []; wheelA = 0;
   for (let i=0;i<save.magCap;i++) mag.push({color:pick(sp), type:'normal'});
-  scopeLeft = 0; turnCounts = false;
+  turnCounts = false;
   gifts = 0; giftMeter = 0; rescueLeft = 2;
   bonus = null; bonusCool = 0; holding = false; clownLeft = 0;
   baseScore = save.score; score = save.score;
   initBackdrop(); tensionLv = 0;
+  AUDIO.onKeyChange(k => fx('toast', '♪ 轉調　'+k, W/2, 300));
   const key = AUDIO.newLevel(L);
   fx('praise', '第 '+L+' 階段', W/2, 210, {hue:44, big:.9, sub:key});
   hud();
@@ -829,7 +1184,7 @@ function descend(n){
   }
   growTo(VISIBLE+3);
   dropOff -= ROWH*(n||1);            // 先把整面畫回原位，再緩緩滑下來
-  AUDIO.descend(n||1);
+  AUDIO.descend(n||1); AUDIO.event('descend');
   if (rowsDropped > 0 && rowsDropped % 8 === 0) stageUp();
 }
 
@@ -853,7 +1208,7 @@ function stageUp(){
   dropEvery = levelSpec(level).dropEvery;
   const stk = awardSticker();
   save.level = level; save.score = score; persist();
-  confetti(); AUDIO.win();
+  confetti(); AUDIO.win(); AUDIO.event('stage');
   fx('praise', '第 '+level+' 階段！', W/2, 200, {hue:130, big:1.0, sub:'新貼紙 '+stk});
   initBackdrop();
 }
@@ -887,6 +1242,7 @@ function triggerCurse(key, x, y){
   revealFx(cu.ico, cu.name, cu.tip, cu.hue, '糟糕！', x, y);
   shockwave(x, y, cu.hue);
   shakeT = 18;
+  AUDIO.event(key);
   if (key === 'surge')      startSurge(6, x, y);
   else if (key === 'clown'){ clownLeft = 6; AUDIO.clown(); }
   else                       scrambleAt(x, y);
@@ -987,13 +1343,13 @@ function resolveClear(cells){
     const [r,c] = queue.pop();
     const b = at(r,c); if (!b) continue;
     if (b.type === 'bomb'){
-      AUDIO.bomb();
+      AUDIO.bomb(); AUDIO.event('special');
       for (const [nr,nc] of nbrs(r,c)){
         const k = nr+','+nc;
         if (!set.has(k) && at(nr,nc)){ set.add(k); queue.push([nr,nc]); }
       }
     } else if (b.type === 'line'){
-      AUDIO.line();
+      AUDIO.line(); AUDIO.event('special');
       for (let i=0; i<len(r); i++){
         const k = r+','+i;
         if (!set.has(k) && at(r,i)){ set.add(k); queue.push([r,i]); }
@@ -1006,10 +1362,12 @@ function resolveClear(cells){
     const b = at(r,c); if (!b) continue;
     if (b.type === 'gift') openGift(b, cx(r,c), cy(r));
     burst(cx(r,c), cy(r), b.color || '#8e9ab5');
-    AUDIO.pop(n, b.color ? COLORS.indexOf(b.color) : null);
+    const ci = b.color ? COLORS.indexOf(b.color) : null;
+    AUDIO.pop(n, ci);
+    if (ci != null) AUDIO.event('pop', 1, ci);        // 顏色決定音樂往哪個性格長
     grid[r].cells[c] = null; n++;
   }
-  if (bonusMoves){ dropIn += bonusMoves; itemFx('❄️ 下降延後 '+bonusMoves+' 發'); AUDIO.plus(); }
+  if (bonusMoves){ dropIn += bonusMoves; itemFx('❄️ 下降延後 '+bonusMoves+' 發'); AUDIO.plus(); AUDIO.event('special'); }
   return n;
 }
 
@@ -1063,7 +1421,7 @@ function openGift(b, x, y){
     particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,color:'#ffd166'});
   }
   shakeT = 8;
-  AUDIO.giftOpen();
+  AUDIO.giftOpen(); AUDIO.event('gift');
   persist(); drawSlots();
 }
 
@@ -1158,6 +1516,10 @@ function endTurn(popped, dropped){
     praise(popped + (dropped||0)*2, chain);
     if (chain >= 2) comboFx(chain);
   }
+  if (popped > 0){
+    if (dropped) AUDIO.event('drop', dropped);
+    if (chain >= 2) AUDIO.event('chain', chain);
+  } else AUDIO.event('miss');
   giftMeter += popped + (dropped||0)*4;          // 墜落泡泡是禮盒的主要來源
   while (giftMeter >= GIFT_NEED){
     giftMeter -= GIFT_NEED;
@@ -1179,7 +1541,6 @@ function endTurn(popped, dropped){
   if (bonusCool > 0) bonusCool--;
   if (turnCounts){                       // 回合結束才推進下降倒數
     turnCounts = false;
-    if (scopeLeft > 0) scopeLeft--;
     if (clownLeft > 0 && --clownLeft === 0){
       itemFx('🤡 面具拿下來了'); AUDIO.blop(true);
     }
@@ -1203,7 +1564,7 @@ function checkEnd(){
           rescueLeft--;
           const n = lift(3);
           fx('praise','救回來了！', W/2, 210, {hue:130, big:.95, sub:'往上推了 '+n+' 列'});
-          AUDIO.giftOpen(); shakeT = 16; hud(); return;
+          AUDIO.giftOpen(); AUDIO.event('rescue'); shakeT = 16; hud(); return;
         }
         return failLevel('泡泡碰到底線了');
       }
@@ -1264,7 +1625,7 @@ function startBonus(){
     if (b) grid[r].cells[c] = {color:b.color, type:'gift', pay:rollGift(level), t:0};
   }
   dropOff = 0; shots = []; initBackdrop();
-  AUDIO.bonusOn();
+  AUDIO.bonusOn(); AUDIO.event('clear');
   confetti();
   fx('praise','獎勵時間！', W/2, 158, {hue:130, big:1.35, sub:'連續開火 '+BONUS_SHOTS+' 發'});
   hud();
@@ -1399,7 +1760,7 @@ function fire(){
   let ball = mag[0], kind = 'ball';
   if (armed && save.slots[armed.i] === armed.key){
     kind = armed.key;
-    AUDIO.power(kind);
+    AUDIO.power(kind); AUDIO.event('item', 1, kind);
     save.slots.splice(armed.i,1); persist();
     if (kind === 'rain') ball = {color:'#ffffff', type:'rain'};
     armed = null; turnCounts = false; drawSlots();
@@ -1441,6 +1802,40 @@ function bestCell(color){
       if (sc > bs){ bs = sc; best = [r,c]; }
     }
   return best;
+}
+
+/* 試放一顆，看會不會湊成三顆以上（不改動盤面） */
+function wouldClear(x, y, color){
+  const cell = snap(x, y);
+  if (!cell) return false;
+  const [r,c] = cell;
+  grid[r].cells[c] = {color, type:'normal'};
+  const n = cluster(r,c).length;
+  grid[r].cells[c] = null;
+  return n >= 3;
+}
+const COLOR_HUE = [350, 160, 212, 44, 275, 28];
+
+/* 🎨 染色：把周圍一圈（與炸彈同範圍）全部改成同色，但不消除 */
+function dyeAt(r, c, color){
+  const set = blastCells([r,c]);
+  let n = 0;
+  for (const k of set){
+    const [rr,cc] = k.split(',').map(Number);
+    const b = at(rr,cc);
+    if (!b || b.type === 'stone' || b.color === color) continue;
+    b.color = color; n++;
+    for (let i=0;i<4;i++){
+      const a = Math.random()*Math.PI*2, sp2 = 1+Math.random()*3.2;
+      particles.push({x:cx(rr,cc), y:cy(rr), vx:Math.cos(a)*sp2, vy:Math.sin(a)*sp2, life:.9, color});
+    }
+  }
+  shockwave(cx(r,c), cy(r), COLOR_HUE[COLORS.indexOf(color)] || 44);
+  shakeT = 10;
+  AUDIO.dye(COLORS.indexOf(color));
+  AUDIO.event('item', 1, 'dye');
+  itemFx('🎨 染了 ' + n + ' 顆　快去引爆！');
+  hud();
 }
 
 function hitTest(x,y){
@@ -1513,7 +1908,7 @@ function settleLoose(L){
   const [r, c] = cell;
   growTo(r + 2);
   grid[r].cells[c] = L.b;
-  AUDIO.land();
+  AUDIO.land(); AUDIO.event('settle');
   const g = cluster(r, c);
   if (g.length >= 3){
     if (bowl) bowl.pop += resolveClear(g);
@@ -1584,6 +1979,37 @@ function stepShot(s){
       }
       continue;
     }
+    // ⚡ 穿透：無視打不掉的泡泡，只在能消除的地方停下；找不到就穿走
+    if (s.kind === 'pierce'){
+      if (s.x < R){ s.x = R; s.vx *= -1; AUDIO.bounce(); }
+      if (s.x > W-R){ s.x = W-R; s.vx *= -1; AUDIO.bounce(); }
+      if (s.y-R <= TOP){ burst(s.x, TOP+R, s.ball.color || '#cfe0ff'); AUDIO.ui(); endTurn(0); return false; }
+      if (s.cool > 0){ s.cool--; continue; }
+      const hp = hitTest(s.x, s.y);
+      if (hp){
+        if (wouldClear(s.x, s.y, s.ball.color)){ land(s.x, s.y, s.ball); return false; }
+        s.cool = PIERCE_COOL;
+        for (let k=0;k<3;k++) particles.push({x:s.x, y:s.y, vx:(Math.random()-.5)*2,
+          vy:(Math.random()-.5)*2, life:.5, color:'#cfe0ff'});
+      }
+      continue;
+    }
+    // 🎨 染色刷：穿過雜色，撞到同色就染一圈
+    if (s.kind === 'dye'){
+      if (s.x < R){ s.x = R; s.vx *= -1; AUDIO.bounce(); }
+      if (s.x > W-R){ s.x = W-R; s.vx *= -1; AUDIO.bounce(); }
+      if (s.y-R <= TOP){ burst(s.x, TOP+R, s.ball.color || '#fff'); AUDIO.ui(); endTurn(0); return false; }
+      if (s.cool > 0){ s.cool--; continue; }
+      const hd = hitTest(s.x, s.y);
+      if (hd){
+        const bb = at(hd[0], hd[1]);
+        if (bb && bb.color === s.ball.color){ dyeAt(hd[0], hd[1], s.ball.color); endTurn(0); return false; }
+        s.cool = PIERCE_COOL;
+        for (let k=0;k<3;k++) particles.push({x:s.x, y:s.y, vx:(Math.random()-.5)*2,
+          vy:(Math.random()-.5)*2, life:.5, color:s.ball.color});
+      }
+      continue;
+    }
     if (s.kind === 'fire'){
       fireballStep(s);
       if (s.y < -R || s.x < -R || s.x > W+R){
@@ -1609,7 +2035,7 @@ function stepShot(s){
     }
     if (s.cool > 0){ s.cool--; continue; }
     const h = hitTest(s.x, s.y);
-    if (h && s.pierce > 0){ s.pierce--; s.cool = 7; continue; }
+    if (h && s.pierce > 0){ s.pierce--; s.cool = PIERCE_COOL; continue; }
     if (h){
       if (s.rapid){ rapidHit(h[0], h[1]); return false; }
       if (s.kind === 'bomb'){
@@ -1941,11 +2367,14 @@ function drawBubble(x,y,b,rad){
 
 /* 模擬瞄準軌跡（不畫任何東西），回傳折點與命中的格子 */
 function traceAim(){
-  const straight = armed && armed.key === 'fire';
-  const plough = armed && armed.key === 'bowl';   // 保齡球貫穿但會撞牆反彈
+  const key = armed && armed.key;
+  const straight = key === 'fire';
+  const plough = key === 'bowl';                  // 保齡球貫穿但會撞牆反彈
+  const phase = (key === 'pierce' || key === 'dye');
+  const myColor = mag[0] && mag[0].color;
   let x=SHOOTER.x, y=SHOOTER.y, vx=Math.cos(angle)*7, vy=Math.sin(angle)*7;
   const pts=[[x,y]];
-  let cell=null, pierceLeft = (armed && armed.key === 'pierce') ? 1 : 0, cool=0;
+  let cell=null, cool=0;
   for (let i=0;i<400;i++){
     x+=vx; y+=vy;
     if (!straight){
@@ -1957,12 +2386,18 @@ function traceAim(){
     if (cool>0){ cool--; continue; }
     const h = hitTest(x,y);
     if (h){
-      if (pierceLeft>0){ pierceLeft--; cool=7; continue; }
+      if (phase){                                 // 穿透／染色：條件不成立就穿過去
+        const b = at(h[0], h[1]);
+        const ok = (key === 'pierce') ? wouldClear(x, y, myColor)
+                                      : (b && b.color === myColor);
+        if (ok){ cell = h; break; }
+        cool = PIERCE_COOL; continue;
+      }
       cell = h; break;
     }
   }
   pts.push([x,y]);
-  return {pts, cell, end:[x,y], straight};
+  return {pts, cell, end:[x,y], straight, key, myColor};
 }
 
 function guide(info){
@@ -2017,10 +2452,25 @@ function pathCells(pts, cap){
 /* 反白：把即將被清掉的泡泡打亮並套上跑動虛線框 */
 function drawPreview(info){
   if (!armed) return;
-  let set = null, hue = 30;
+  let set = null, hue = 30, tint = null, verb = '顆';
   if (armed.key === 'bomb' && info.cell){ set = blastCells(info.cell); hue = 18; }
   else if (armed.key === 'fire'){ set = pathCells(info.pts); hue = 34; }
   else if (armed.key === 'bowl'){ set = pathCells(info.pts, 3); hue = 212; }
+  else if (armed.key === 'dye' && info.cell){          // 染色範圍＝爆炸範圍
+    set = blastCells(info.cell);
+    hue = COLOR_HUE[COLORS.indexOf(info.myColor)] || 44;
+    tint = info.myColor; verb = '顆要染色';
+  }
+  else if (armed.key === 'pierce' && info.cell){        // 會被消掉的那一群
+    const cc = snap(info.end[0], info.end[1]);
+    if (cc){
+      grid[cc[0]].cells[cc[1]] = {color:info.myColor, type:'normal'};
+      set = new Set(cluster(cc[0], cc[1]).map(a => a[0]+','+a[1]));
+      grid[cc[0]].cells[cc[1]] = null;
+      set.delete(cc[0]+','+cc[1]);
+      hue = 190; verb = '顆要消除';
+    }
+  }
   if (!set || !set.size) return;
 
   const t = performance.now();
@@ -2035,7 +2485,7 @@ function drawPreview(info){
     ctx.save();                                   // 打亮
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = .26 + .20*pulse;
-    ctx.fillStyle = b.type === 'gift' ? '#ffd166' : '#ffffff';
+    ctx.fillStyle = b.type === 'gift' ? '#ffd166' : (tint || '#ffffff');
     ctx.beginPath(); ctx.arc(X,Y,R-2,0,7); ctx.fill();
     ctx.restore();
     ctx.save();                                   // 跑動虛線框
@@ -2047,7 +2497,7 @@ function drawPreview(info){
     ctx.restore();
   }
 
-  const label = set.size + ' 顆' + (gift ? '　🎁×'+gift : '');
+  const label = set.size + ' ' + verb + (gift ? '　🎁×'+gift : '');
   const p = info.cell ? [cx(info.cell[0], info.cell[1]), cy(info.cell[0])]
                       : [info.end[0], info.end[1] + 34];
   ctx.save();
@@ -2389,19 +2839,10 @@ function draw(){
   if (nextRow){                                    // 下一列預覽
     for (let c=0;c<nextRow.cells.length;c++){
       const b = nextRow.cells[c]; if (!b) continue;
-      if (scopeLeft > 0){
-        ctx.globalAlpha = .85; ctx.fillStyle = b.color || '#8e9ab5';
-        ctx.beginPath(); ctx.arc(c*D+R, 5, 3.6, 0, 7); ctx.fill();
-      } else {
-        ctx.globalAlpha = .5; ctx.fillStyle = 'rgba(150,160,185,.9)';
-        ctx.fillRect(c*D+R-3, 3, 6, 4);
-      }
+      ctx.globalAlpha = .5; ctx.fillStyle = 'rgba(150,160,185,.9)';
+      ctx.fillRect(c*D+R-3, 3, 6, 4);
     }
     ctx.globalAlpha = 1;
-    if (scopeLeft > 0){
-      ctx.fillStyle='rgba(255,209,102,.95)'; ctx.font='600 9px system-ui'; ctx.textAlign='right';
-      ctx.fillText('🔭'+scopeLeft, W-6, 7);
-    }
   }
   // 底線
   ctx.save(); ctx.setLineDash([3,7]);
@@ -2561,6 +3002,7 @@ function useSlot(i){
   if (!key) return;
   const it = ITEMS[key];
   AUDIO.ui();
+  if (it.kind !== 'shot') AUDIO.event('item', 1, key);
   if (it.kind === 'shot'){
     armed = (armed && armed.i === i) ? null : {i, key};
     if (armed) itemFx(it.ico + ' ' + it.name + ' 待發');
@@ -2576,7 +3018,6 @@ function instant(key){
     const n = lift(1);
     itemFx('⬆️ 往上推了 '+n+' 列'); AUDIO.plus(); shakeT = 10;
   }
-  else if (key === 'scope'){ scopeLeft = 5; itemFx('🔭 透視五發'); AUDIO.plus(); }
   else if (key === 'purge'){
     const tally = {};
     for (const row of grid) for (const b of row.cells) if (b && b.color) tally[b.color] = (tally[b.color]||0)+1;
