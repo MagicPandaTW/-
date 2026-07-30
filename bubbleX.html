@@ -373,6 +373,7 @@ const AUDIO = (function(){
     purge:  () => [0,4,8].map((i,k)=>           ({i,       deg:sdeg(k*2),  dur:.55, v:'organ',   g:.14, o:0})),
     scope:  () => Array.from({length:8}, (_,k)=>({i:k*2,   deg:sdeg(k*2),  dur:.20, v:'bell',    g:.08, o:24})),
     lift:   () => Array.from({length:6}, (_,k)=>({i:k*2,   deg:sdeg(k),    dur:.16, v:'marimba', g:.11, o:12})),
+    dye:    () => Array.from({length:4}, (_,k)=>({i:k*4,   deg:sdeg(k*2),  dur:.40, v:'choir',   g:.12, o:12})),
     // 事件
     clown:  () => [0,4,8,12].map((i,k)=>        ({i, deg:[0,4,8,4][k],     dur:.20, v:'sqr',     g:.13, o:12})),
     surge:  () => Array.from({length:8}, (_,k)=>({i:k*2, deg:[0,5,10,15][k%4], dur:.18, v:'bell', g:.09, o:12})),
@@ -380,7 +381,7 @@ const AUDIO = (function(){
     fanfare:() => [0,2,4,6,8].map((i,k)=>       ({i, deg:[0,4,7,11,12][k],  dur:.30, v:'sqr',    g:.13, o:12}))
   };
   const RIFF_FOR = {fire:'fire', bomb:'bomb', bowl:'bowl', rain:'rain', magnet:'magnet',
-                    pierce:'pierce', purge:'purge', scope:'scope', lift:'lift'};
+                    pierce:'pierce', purge:'purge', dye:'dye', lift:'lift'};
   function playRiff(name){
     if (!RIFFS[name]) name = 'fanfare';
     riffPend = name;                          // 等下一個小節線
@@ -823,6 +824,14 @@ const AUDIO = (function(){
     },
     ui(){ if(!ctx||!on) return; noise(ctx.currentTime,.03,'highpass',3000,.12); },
     /* 保齡球：低沉滾動聲 */
+    /* 🎨 染色：刷過去的沙沙聲 + 該顏色專屬音色的三音上行 */
+    dye(ci){
+      if (!ctx || !on) return;
+      const t = q(16);
+      noise(t, .30, 'bandpass', 1500, .16, master, 1.4);
+      const V = ['marimba','choir','bell','pluck','organ','sqr'][((ci|0)%6+6)%6];
+      [0,4,7].forEach((d,i) => VOICE[V](t + i*.07, mtof(root+12+d), .45, .16, master));
+    },
     /* 🤡 小丑面具：滑管笛上下、兩聲喇叭、最後一段哇哇下滑 */
     clown(){
       if (!ctx || !on) return;
@@ -1087,7 +1096,7 @@ let grid, nextRow, angle, shots, mag, wheelA, dropIn, dropEvery, rowsDropped, sc
     chain, particles, falling, floaters, state, armed, level, shakeT,
     gifts, giftMeter, rescueLeft, turnCounts, dropOff = 0,
     bonus = null, bonusCool = 0, holding = false, loose, bowl = null, rise = [], shocks = [],
-    clownLeft = 0,
+    clownLeft = 0, stuckT = 0,
     tensionLv = 0, fxPos = {x:220,y:260};
 
 /* ── 網格幾何（每列自帶 odd 旗標，插列時奇偶才不會錯亂）── */
@@ -1883,7 +1892,7 @@ function bombAt(r,c){
    🎳 保齡球：無色重球撞飛泡泡，被撞飛的泡泡亂彈
    三次才黏回去，撞到別人會連鎖，同時最多 6 顆
    ══════════════════════════════════════════════ */
-const LOOSE_MAX = 6, LOOSE_BOUNCE = 3;
+const LOOSE_MAX = 6, LOOSE_BOUNCE = 3;   // 彈三次才黏回
 
 function knockLoose(r, c, vx, vy){
   if (loose.length >= LOOSE_MAX) return false;
@@ -1916,8 +1925,8 @@ function settleLoose(L){
   }
 }
 
-const LOOSE_MINSPD = 7.5;      // 低於這個速度就加速，避免龜速亂晃
-const LOOSE_MAXAGE = 95;       // 約 1.6 秒後強制黏回去，不讓殘局拖戲
+const LOOSE_MINSPD = 8.5;      // 低於這個速度就加速，避免龜速亂晃
+const LOOSE_MAXAGE = 72;       // 約 1.6 秒後強制黏回去，不讓殘局拖戲
 
 function stepLoose(){
   for (let i = loose.length - 1; i >= 0; i--){
@@ -1932,7 +1941,7 @@ function stepLoose(){
     }
     // 逾時強制收場（越接近上限越快，視覺上像是被吸回去）
     if (++L.age > LOOSE_MAXAGE){ settleLoose(L); loose.splice(i,1); continue; }
-    if (L.age > LOOSE_MAXAGE - 25){ L.vx *= 1.045; L.vy *= 1.045; }
+    if (L.age > LOOSE_MAXAGE - 20){ L.vx *= 1.05; L.vy *= 1.05; }
     for (let k = 0; k < steps && !done; k++){
       L.x += L.vx/steps; L.y += L.vy/steps; L.rot += L.spin/steps;
       if (L.x < R){ L.x = R; L.vx *= -1; if (--L.left <= 0) done = true; AUDIO.bounce(); }
@@ -2063,6 +2072,13 @@ function update(){
     endTurn(pop, d);
   }
   if (bonus) bonusTick();
+  else if (!canFire()){                          // 看門狗：任何原因卡住四秒就強制解除
+    if (++stuckT > 240){
+      for (const L of loose) settleLoose(L);
+      shots.length = 0; loose.length = 0; bowl = null; stuckT = 0;
+      refill(); hud();
+    }
+  } else stuckT = 0;
   for (const k of shocks){ k.r += 7.5; k.life -= .045; }
   shocks = shocks.filter(k => k.life > 0);
   for (const p of particles){ p.x+=p.vx; p.y+=p.vy; p.vy+=.22; p.life-=.035; }
@@ -3123,7 +3139,18 @@ btn.textContent = '開始遊戲';
 onBtn = () => buildLevel(save.level||1);
 ovExtra.innerHTML = resumeBlock(); wireExtra();
 
-(function loop(){ if (state==='play') update(); draw(); requestAnimationFrame(loop); })();
+/* 迴圈加上防護罩：任何一幀出錯都不會讓整個遊戲停住 */
+let errCount = 0;
+(function loop(){
+  try {
+    if (state === 'play') update();
+    draw();
+  } catch (e){
+    if (++errCount < 6) console.error('[frame error]', e);
+    shots.length = 0; loose.length = 0; bowl = null;
+  }
+  requestAnimationFrame(loop);
+})();
 })();
 </script>
 </body>
