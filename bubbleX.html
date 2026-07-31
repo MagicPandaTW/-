@@ -2,19 +2,35 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Bubble X</title>
+<meta name="description" content="Bubble X —— 泡泡射擊生存遊戲">
+<meta name="theme-color" content="#0f1117">
+<meta name="color-scheme" content="dark">
+<!-- 安裝成 app 用；單檔直接開啟時這些檔案不存在也不會壞 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bubble X">
 <style>
   :root{
     --bg:#0f1117; --panel:#141926; --line:#28304a; --ink:#e8ecf5;
     --dim:#8891a8; --accent:#ffd166; --danger:#ff5d73;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;overflow:hidden;background:var(--bg);}
+  html,body{
+    height:100%;overflow:hidden;background:var(--bg);
+    overscroll-behavior:none;touch-action:none;   /* 擋掉下拉刷新與雙指縮放 */
+  }
   body{
     font-family:"Segoe UI","Noto Sans TC","PingFang TC",system-ui,sans-serif;
     color:var(--ink);display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:8px;padding:8px;
+    justify-content:center;gap:8px;
+    padding:max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+            max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
     -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
   }
   .bar{width:100%;max-width:460px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px;}
@@ -1096,7 +1112,7 @@ let grid, nextRow, angle, shots, mag, wheelA, dropIn, dropEvery, rowsDropped, sc
     chain, particles, falling, floaters, state, armed, level, shakeT,
     gifts, giftMeter, rescueLeft, turnCounts, dropOff = 0,
     bonus = null, bonusCool = 0, holding = false, loose, bowl = null, rise = [], shocks = [],
-    clownLeft = 0, stuckT = 0,
+    clownLeft = 0, stuckT = 0, looseWas = false, loosePop = 0,
     tensionLv = 0, fxPos = {x:220,y:260};
 
 /* ── 網格幾何（每列自帶 odd 旗標，插列時奇偶才不會錯亂）── */
@@ -1172,6 +1188,7 @@ function buildLevel(L, keepGear){
   turnCounts = false;
   gifts = 0; giftMeter = 0; rescueLeft = 2;
   bonus = null; bonusCool = 0; holding = false; clownLeft = 0;
+  looseWas = false; loosePop = 0;
   baseScore = save.score; score = save.score;
   initBackdrop(); tensionLv = 0;
   AUDIO.onKeyChange(k => fx('toast', '♪ 轉調　'+k, W/2, 300));
@@ -1550,9 +1567,6 @@ function endTurn(popped, dropped){
   if (bonusCool > 0) bonusCool--;
   if (turnCounts){                       // 回合結束才推進下降倒數
     turnCounts = false;
-    if (clownLeft > 0 && --clownLeft === 0){
-      itemFx('🤡 面具拿下來了'); AUDIO.blop(true);
-    }
     if (--dropIn <= 0){ descend(1); dropIn = dropEvery; }
   }
   hud();
@@ -1562,9 +1576,17 @@ function endTurn(popped, dropped){
 function checkEnd(){
   if (bonus) return;
   const wc = wallCount();
-  if (wc <= 3 && bonusCool <= 0){
-    if (wc === 0){ score += 1500; fx('praise','全部清光！', W/2, 118, {hue:130, big:1.1, sub:'+1500'}); }
-    return startBonus();
+  if (wc <= 3){
+    if (bonusCool <= 0){
+      if (wc === 0){ score += 1500; fx('praise','全部清光！', W/2, 118, {hue:130, big:1.1, sub:'+1500'}); }
+      return startBonus();
+    }
+    // 獎勵關還在冷卻：直接補牆，別讓玩家對著空畫面沒事做
+    if (wc === 0){ score += 500; fx('praise','清光了！', W/2, 130, {hue:130, big:.95, sub:'+500'}); }
+    let guard = 0;
+    while (occRows() < 3 && guard++ < 5) descend(1);
+    hud();
+    return;
   }
   for (let r=grid.length-1; r>=0; r--)
     if (grid[r].cells.some(Boolean)){
@@ -1599,7 +1621,7 @@ function failLevel(why){
    獎勵關：畫面清光（或剩 3 顆以下）就觸發
    倒數 3・2・1 → 連續開火 20 發，每發是小爆破、分數三倍
    ══════════════════════════════════════════════════ */
-const BONUS_SHOTS = 20, BONUS_MULT = 3, BONUS_COOL = 25;
+const BONUS_SHOTS = 20, BONUS_MULT = 3, BONUS_COOL = 10;   // 冷卻回合數
 
 function wallCount(){
   let n = 0;
@@ -1681,6 +1703,7 @@ function bonusTick(){
 }
 
 function endBonus(){
+  if (!bonus) return;
   const g = bonus.gained, pk = bonus.popped;
   bonus = null;
   AUDIO.bonusOff();
@@ -1754,8 +1777,16 @@ addEventListener('keydown', e => {
 });
 function rotate(){ if (!shots.length && !loose.length && !bowl){ mag.push(mag.shift()); wheelA += STEPA(); AUDIO.ui(); } }
 
+/* 小丑面具倒數：任何一發泡泡都算，包含道具彈與獎勵關連射 */
+function spendClown(){
+  if (clownLeft > 0 && --clownLeft === 0){
+    itemFx('🤡 面具拿下來了'); AUDIO.blop(true);
+  }
+}
+
 function fire(){
   const sp = 11;
+  spendClown();
   if (bonus){
     const ball = mag[0];
     mag.shift(); mag.push(nextBubble()); wheelA += STEPA();
@@ -1921,7 +1952,7 @@ function settleLoose(L){
   const g = cluster(r, c);
   if (g.length >= 3){
     if (bowl) bowl.pop += resolveClear(g);
-    else resolveClear(g);
+    else loosePop += resolveClear(g);
   }
 }
 
@@ -2070,9 +2101,20 @@ function update(){
     const pop = bowl.pop, d = dropFloating();
     bowl = null;
     endTurn(pop, d);
+  } else if (looseWas && !loose.length && !bowl){
+    // 亂彈風暴等情況：沒有保齡球，但鬆脫泡泡剛剛全部落定，一樣要結算
+    const d = dropFloating();
+    endTurn(loosePop, d);
+    loosePop = 0;
   }
+  looseWas = loose.length > 0;
   if (bonus) bonusTick();
-  else if (!canFire()){                          // 看門狗：任何原因卡住四秒就強制解除
+  else if (canFire() && !falling.length){
+    // 安全網：不管哪條路徑清空了盤面，這裡都會接住
+    // （冷卻與否由 checkEnd 決定：能觸發就開獎勵關，不能就補牆）
+    if (wallCount() <= 3) checkEnd();
+  }
+  if (!bonus && !canFire()){                          // 看門狗：任何原因卡住四秒就強制解除
     if (++stuckT > 240){
       for (const L of loose) settleLoose(L);
       shots.length = 0; loose.length = 0; bowl = null; stuckT = 0;
@@ -3087,8 +3129,31 @@ function codeBlock(){
          '<div class="hint">把這組密碼抄下來或拍照。<br>換手機、換電腦都能用它接著玩。</div>' +
          '<button class="mini" id="cpBtn">複製密碼</button>';
 }
+/* 安裝到主畫面 */
+let deferredPrompt = null;
+const isStandalone = () =>
+  (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone)').matches)
+  || navigator.standalone === true;
+function installBlock(){
+  if (isStandalone()) return '';
+  if (deferredPrompt) return '<button class="mini" id="pwaBtn">📲 安裝到主畫面</button>';
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent || ''))
+    return '<div class="hint">iPhone / iPad：點下方的「分享」→「加入主畫面」<br>就會變成一個 app，全螢幕又能離線玩</div>';
+  return '';
+}
+function refreshInstallUI(){
+  if (state === 'menu' && overlay.classList.contains('show')){
+    ovExtra.innerHTML = resumeBlock(); wireExtra();
+  }
+}
+addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e; refreshInstallUI();
+});
+addEventListener('appinstalled', () => { deferredPrompt = null; refreshInstallUI(); });
+
 function resumeBlock(){
-  return '<div class="row"><input id="codeIn" placeholder="輸入接關密碼" maxlength="14">' +
+  return installBlock() +
+         '<div class="row"><input id="codeIn" placeholder="輸入接關密碼" maxlength="14">' +
          '<button class="mini" id="okBtn">接關</button></div>' +
          '<div class="hint" id="codeMsg"></div>' +
          '<button class="mini" id="rsBtn" style="opacity:.55">清除所有紀錄</button>';
@@ -3099,6 +3164,14 @@ function wireExtra(){
     const t = ovExtra.querySelector('.code').textContent;
     if (navigator.clipboard) navigator.clipboard.writeText(t);
     cp.textContent = '已複製 ✓';
+  };
+  const pw = document.getElementById('pwaBtn');
+  if (pw) pw.onclick = async () => {
+    if (!deferredPrompt) return;
+    pw.textContent = '安裝中…';
+    deferredPrompt.prompt();
+    try { await deferredPrompt.userChoice; } catch(e){}
+    deferredPrompt = null; refreshInstallUI();
   };
   const rs = document.getElementById('rsBtn');
   if (rs) rs.onclick = () => {
@@ -3138,6 +3211,24 @@ hud();
 btn.textContent = '開始遊戲';
 onBtn = () => buildLevel(save.level||1);
 ovExtra.innerHTML = resumeBlock(); wireExtra();
+
+/* ══════════ App 化：離線快取、螢幕常亮、前景恢復 ══════════ */
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0)
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+let wakeLock = null;
+async function keepAwake(){
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }
+  catch(e){}
+}
+let audioStarted = false;
+btn.addEventListener('click', () => { audioStarted = true; keepAwake(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible'){
+    keepAwake();
+    if (audioStarted) AUDIO.start();          // iOS 切回前景後 AudioContext 會被暫停
+  }
+});
 
 /* 迴圈加上防護罩：任何一幀出錯都不會讓整個遊戲停住 */
 let errCount = 0;
