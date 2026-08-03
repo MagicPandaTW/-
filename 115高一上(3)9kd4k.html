@@ -1,0 +1,2342 @@
+<!DOCTYPE html>
+<!--
+  物理詳解骨架樣板 v3（依 115上(1)、115上(3) 全卷實作經驗更新）
+  規格依據：白底、手機優先、inline SVG 圖解、KaTeX 公式
+  使用方式：複製本檔，填入題目/詳解/圖形內容；禁止重寫 CSS 變數與 defs 區塊
+
+  【v2 對比 v1 的重點變更】
+  1. 選項一律用 .opts 清單逐行顯示，不可逗號連寫在同一行
+  2. 「觀念」說明一律用 .concept-list（●bullet）逐條列出，不可寫成大段連續文字
+  3. 平均速度/平均加速度一律用下標 v_平 / a_平（KaTeX: v_{\text{平}}、a_{\text{平}}），
+     不用 \bar{} 上標橫線；平均速率不設符號，直接寫中文「平均速率」四個字
+  4. 多選題的「計算」框，一律依選項分組，每個框的 tag 直接寫該框討論的選項字母
+     （如 (A)(E)），不可籠統寫「計算」；只有單一答案的填充題才維持 tag="計算"
+  5. 多個選項共用的基礎數據，先獨立放進 .basecalc 灰色框（tag 可寫「基本量」
+     「判斷」等），選項框再各自引用，避免每個選項框重複同樣的運算
+  6. 每題最下面固定加上「上一題／下一題」導覽按鈕（.qnav），第一/最後一題
+     對應方向的按鈕加 disabled
+  7. 分頁固定使用下拉式（題數通常>5），不使用 tab 版型
+  8. 【強制規則】物體貼合斜面/曲線/其他物體表面，或任何函數圖形（v-t圖、a-t圖等），
+     位置與座標一律由實際計算或函數取樣得出，禁止目測；圖上格線必須對齊實際
+     座標值（時間點、關鍵位置），不可用純裝飾性的等距格線
+  9. 詳解檔案只放「給學生看的最終內容」，函數擬合、係數求解等內部推導過程
+     不要放進最終文件（可在草稿中運算，結論直接寫成觀念/計算框即可）
+  10. 縱軸刻度數字一律用 text-anchor="end" 對齊同一縱行；v-t圖等函數圖的
+      軸線本身座標必須與格線的 t=0 位置完全對齊，不可分開設定造成錯位
+
+  【v3 新增規則（依115上(3)實作經驗）】
+  11. 【強制規則】所有v-t/x-t圖的資料點（circle）與多邊形頂點（polygon），
+      定稿前一律用直線方程式 y=y1+斜率×(x-x1) 重新驗證是否精確落在該圖的
+      直線上，不可肉眼估座標；只要調整過線的端點，所有依附在該線上的舊點
+      都要重新計算，不可保留舊座標（這是最容易出錯、也最容易被發現的錯誤）
+  12. 圖說（.figcap）與旁邊的「觀念」「計算」文字，必須用同一套邏輯、同一組
+      符號描述同一件事，不可自相矛盾（例如圖說說「不用相減」，計算卻用減法）
+  13. 同一張基礎圖（同一個三角形/同一組座標）被不同小題重複引用時，該小題
+      「新增」的部分要換一個新顏色/新標示再輸出，否則兩張圖看起來像沒有
+      更新；建議的圖形顏色慣例：
+        - 完整/參考用的大形狀：fill-opacity 0.15～0.22，加 stroke 同色虛線外框
+        - 被強調的子區域/答案區域：fill-opacity 0.3～0.45，無外框即可
+        - 每多一個「這一小題才新增」的區域，換一個第三種顏色（如 var(--v3)）
+  14. 多資料點（3個以上）的v-t圖，除了圖上逐點標示，最好在圖說下方額外
+      補一行完整比例關係式（如 t_p:t_q:t_f=1:√2:√3），方便學生對照
+  15. 給學生看的文字，不可出現像是在跟AI助手對話的殘留語氣（如「這裡改用」
+      「我調整成」），一律用直接對學生講述的自然語氣撰寫
+  16. 對非常初學的學生，任何「這個時間/這個量為什麼是XX」的中間結果，只要
+      不是顯而易見，都要拆解成明確的推導步驟（例如：先算兩個時刻相減、
+      再用對稱性說明為何要除以2），不能直接斷言結果
+  17. 示意圖中，若同一物體有「去程/回程」或「上升/下降」兩段路徑，要畫在
+      不同欄位（用短虛線標示「同一位置，畫開方便看」），不要重疊畫在
+      同一條線上，以免學生分不清是哪一段
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>李鋒物理 高一進度班小考(4) 詳解</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });"></script>
+
+<style>
+  :root{
+    --ink:#1a1a1a; --aux:#8a8a8a;
+    --v1:#c62828; --v2:#1565c0; --v3:#2e7d32;
+    --fill:#f2f4f7; --bg:#ffffff; --line:#e5e7eb;
+    --fs-h1:clamp(20px,5vw,26px); --fs-h2:clamp(16px,4.2vw,20px);
+    --fs-body:clamp(15px,4vw,17px); --fs-small:clamp(13px,3.4vw,14px);
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;
+    line-height:1.7; -webkit-text-size-adjust:100%;
+  }
+  body{ max-width:720px; margin:0 auto; padding:16px 16px 48px; }
+  h1{ font-size:var(--fs-h1); margin:0 0 4px; }
+  h2{ font-size:var(--fs-h2); margin:28px 0 10px; padding-top:14px; border-top:1px solid var(--line); }
+  .subtitle{ font-size:var(--fs-small); color:var(--aux); margin-bottom:20px; }
+  p, li{ font-size:var(--fs-body); }
+
+  /* ===== 題目卡：題幹與選項分開 ===== */
+  .qbox{
+    background:var(--fill); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; margin:16px 0; font-size:var(--fs-body);
+  }
+  .qstem{ margin:0 0 8px; }
+  .opts{ margin:0; padding:0; list-style:none; }
+  .opts li{ margin:6px 0; padding-left:2.4em; text-indent:-2.4em; }
+
+  /* ===== 圖形容器 ===== */
+  .fig{ display:block; width:100%; max-width:520px; height:auto; margin:1.2em auto; overflow:visible; }
+  .figrow{ display:flex; flex-wrap:wrap; gap:1em; justify-content:center; margin:1.2em 0; }
+  .figrow .fig{ flex:1 1 260px; margin:0.4em auto; }
+  .figcap{ text-align:center; font-size:var(--fs-small); color:var(--aux); margin-top:-0.6em; margin-bottom:1.2em; }
+  .lbl{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; font-style:italic; }
+  .lbl-rm{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; }
+
+  .ans{ background:#e8f5e9; border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; }
+  .flag{ color:#e65100; font-weight:bold; }
+
+  /* ===== 觀念：條列式，每項前面一個● ===== */
+  .concept{ background:#eef4fb; border-left:4px solid var(--v2); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .concept .tag, .flow .tag, .calcblock .tag, .basecalc .tag{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; color:#fff;
+    padding:2px 8px; border-radius:4px; margin-bottom:6px;
+  }
+  .concept .tag{ background:var(--v2); }
+  .concept-list{ list-style:none; margin:8px 0 0; padding:0; }
+  .concept-list li{ position:relative; margin:8px 0; padding-left:1.3em; }
+  .concept-list li::before{ content:"●"; position:absolute; left:0; top:0.15em; font-size:0.55em; color:var(--v2); }
+
+  .flow{ background:var(--fill); border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .flow .tag{ background:var(--aux); }
+  .flow ol{ margin:6px 0 0; padding-left:1.3em; }
+  .flow li{ margin:4px 0; }
+
+  /* ===== 計算：綠色框討論選項；灰色框放共用基本量 ===== */
+  .calcblock{ border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; background:#f4faf5; }
+  .calcblock .tag{ background:var(--v3); }
+  .calcblock .katex-display{ text-align:left; margin:8px 0; }
+
+  .basecalc{ border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; background:var(--fill); }
+  .basecalc .tag{ background:var(--aux); }
+  .basecalc .katex-display{ text-align:left; margin:8px 0; }
+
+  .step{ margin:12px 0; }
+  .step .label{ font-weight:600; color:var(--v2); }
+
+  /* ===== 分頁導覽：固定用下拉式（題數通常>5） ===== */
+  .pager{ position:sticky; top:0; background:var(--bg); z-index:10; border-bottom:1px solid var(--line); padding:8px 0 0; margin-bottom:14px; }
+  .tabs{ display:none; }
+  .pagesel{ display:block; }
+  .pagesel select{
+    width:100%; font-size:var(--fs-body); padding:8px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); margin-bottom:8px;
+  }
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  /* ===== 每題底部：上一題／下一題 ===== */
+  .qnav{ display:flex; justify-content:space-between; margin:24px 0 6px; }
+  .qnav button{ border:1px solid var(--line); background:var(--fill); color:var(--ink); font-size:var(--fs-small); padding:8px 14px; border-radius:8px; cursor:pointer; }
+  .qnav button:disabled{ opacity:0.4; cursor:default; }
+
+  /* ===== 公式點擊放大 ===== */
+  .katex{ cursor:pointer; } .katex-display{ cursor:pointer; }
+  #zoomOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:999; -webkit-tap-highlight-color:transparent; }
+  #zoomOverlay.show{ display:flex; }
+  #zoomInner{ background:var(--bg); border-radius:12px; padding:24px 20px; max-width:92vw; max-height:80vh; overflow:auto; box-shadow:0 8px 30px rgba(0,0,0,0.25); font-size:clamp(22px,7vw,34px); }
+</style>
+</head>
+<body>
+
+<h1>李鋒物理　高一進度班小考試題卷(4)　詳解</h1>
+<div class="subtitle">考試範圍：CH3-1　直線運動　｜　依原始題卷 115高一進度班小考(4) 逐題詳解，共19題</div>
+
+<nav class="pager">
+  <div class="tabs" id="tabs"></div>
+  <div class="pagesel" id="pagesel">
+    <select id="pageSelect">
+      <option value="page1">第1題</option>
+      <option value="page2">第2題</option>
+      <option value="page3">第3題</option>
+      <option value="page4">第4題</option>
+      <option value="page5">第5題</option>
+      <option value="page6">第6題</option>
+      <option value="page7">第7題</option>
+      <option value="page8">第8題</option>
+      <option value="page9">第9題</option>
+      <option value="page10">第10題</option>
+      <option value="page11">第11-12題</option>
+      <option value="page13">第13題</option>
+      <option value="page14">第14題</option>
+      <option value="page15">第15題</option>
+      <option value="page16">第16題</option>
+      <option value="page17">第17題</option>
+      <option value="page18">第18題</option>
+      <option value="page19">第19題</option>
+    </select>
+  </div>
+</nav>
+
+<div class="page active" id="page1">
+<section id="q1">
+<h2>第 1 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">等速水平飛行的轟炸機，相鄰1秒依序放下炸彈，地面上的觀察者，看到炸彈相對於飛機的位置，何者正確？（不考慮一切阻力）</p>
+<ul class="opts">
+<li>(A) 炸彈的相對位置斜向後方，且點距大致相等</li>
+<li>(B) 炸彈的相對位置斜向後方，且點距漸漸變大</li>
+<li>(C) 炸彈的相對位置在飛機正下方，且點距相等</li>
+<li>(D) 炸彈的相對位置在飛機正下方，且點距漸漸變大</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 225" preserveAspectRatio="xMidYMid meet" role="img" aria-label="轟炸機投彈的地面座標圖與相對位置構圖(四彈，含各觀測瞬間)">
+  <defs>
+    <marker id="ar1a" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <!-- 細格線：每一格代表相對飛機的下墜量一個基本單位，方便數格子看出1:3:5比例 -->
+  <g stroke="#e3e6ea" stroke-width="0.7">
+    <line x1="30" y1="20" x2="30" y2="175"/>
+    <line x1="42" y1="20" x2="42" y2="175"/>
+    <line x1="54" y1="20" x2="54" y2="175"/>
+    <line x1="66" y1="20" x2="66" y2="175"/>
+    <line x1="78" y1="20" x2="78" y2="175"/>
+    <line x1="90" y1="20" x2="90" y2="175"/>
+    <line x1="102" y1="20" x2="102" y2="175"/>
+    <line x1="114" y1="20" x2="114" y2="175"/>
+    <line x1="126" y1="20" x2="126" y2="175"/>
+    <line x1="138" y1="20" x2="138" y2="175"/>
+    <line x1="150" y1="20" x2="150" y2="175"/>
+    <line x1="162" y1="20" x2="162" y2="175"/>
+    <line x1="174" y1="20" x2="174" y2="175"/>
+    <line x1="186" y1="20" x2="186" y2="175"/>
+    <line x1="198" y1="20" x2="198" y2="175"/>
+    <line x1="210" y1="20" x2="210" y2="175"/>
+    <line x1="222" y1="20" x2="222" y2="175"/>
+    <line x1="234" y1="20" x2="234" y2="175"/>
+    <line x1="246" y1="20" x2="246" y2="175"/>
+    <line x1="258" y1="20" x2="258" y2="175"/>
+    <line x1="270" y1="20" x2="270" y2="175"/>
+    <line x1="282" y1="20" x2="282" y2="175"/>
+    <line x1="294" y1="20" x2="294" y2="175"/>
+    <line x1="306" y1="20" x2="306" y2="175"/>
+    <line x1="318" y1="20" x2="318" y2="175"/>
+    <line x1="330" y1="20" x2="330" y2="175"/>
+    <line x1="30" y1="28" x2="330" y2="28"/>
+    <line x1="30" y1="40" x2="330" y2="40"/>
+    <line x1="30" y1="52" x2="330" y2="52"/>
+    <line x1="30" y1="64" x2="330" y2="64"/>
+    <line x1="30" y1="76" x2="330" y2="76"/>
+    <line x1="30" y1="88" x2="330" y2="88"/>
+    <line x1="30" y1="100" x2="330" y2="100"/>
+    <line x1="30" y1="112" x2="330" y2="112"/>
+    <line x1="30" y1="124" x2="330" y2="124"/>
+    <line x1="30" y1="136" x2="330" y2="136"/>
+    <line x1="30" y1="148" x2="330" y2="148"/>
+    <line x1="30" y1="160" x2="330" y2="160"/>
+    <line x1="30" y1="172" x2="330" y2="172"/>
+  </g>
+  <!-- 粗格線：對齊四個投彈時刻 t=0,1,2,3 -->
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="60" y1="20" x2="60" y2="175"/>
+    <line x1="130" y1="20" x2="130" y2="175"/>
+    <line x1="200" y1="20" x2="200" y2="175"/>
+    <line x1="270" y1="20" x2="270" y2="175"/>
+  </g>
+  <line x1="30" y1="175" x2="330" y2="175" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar1a)"/>
+  <text x="300" y="190" font-size="12" class="lbl">飛行方向 →</text>
+  <!-- 飛機航線 -->
+  <line x1="30" y1="40" x2="330" y2="40" stroke="var(--v2)" stroke-width="1.8"/>
+  <text x="34" y="33" font-size="12" class="lbl" fill="var(--v2)">飛機（等速飛行）</text>
+  <!-- 四次投彈點 -->
+  <circle cx="60" cy="40" r="3.2" fill="var(--v2)"/>
+  <circle cx="130" cy="40" r="3.2" fill="var(--v2)"/>
+  <circle cx="200" cy="40" r="3.2" fill="var(--v2)"/>
+  <circle cx="270" cy="40" r="3.2" fill="var(--v2)"/>
+  <text x="60" y="16" font-size="10.5" class="lbl" text-anchor="middle">t=0投彈(甲)</text>
+  <text x="130" y="16" font-size="10.5" class="lbl" text-anchor="middle">t=1投彈(乙)</text>
+  <text x="200" y="16" font-size="10.5" class="lbl" text-anchor="middle">t=2投彈(丙)</text>
+  <text x="270" y="16" font-size="10.5" class="lbl" text-anchor="middle">t=3投彈(丁)</text>
+  <!-- 甲、乙、丙彈拋物線(地面座標，實際取樣) -->
+  <path d="M 60.0,40.0 L 75.0,40.55 L 90.0,42.2 L 105.0,44.96 L 120.0,48.82 L 135.0,53.78 L 150.0,59.84 L 165.0,67.0 L 180.0,75.27 L 195.0,84.63 L 210.0,95.1 L 225.0,106.67 L 240.0,119.35 L 255.0,133.12 L 270.0,148.0" fill="none" stroke="var(--v1)" stroke-width="1.6"/>
+  <path d="M 130.0,40.0 L 140.0,40.24 L 150.0,40.98 L 160.0,42.2 L 170.0,43.92 L 180.0,46.12 L 190.0,48.82 L 200.0,52.0 L 210.0,55.67 L 220.0,59.84 L 230.0,64.49 L 240.0,69.63 L 250.0,75.27 L 260.0,81.39 L 270.0,88.0" fill="none" stroke="var(--v3)" stroke-width="1.6"/>
+  <path d="M 200.0,40.0 L 205.0,40.06 L 210.0,40.24 L 215.0,40.55 L 220.0,40.98 L 225.0,41.53 L 230.0,42.2 L 235.0,43.0 L 240.0,43.92 L 245.0,44.96 L 250.0,46.12 L 255.0,47.41 L 260.0,48.82 L 265.0,50.35 L 270.0,52.0" fill="none" stroke="#8e5ec7" stroke-width="1.6"/>
+
+  <!-- ===== t=1 觀測瞬間（乙彈剛放）：只有甲、乙兩彈存在 ===== -->
+  <line x1="130" y1="40" x2="130" y2="52" stroke="#555" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <circle cx="130" cy="40" r="3.4" fill="var(--v3)"/>
+  <circle cx="130" cy="52" r="3.4" fill="var(--v1)"/>
+  <text x="136" y="43" font-size="9.5" class="lbl" fill="var(--v3)">乙:0</text>
+  <text x="136" y="55" font-size="9.5" class="lbl" fill="var(--v1)">甲:d</text>
+  <!-- ===== t=2 觀測瞬間（丙彈剛放）：甲、乙、丙三彈存在 ===== -->
+  <line x1="200" y1="40" x2="200" y2="88" stroke="#555" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <circle cx="200" cy="40" r="3.4" fill="#8e5ec7"/>
+  <circle cx="200" cy="52" r="3.4" fill="var(--v3)"/>
+  <circle cx="200" cy="88" r="3.4" fill="var(--v1)"/>
+  <text x="206" y="43" font-size="9.5" class="lbl" fill="#8e5ec7">丙:0</text>
+  <text x="206" y="55" font-size="9.5" class="lbl" fill="var(--v3)">乙:d</text>
+  <text x="206" y="91" font-size="9.5" class="lbl" fill="var(--v1)">甲:4d</text>
+  <!-- ===== t=3 觀測瞬間（丁彈剛放）：甲、乙、丙、丁四彈都存在 ===== -->
+  <line x1="270" y1="40" x2="270" y2="148" stroke="#555" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <circle cx="270" cy="40" r="3.4" fill="var(--aux)"/>
+  <circle cx="270" cy="52" r="3.4" fill="#8e5ec7"/>
+  <circle cx="270" cy="88" r="3.4" fill="var(--v3)"/>
+  <circle cx="270" cy="148" r="3.4" fill="var(--v1)"/>
+  <g font-size="10.5" class="lbl">
+    <text x="278" y="46">丁彈(剛放，落差0)</text>
+    <text x="278" y="60" fill="#8e5ec7">丙彈(落1秒，落差d)</text>
+    <text x="278" y="96" fill="var(--v3)">乙彈(落2秒，落差4d)</text>
+    <text x="278" y="152" fill="var(--v1)">甲彈(落3秒，落差9d)</text>
+  </g>
+  <g stroke="var(--ink)" stroke-width="1">
+    <line x1="258" y1="40" x2="258" y2="52"/>
+    <line x1="255" y1="40" x2="261" y2="40"/>
+    <line x1="255" y1="52" x2="261" y2="52"/>
+  </g>
+  <text x="230" y="49" font-size="9.5" class="lbl">1格</text>
+  <g stroke="var(--ink)" stroke-width="1">
+    <line x1="258" y1="52" x2="258" y2="88"/>
+    <line x1="255" y1="88" x2="261" y2="88"/>
+  </g>
+  <text x="228" y="73" font-size="9.5" class="lbl">3格</text>
+  <g stroke="var(--ink)" stroke-width="1">
+    <line x1="258" y1="88" x2="258" y2="148"/>
+    <line x1="255" y1="148" x2="261" y2="148"/>
+  </g>
+  <text x="228" y="121" font-size="9.5" class="lbl">5格</text>
+</svg>
+<div class="figcap">圖1：地面座標中，甲、乙、丙、丁四顆炸彈依序（每隔1秒）投下，各自的拋物線軌跡。細格線每一格代表相對飛機下墜的一個基本單位。圖中畫出三條灰色鉛垂虛線，分別是 t=1秒（乙彈剛放）、t=2秒（丙彈剛放）、t=3秒（丁彈剛放）三個觀測瞬間：t=1秒時只有甲、乙兩彈，間距1格；t=2秒時甲、乙、丙三彈，間距1格、3格；t=3秒時四彈齊全，間距1格、3格、5格——同一組炸彈，愈晚觀測，看到的相鄰間距比例就愈完整地呈現1:3:5的規律。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>炸彈離開飛機的瞬間，水平方向的初速度＝飛機當時的水平速度；離開後，炸彈水平方向不再受力（不考慮阻力），所以炸彈的水平速度永遠等於飛機的水平速度。</li>
+<li>因為兩者水平速度隨時同步，炸彈的水平位置會一直跟飛機的水平位置相等，所以「炸彈相對於飛機」水平方向的位置差恆為0──也就是說，炸彈永遠在飛機的正下方，不會斜向後方落後。</li>
+<li>鉛直方向上，炸彈離開飛機後只受重力，做自由落體；飛機本身沒有鉛直分量，所以「炸彈相對於飛機」的鉛直落差，就是炸彈離開飛機之後、以自由落體公式算出的下落距離。</li>
+<li>自由落體是從靜止開始的等加速度運動（相對飛機而言，炸彈離開瞬間的相對速度為0），愈晚放的炸彈墜落時間愈短、相對位置離飛機愈近；愈早放的炸彈已經墜落比較久，相對位置離飛機愈遠。</li>
+<li>更精確地說：等加速度運動中，從靜止出發、每經過相同時間（這裡是每1秒）所累積的位移比，會是 $1^2:2^2:3^2:\cdots=1:4:9:\cdots$；而「相鄰兩個累積位移的差」，就會呈現 $1:3:5:\cdots$ 這樣的奇數等差關係——這正是圖1中四顆炸彈之間，鉛直間距數格子會是1格、3格、5格的原因。</li>
+</ul>
+</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+<li>先在地面座標畫出飛機的水平航線，以及甲（t=0放）、乙（t=1秒放）、丙（t=2秒放）、丁（t=3秒放）四顆炸彈各自的拋物線軌跡（如圖1）。</li>
+<li>取「丁彈剛放開」的那一瞬間（t=3秒）畫一條鉛垂虛線：這條線同時通過飛機當時的位置、丁彈（剛放，尚未落下）、丙彈（已落下1秒）、乙彈（已落下2秒）、甲彈（已落下3秒）。</li>
+<li>比較這條鉛垂線上四個交點的相對高度差，就是「相對於飛機」的位置關係。</li>
+</ol>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+\text{丁彈（落下0秒）相對飛機下墜} &= 0 \\
+\text{丙彈（落下1秒）相對飛機下墜} &= \tfrac12 g (1)^2 \\
+\text{乙彈（落下2秒）相對飛機下墜} &= \tfrac12 g (2)^2 = 4\times\left(\tfrac12 g(1)^2\right) \\
+\text{甲彈（落下3秒）相對飛機下墜} &= \tfrac12 g (3)^2 = 9\times\left(\tfrac12 g(1)^2\right)
+\end{aligned}$$
+設 $\tfrac12 g(1)^2 = d$，四彈相對飛機的下墜量依序為 $0,\ d,\ 4d,\ 9d$。
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(B)(C)(D)</span>
+$$\begin{aligned}
+\text{丁、丙間的落差} &= d-0 = d \\
+\text{丙、乙間的落差} &= 4d-d = 3d \\
+\text{乙、甲間的落差} &= 9d-4d = 5d
+\end{aligned}$$
+水平方向相對位置差恆為0，所以炸彈一定落在飛機正下方（排除斜向後方的(A)(B)）；
+又相鄰點距為 $d:3d:5d=1:3:5$，愈往下點距愈大（不是等距），所以排除點距相等的(C)。
+</div>
+
+<div class="ans">
+答案：<strong>(D)</strong>
+</div>
+
+<div class="qnav">
+<button disabled>← 第1題</button>
+<button onclick="showPage('page2')">第2題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page1 -->
+
+<div class="page" id="page2">
+<section id="q2">
+<h2>第 2 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">將一物自地面以 40 m/s 鉛直上拋，則 2 秒後速度為何？（g = 10 m/s²）</p>
+<ul class="opts">
+<li>(A) 0 m/s</li>
+<li>(B) 10 m/s</li>
+<li>(C) 20 m/s</li>
+<li>(D) 30 m/s</li>
+<li>(E) 40 m/s</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="鉛直上拋示意圖">
+  <line x1="30" y1="170" x2="170" y2="170" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="150" y="184" font-size="10.5" class="lbl">地面（初位置，y=0）</text>
+  <line x1="100" y1="170" x2="100" y2="40" stroke="var(--v2)" stroke-width="1.6" marker-end="url(#ar2s)" stroke-dasharray="4 3"/>
+  <defs><marker id="ar2s" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v2)"/></marker></defs>
+  <circle cx="100" cy="170" r="4.2" fill="var(--v1)"/>
+  <text x="108" y="165" font-size="10" class="lbl" fill="var(--v1)">t=0，v₀=40 m/s（向上）</text>
+  <circle cx="100" cy="90" r="4.2" fill="var(--v3)"/>
+  <text x="108" y="93" font-size="10" class="lbl" fill="var(--v3)">t=2秒，仍在上升</text>
+  <text x="60" y="30" font-size="10" class="lbl">＋（向上為正）</text>
+</svg>
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="鉛直上拋v-t圖">
+  <defs><marker id="ar2q" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="160" y1="20" x2="160" y2="175"/>
+    <line x1="270" y1="20" x2="270" y2="175"/>
+    <line x1="50" y1="40.0" x2="270" y2="40.0"/>
+    <line x1="50" y1="100.0" x2="270" y2="100.0"/>
+  </g>
+  <line x1="50" y1="180" x2="50" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar2q)"/>
+  <line x1="35" y1="160.0" x2="285" y2="160.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar2q)"/>
+  <text x="18" y="30" font-size="14" class="lbl">v(m/s)</text>
+  <text x="288" y="176.0" font-size="14" class="lbl">t(s)</text>
+  <text x="39" y="44.0" font-size="12" class="lbl-rm" text-anchor="end">40</text>
+  <text x="39" y="104.0" font-size="12" class="lbl-rm" text-anchor="end">20</text>
+  <text x="39" y="164.0" font-size="12" class="lbl-rm" text-anchor="end">0</text>
+  <line x1="50" y1="40.0" x2="270" y2="280.0" stroke="var(--v2)" stroke-width="1.8"/>
+  <line x1="160" y1="100.0" x2="160" y2="160.0" stroke="var(--v3)" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <circle cx="160" cy="100.0" r="3.4" fill="var(--v3)"/>
+  <text x="166" y="94.0" font-size="11" class="lbl" fill="var(--v3)">(2, 20)</text>
+</svg>
+</div>
+<div class="figcap">圖2a（左）：拋出示意圖，地面為初位置（t=0），向上為正，標出t=0與t=2秒時的位置。圖2b（右）：對應的v-t圖，初速40 m/s，斜率為 $-g$ 的直線；2秒末仍在上升階段（尚未到達最高點）。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>鉛直上拋只受重力，全程加速度恆為 $-g$（取向上為正），從拋出到最高點、到落回，v-t圖是同一條斜直線，不會中途轉折。</li>
+<li>先算出到最高點（v=0）需要的時間，用來判斷「2秒」這個時刻物體還在上升還是已經開始下降。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式</span>
+$$v = v_0 - gt$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$v = 40 - 10\times 2$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$v = 20\ \text{m/s（仍向上，尚未到達最高點）}$$
+</div>
+到達最高點所需時間為 $40\div 10 = 4$ 秒，2秒小於4秒，所以此時物體仍在上升階段，速度為正值、大小20 m/s。
+</div>
+
+<div class="ans">
+答案：<strong>(C) 20 m/s</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page1')">← 第1題</button>
+<button onclick="showPage('page3')">第3題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page2 -->
+
+<div class="page" id="page3">
+<section id="q3">
+<h2>第 3 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">某自由落體最後一秒下落的距離為全程的 17/81，則此落體最初的高度為</p>
+<ul class="opts">
+<li>(A) 49.0</li>
+<li>(B) 128</li>
+<li>(C) 256</li>
+<li>(D) 397</li>
+<li>(E) 728</li>
+</ul>
+<p class="qstem">（單位：m）</p>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 160 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="自由落體示意圖">
+  <circle cx="80" cy="30" r="4.5" fill="var(--v1)"/>
+  <text x="90" y="34" font-size="10" class="lbl">t=0，靜止釋放</text>
+  <line x1="80" y1="35" x2="80" y2="165" stroke="var(--aux)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="55" y="100" font-size="11" class="lbl" text-anchor="middle">H</text>
+  <line x1="65" y1="35" x2="65" y2="165" stroke="var(--ink)" stroke-width="0.9"/>
+  <line x1="61" y1="35" x2="69" y2="35" stroke="var(--ink)" stroke-width="0.9"/>
+  <line x1="61" y1="165" x2="69" y2="165" stroke="var(--ink)" stroke-width="0.9"/>
+  <line x1="30" y1="165" x2="130" y2="165" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="80" y="180" font-size="10" class="lbl" text-anchor="middle">地面，t（落地）</text>
+  <circle cx="80" cy="140" r="3.6" fill="var(--v3)"/>
+  <text x="88" y="143" font-size="9.5" class="lbl" fill="var(--v3)">t−1秒時的位置</text>
+</svg>
+<svg class="fig" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="自由落體最後一秒v-t圖與相似三角形">
+  <defs><marker id="ar3b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="274" y1="20" x2="274" y2="185"/>
+    <line x1="302" y1="20" x2="302" y2="185"/>
+  </g>
+  <line x1="50" y1="185" x2="50" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar3b)"/>
+  <line x1="35" y1="180" x2="317" y2="180" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar3b)"/>
+  <text x="18" y="30" font-size="14" class="lbl">v</text>
+  <text x="320" y="196" font-size="14" class="lbl">t</text>
+  <text x="42" y="196" font-size="11" class="lbl-rm" text-anchor="middle">0</text>
+  <text x="274" y="196" font-size="11" class="lbl-rm" text-anchor="middle">t−1</text>
+  <text x="302" y="196" font-size="11" class="lbl-rm" text-anchor="middle">t（落地）</text>
+  <!-- 前(t-1)秒：小三角形，藍色 -->
+  <polygon points="50,180 274,180 274,52"
+           fill="var(--v2)" fill-opacity="0.22" stroke="var(--v2)" stroke-width="1.4"/>
+  <!-- 最後1秒：梯形，紅色 -->
+  <polygon points="274,180 302,180 302,36 274,52"
+           fill="var(--v1)" fill-opacity="0.32" stroke="var(--v1)" stroke-width="1.4"/>
+  <!-- 整體大三角形外框(斜邊) -->
+  <line x1="50" y1="180" x2="302" y2="36" stroke="var(--ink)" stroke-width="1.8"/>
+  <text x="162.0" y="150" font-size="11" class="lbl" fill="var(--v2)" text-anchor="middle">前(t−1)秒的位移</text>
+  <text x="162.0" y="162" font-size="11" class="lbl" fill="var(--v2)" text-anchor="middle">＝小三角形面積</text>
+  <text x="296.0" y="46" font-size="10.5" class="lbl" fill="var(--v1)" text-anchor="middle">最後1秒</text>
+  <text x="296.0" y="58" font-size="10.5" class="lbl" fill="var(--v1)" text-anchor="middle">＝梯形面積</text>
+  <text x="304" y="30" font-size="10.5" class="lbl">v=gt</text>
+</svg>
+</div>
+<div class="figcap">圖3a（左）：自由落體示意圖，物體從高度H處靜止釋放，標出t−1秒時的位置。圖3b（右）：對應的v-t圖，大三角形（面積＝總高度H）與藍色小三角形（前t-1秒，跟大三角形相似）。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>自由落體是從靜止開始的等加速度運動，v-t圖是一條由原點出發的直線，全程（0到t秒）圍出的面積就是總高度 $H$，是一個大三角形。</li>
+<li>「前(t−1)秒」的位移，同樣是v-t圖上（0到t−1秒）圍出的三角形面積——這個小三角形跟大三角形共用同一個頂點、同一條斜邊，形狀相似，只是把大三角形按比例縮小了 $\dfrac{t-1}{t}$ 倍。</li>
+<li>相似三角形的面積比＝邊長比的平方，所以不用分別算出兩個三角形的面積再相減，可以直接用「面積比」求出時間比：小三角形面積÷大三角形面積＝$\left(\dfrac{t-1}{t}\right)^2$。</li>
+<li>「最後1秒」的位移＝大三角形－小三角形（也就是圖上的紅色梯形），把它寫成「1－面積比」，就能直接列出關於 $t$ 的方程式，不需要把兩個三角形面積個別展開再硬解一元二次方程式。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算（v-t圖＋相似三角形，面積比＝邊長平方比）</span>
+<div class="step">
+<span class="label">公式</span>
+$$\dfrac{\text{小三角形面積（前t-1秒）}}{\text{大三角形面積（全程t秒）}}=\left(\dfrac{t-1}{t}\right)^2$$
+</div>
+<div class="step">
+<span class="label">列式（最後1秒＝大三角形－小三角形，占全程的17/81）</span>
+$$1-\left(\dfrac{t-1}{t}\right)^2=\dfrac{17}{81}\ \Longrightarrow\ \left(\dfrac{t-1}{t}\right)^2=\dfrac{64}{81}$$
+</div>
+<div class="step">
+<span class="label">開根號（邊長比，兩三角形對應邊為正值，取正根）</span>
+$$\dfrac{t-1}{t}=\dfrac{8}{9}$$
+</div>
+<div class="step">
+<span class="label">求解t</span>
+$$9(t-1)=8t \ \Longrightarrow\ 9t-9=8t \ \Longrightarrow\ t=9\ \text{秒}$$
+</div>
+<div class="step">
+<span class="label">代入求高度</span>
+題目沒有給 $g$ 值；若取 $g=9.8\ \text{m/s}^2$（此題未寫明g，需取此值才能對上選項）：
+$$H=\tfrac12\times9.8\times9^2=\tfrac12\times9.8\times81\approx397\ \text{m}$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(D) 397</strong>　<span class="flag">⚑</span> 本題未標示 $g$ 值；取 $g=9.8\ \text{m/s}^2$ 才能得到397，若貴班統一取 $g=10$，計算出的高度會是405 m（不在選項內），建議跟老師確認此題原意是否要用 $g=9.8$。
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page2')">← 第2題</button>
+<button onclick="showPage('page4')">第4題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page3 -->
+
+<div class="page" id="page4">
+<section id="q4">
+<h2>第 4 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">如附圖，若擺球擺到最高點時繩子斷掉，則球的運動軌跡為何？</p>
+<ul class="opts">
+<li>(A) A</li>
+<li>(B) B</li>
+<li>(C) C</li>
+<li>(D) D</li>
+<li>(E) E</li>
+</ul>
+<p class="qstem">（原圖中A、B、C、D、E為由斷點放射狀畫出的五個方向：A朝正上方、B斜向右上、C偏向右側、D斜向右下、E正朝下方）</p>
+</div>
+
+<svg class="fig" viewBox="0 0 300 240" preserveAspectRatio="xMidYMid meet" role="img" aria-label="擺球最高點斷繩軌跡示意圖">
+  <defs>
+    <marker id="ar4" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <!-- 固定支架 -->
+  <line x1="30" y1="30" x2="130" y2="30" stroke="var(--ink)" stroke-width="4"/>
+  <!-- 擺動弧線：最低點(懸掛正下方)到最高點(釋放點) -->
+  <path d="M 80,30 Q 40,110 80,150" fill="none" stroke="var(--aux)" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <line x1="80" y1="30" x2="80" y2="150" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <circle cx="80" cy="150" r="6" fill="none" stroke="var(--aux)" stroke-width="1.2"/>
+  <text x="60" y="170" font-size="10.5" class="lbl" fill="var(--aux)">最低點</text>
+  <!-- 繩子到最高點(釋放點) -->
+  <line x1="80" y1="30" x2="150" y2="110" stroke="var(--ink)" stroke-width="1.4"/>
+  <circle cx="150" cy="110" r="7" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.4"/>
+  <text x="150" y="128" font-size="10.5" class="lbl" text-anchor="middle">最高點（繩斷處，v=0）</text>
+  <!-- 五個方向箭頭，從釋放點放射 -->
+  <line x1="150" y1="110" x2="150" y2="55" stroke="var(--v2)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <text x="150" y="46" font-size="12" class="lbl" fill="var(--v2)" text-anchor="middle">A</text>
+  <line x1="150" y1="110" x2="196" y2="82" stroke="var(--v2)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <text x="204" y="78" font-size="12" class="lbl" fill="var(--v2)">B</text>
+  <line x1="150" y1="110" x2="222" y2="110" stroke="var(--v2)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <text x="230" y="114" font-size="12" class="lbl" fill="var(--v2)">C</text>
+  <line x1="150" y1="110" x2="196" y2="150" stroke="var(--v2)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <text x="204" y="162" font-size="12" class="lbl" fill="var(--v2)">D</text>
+  <line x1="150" y1="110" x2="150" y2="200" stroke="var(--v1)" stroke-width="2.2" marker-end="url(#ar4)"/>
+  <text x="150" y="216" font-size="12.5" class="lbl" fill="var(--v1)" text-anchor="middle">E（正確答案）</text>
+</svg>
+<div class="figcap">圖4：擺球擺到最高點（釋放點速度為0）時繩子斷掉，五個候選方向A~E由釋放點放射狀畫出；正確答案E是鉛直向下的方向。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>要判斷斷繩之後的運動軌跡，只需要兩個資訊：斷繩那一瞬間的初速度方向、以及之後的加速度方向。</li>
+<li>擺球擺動到「最高點」時，代表它正好要開始往回擺，這一瞬間速度恰好是0（跟鉛直上拋到達最高點時速度為0，是一樣的道理）。</li>
+<li>繩子斷掉之後，球只受重力，加速度方向恆為鉛直向下、大小為 $g$。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">判斷初速度</span>
+$$v_{\text{斷繩瞬間}} = 0\ \ (\text{最高點，瞬時靜止})$$
+</div>
+<div class="step">
+<span class="label">判斷之後的運動</span>
+初速度為0、加速度為鉛直向下的 $g$，代表斷繩後球只做「自由落體」——軌跡是一條鉛直向下的直線，不會有任何水平偏移。
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(E)</strong>（鉛直向下那個方向）
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page3')">← 第3題</button>
+<button onclick="showPage('page5')">第5題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page4 -->
+
+<div class="page" id="page5">
+<section id="q5">
+<h2>第 5 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">物體的加速度方向必與其下列哪個物理量方向相同？</p>
+<ul class="opts">
+<li>(A) 運動之方向</li>
+<li>(B) 位移之方向</li>
+<li>(C) 速度之方向</li>
+<li>(D) 速度變化之方向</li>
+<li>(E) 物體軌跡之切線方向</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>加速度的定義就是「速度對時間的變化率」：$\vec a=\dfrac{\Delta \vec v}{\Delta t}$。$\Delta t$ 是純量（恆為正），所以 $\vec a$ 的方向，永遠跟 $\Delta \vec v$（速度變化量）的方向相同——這是由定義直接保證的，不需要額外假設。</li>
+<li>把常見的物理量分成「兩個家族」：速度／運動方向／位移，這三個永遠同方向；加速度／合力／速度變化量，這三個也永遠同方向。但「這兩個家族之間」在任意瞬間是互相獨立的，不需要也不一定同方向（例如圓周運動、拋體運動中，速度方向與加速度方向就不同）。</li>
+<li>兩個家族的方向關係，決定了物體是變快還是變慢：速度與加速度同方向，物體在加速（變快）；速度與加速度反方向，物體在減速（變慢）。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 230" preserveAspectRatio="xMidYMid meet" role="img" aria-label="速度與加速度方向關係整理圖">
+  <!-- 左框：恆同方向的一組(速度家族) -->
+  <rect x="15" y="15" width="150" height="95" rx="6" fill="#eef4fb" stroke="var(--v2)" stroke-width="1.4"/>
+  <text x="90" y="32" font-size="11" class="lbl" fill="var(--v2)" text-anchor="middle">這三個永遠同方向</text>
+  <line x1="30" y1="55" x2="150" y2="55" stroke="var(--v2)" stroke-width="2.2" marker-end="url(#arQ5a)"/>
+  <text x="90" y="50" font-size="10.5" class="lbl" text-anchor="middle">速度</text>
+  <line x1="30" y1="75" x2="150" y2="75" stroke="var(--v2)" stroke-width="2.2" marker-end="url(#arQ5a)"/>
+  <text x="90" y="70" font-size="10.5" class="lbl" text-anchor="middle">運動方向</text>
+  <line x1="30" y1="95" x2="150" y2="95" stroke="var(--v2)" stroke-width="2.2" marker-end="url(#arQ5a)"/>
+  <text x="90" y="90" font-size="10.5" class="lbl" text-anchor="middle">位移</text>
+  <defs><marker id="arQ5a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v2)"/></marker></defs>
+
+  <!-- 右框：恆同方向的另一組(加速度家族) -->
+  <rect x="195" y="15" width="150" height="95" rx="6" fill="#f4faf5" stroke="var(--v3)" stroke-width="1.4"/>
+  <text x="270" y="32" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">這三個永遠同方向</text>
+  <line x1="210" y1="55" x2="330" y2="55" stroke="var(--v3)" stroke-width="2.2" marker-end="url(#arQ5b)"/>
+  <text x="270" y="50" font-size="10.5" class="lbl" text-anchor="middle">加速度</text>
+  <line x1="210" y1="75" x2="330" y2="75" stroke="var(--v3)" stroke-width="2.2" marker-end="url(#arQ5b)"/>
+  <text x="270" y="70" font-size="10.5" class="lbl" text-anchor="middle">合力</text>
+  <line x1="210" y1="95" x2="330" y2="95" stroke="var(--v3)" stroke-width="2.2" marker-end="url(#arQ5b)"/>
+  <text x="270" y="90" font-size="10.5" class="lbl" text-anchor="middle">速度變化量Δv</text>
+  <defs><marker id="arQ5b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v3)"/></marker></defs>
+
+  <!-- 中間：兩組之間彼此獨立 -->
+  <text x="180" y="65" font-size="16" class="lbl" text-anchor="middle" fill="var(--aux)">≠</text>
+  <text x="180" y="130" font-size="10" class="lbl" text-anchor="middle" fill="var(--aux)">左框與右框「在同一瞬間」互相獨立，</text>
+  <text x="180" y="144" font-size="10" class="lbl" text-anchor="middle" fill="var(--aux)">方向不一定相同</text>
+
+  <!-- 下方：兩組方向關係 -> 加速/減速 -->
+  <rect x="15" y="160" width="330" height="60" rx="6" fill="var(--fill)" stroke="var(--aux)" stroke-width="1"/>
+  <text x="30" y="180" font-size="11" class="lbl" fill="var(--v1)">● 左框（速度）與右框（加速度）同方向 → 物體正在「變快」</text>
+  <text x="30" y="202" font-size="11" class="lbl" fill="var(--v2)">● 左框（速度）與右框（加速度）反方向 → 物體正在「變慢」</text>
+</svg>
+<div class="figcap">圖5：物理量方向關係整理。左框（速度、運動方向、位移）三者恆同方向；右框（加速度、合力、速度變化量Δv）三者也恆同方向；但左框與右框彼此獨立，同一瞬間不一定同方向——兩者的相對方向才決定物體是變快還是變慢。</div>
+
+<div class="ans">
+答案：<strong>(D) 速度變化之方向</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page4')">← 第4題</button>
+<button onclick="showPage('page6')">第6題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page5 -->
+
+<div class="page" id="page6">
+<section id="q6">
+<h2>第 6 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">二火車在同一直線的軌道上各以10公尺/秒之速率相向而行，一鳥以20公尺/秒等速率飛行，當二車相距20公尺時，鳥自一車飛至另一車，到達後即飛回原車，再繼續來回飛行，在二車相撞前鳥共飛行多少路徑長？</p>
+<ul class="opts">
+<li>(A) 10</li>
+<li>(B) 20</li>
+<li>(C) 30</li>
+<li>(D) 40</li>
+<li>(E) 50</li>
+</ul>
+<p class="qstem">（單位：公尺）</p>
+</div>
+
+<svg class="fig" viewBox="0 0 360 140" preserveAspectRatio="xMidYMid meet" role="img" aria-label="兩車與鳥示意圖">
+  <line x1="30" y1="90" x2="330" y2="90" stroke="var(--aux)" stroke-width="1.2"/>
+  <rect x="35" y="75" width="34" height="18" fill="none" stroke="var(--v2)" stroke-width="1.6"/>
+  <text x="52" y="70" font-size="10" class="lbl" text-anchor="middle" fill="var(--v2)">甲車 10m/s→</text>
+  <rect x="291" y="75" width="34" height="18" fill="none" stroke="var(--v3)" stroke-width="1.6"/>
+  <text x="308" y="70" font-size="10" class="lbl" text-anchor="middle" fill="var(--v3)">←10m/s 乙車</text>
+  <text x="180" y="70" font-size="10.5" class="lbl" text-anchor="middle">相距20公尺</text>
+  <line x1="69" y1="84" x2="291" y2="84" stroke="var(--ink)" stroke-width="0.9"/>
+  <line x1="69" y1="80" x2="69" y2="88" stroke="var(--ink)" stroke-width="0.9"/>
+  <line x1="291" y1="80" x2="291" y2="88" stroke="var(--ink)" stroke-width="0.9"/>
+  <path d="M 100,40 Q 180,10 260,40" fill="none" stroke="var(--v1)" stroke-width="1.6" stroke-dasharray="3 2"/>
+  <text x="180" y="25" font-size="10" class="lbl" fill="var(--v1)">鳥 20m/s 來回飛行</text>
+  <circle cx="100" cy="40" r="3" fill="var(--v1)"/>
+</svg>
+<div class="figcap">圖6：兩車相向而行示意圖，甲車、乙車相距20公尺，鳥在兩車之間來回飛行。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>鳥在兩車之間來回飛行，路徑看起來很複雜，但只要問的是「總路徑長」，其實不需要一段一段算，只要抓住兩個關鍵：鳥「全程都以20 m/s飛行」，以及「鳥飛行的總時間＝兩車從相距20公尺到相撞為止的時間」。</li>
+<li>兩車相向而行，靠近的速度是兩車速率直接相加（同一段時間內兩車互相靠近的距離＝兩車各自走的距離加起來），不需要用到正式的「相對運動」公式，用最基本的「兩人相向而行，距離縮短的快慢＝兩人速率相加」就可以求出兩車相撞所需的時間。</li>
+<li>鳥的總路徑長＝鳥的飛行速率 × 鳥飛行的總時間（因為速率全程不變，路徑長＝速率×時間，跟中途轉了幾次彎無關）。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（求兩車相撞時間）</span>
+$$t_{\text{相撞}}=\dfrac{\text{兩車間距}}{v_{\text{甲車}}+v_{\text{乙車}}}$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$t_{\text{相撞}}=\dfrac{20}{10+10}$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$t_{\text{相撞}}=1\ \text{秒}$$
+</div>
+<div class="step">
+<span class="label">求鳥的總路徑長</span>
+$$S_{\text{鳥}}=v_{\text{鳥}}\times t_{\text{相撞}}=20\times1=20\ \text{公尺}$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(B) 20</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page5')">← 第5題</button>
+<button onclick="showPage('page7')">第7題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page6 -->
+
+<div class="page" id="page7">
+<section id="q7">
+<h2>第 7 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">有一皮球自由落下，著地後又反跳，所有過程均無能量損失，且球與地面接觸時間極短。假設速度向下為正，向上為負，則下列皮球速度 v 對時間 t 的關係圖何者正確？</p>
+<ul class="opts">
+<li>(A) 上升下降對稱的單一三角形（尖峰朝上）</li>
+<li>(B) 先急降再緩緩彎回上升的平滑曲線</li>
+<li>(C) 直線下降後直線上升，中間在時間軸上交會（V字形）</li>
+<li>(D) 單一直線由正值連續遞減到負值</li>
+<li>(E) 一段段斜率相同、往右上方傾斜的直線，每碰地一次瞬間跳回負值再繼續往上爬升</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="彈跳皮球v-t圖(依下降/反彈/上升分色)">
+  <defs><marker id="ar7" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="92.0" y1="20" x2="92.0" y2="180"/>
+    <line x1="134.0" y1="20" x2="134.0" y2="180"/>
+    <line x1="176.0" y1="20" x2="176.0" y2="180"/>
+    <line x1="218.0" y1="20" x2="218.0" y2="180"/>
+    <line x1="260.0" y1="20" x2="260.0" y2="180"/>
+    <line x1="50.0" y1="60.0" x2="260.0" y2="60.0"/>
+    <line x1="50.0" y1="160.0" x2="260.0" y2="160.0"/>
+  </g>
+  <line x1="50.0" y1="185" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar7)"/>
+  <line x1="35.0" y1="110.0" x2="270.0" y2="110.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar7)"/>
+  <text x="20" y="30" font-size="14" class="lbl">v</text>
+  <text x="274.0" y="126.0" font-size="14" class="lbl">t</text>
+  <text x="37.0" y="106.0" font-size="12" class="lbl-rm" text-anchor="end">0</text>
+  <text x="37.0" y="64.0" font-size="12" class="lbl-rm" text-anchor="end">v₁</text>
+  <text x="37.0" y="164.0" font-size="12" class="lbl-rm" text-anchor="end">−v₁</text>
+  <line x1="50.0" y1="110.0" x2="92.0" y2="60.0" stroke="var(--v1)" stroke-width="2"/><line x1="92.0" y1="160.0" x2="134.0" y2="110.0" stroke="var(--v2)" stroke-width="2"/><line x1="134.0" y1="110.0" x2="176.0" y2="60.0" stroke="var(--v1)" stroke-width="2"/><line x1="176.0" y1="160.0" x2="218.0" y2="110.0" stroke="var(--v2)" stroke-width="2"/><line x1="218.0" y1="110.0" x2="260.0" y2="60.0" stroke="var(--v1)" stroke-width="2"/>
+  <line x1="92.0" y1="60.0" x2="92.0" y2="160.0" stroke="var(--aux)" stroke-width="1.6" stroke-dasharray="2 2"/><line x1="176.0" y1="60.0" x2="176.0" y2="160.0" stroke="var(--aux)" stroke-width="1.6" stroke-dasharray="2 2"/>
+  <text x="66.8" y="77.0" font-size="10" class="lbl" fill="var(--v1)">下降①</text>
+  <text x="106.7" y="134.0" font-size="10" class="lbl" fill="var(--v2)">上升①</text>
+  <text x="148.7" y="77.0" font-size="10" class="lbl" fill="var(--v1)">下降②</text>
+  <text x="190.7" y="134.0" font-size="10" class="lbl" fill="var(--v2)">上升②</text>
+  <text x="232.7" y="77.0" font-size="10" class="lbl" fill="var(--v1)">下降③</text>
+  <text x="88.0" y="50.0" font-size="9.5" class="lbl" fill="var(--aux)" text-anchor="middle">反彈</text>
+  <text x="172.0" y="50.0" font-size="9.5" class="lbl" fill="var(--aux)" text-anchor="middle">反彈</text>
+</svg>
+<div class="figcap">圖7：v-t圖（向下為正），依「下降／反彈／上升」分成三種顏色：紅色是下降段（v由0或由負值一路直線上升到正的最大值），灰色鉛垂虛線是反彈瞬間（v瞬間由正最大值跳到負最大值，方向反轉但量值不變），藍色是上升段（v由負最大值直線上升回0，此時到達最高點）。整條線斜率處處相同（恆為+g），差別只在於「這一段對應的是球正在往上飛，還是正在往下掉」。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>全程只受重力，加速度恆為 $g$、方向向下；因為題目取「向下為正」，所以不論球正在下落還是正在上升，$\dfrac{dv}{dt}=+g$ 恆為正值──也就是說 v-t圖的斜率永遠相同、永遠是同一個正值，不會忽正忽負。</li>
+<li>正因為斜率全程不變，v-t圖不會出現像三角形尖峰或V字那樣「斜率變號」的轉折；唯一的變化只發生在「碰地瞬間」：接觸時間極短、無能量損失，代表速度大小不變，但方向瞬間反轉（由向下變向上），所以 v 值會在碰地那一刻瞬間從最大正值「跳」到最大負值，圖形上是一條鉛垂的躍變，不是平滑轉彎。</li>
+<li>反彈上升到最高點時，球的重力位能等於原來下落的高度（無能量損失），所以彈起後上升到最高點所需的時間，等於原本下落的時間；也就是說「彈起上升＋再落下碰地」這一整段所花的時間，是「最初那一次下落」的2倍。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+比較五個選項：(A)(B)(C) 都在圖形中間出現了「平滑的尖峰或V形轉折」，代表某一瞬間斜率由正變負（或由負變正）——但我們已經證明加速度恆為 $+g$，斜率不會變號，所以(A)(B)(C)都不對；(D) 只有一條連續直線、完全沒有碰地瞬間應有的躍變，也不對；只有(E)符合「同斜率的連續直線＋碰地瞬間鉛垂躍變＋每次彈起段的時間是前一次下落段的2倍」。
+</div>
+
+<div class="ans">
+答案：<strong>(E)</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page6')">← 第6題</button>
+<button onclick="showPage('page8')">第8題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page7 -->
+
+<div class="page" id="page8">
+<section id="q8">
+<h2>第 8 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">一氣球從地面上以5.0公尺/秒等速度上升，12秒後，氣球中有一石子以相對於氣球為靜止開始從氣球中掉落。對地面上的觀察者而言，石子從開始掉落到抵達地面的過程中，其速度 v 隨時間 t 的變化為下列何圖？（定向上為正）</p>
+<ul class="opts">
+<li>(A) 由正的5開始，直線遞減，穿過0後繼續變負</li>
+<li>(B) 由0開始，直線遞減到負值</li>
+<li>(C) 由0開始，先升後降的拋物線（開口向下）</li>
+<li>(D) 由0開始，先升後降的拋物線，峰值較高</li>
+<li>(E) 由正值開始，先升後降再回到接近0的三角形</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 190" preserveAspectRatio="xMidYMid meet" role="img" aria-label="石子脫離氣球過程分格示意圖">
+  <line x1="12" y1="170" x2="88" y2="170" stroke="var(--ink)" stroke-width="1.2"/>
+  <ellipse cx="50" cy="130" rx="10" ry="13" fill="none" stroke="var(--v2)" stroke-width="1.4"/>
+  <rect x="45" y="141" width="10" height="6" fill="none" stroke="var(--v2)" stroke-width="1.1"/>
+  <circle cx="50" cy="147" r="3.4" fill="var(--v1)"/>
+  <text x="50" y="184" font-size="8.5" class="lbl" text-anchor="middle">①上升中</text>
+  <text x="50" y="194" font-size="7.8" class="lbl" text-anchor="middle">石子隨氣球</text>
+  <line x1="102" y1="170" x2="178" y2="170" stroke="var(--ink)" stroke-width="1.2"/>
+  <ellipse cx="140" cy="90" rx="10" ry="13" fill="none" stroke="var(--v2)" stroke-width="1.4"/>
+  <rect x="135" y="101" width="10" height="6" fill="none" stroke="var(--v2)" stroke-width="1.1"/>
+  <circle cx="140" cy="108" r="3.4" fill="var(--v1)"/>
+  <text x="140" y="184" font-size="8.5" class="lbl" text-anchor="middle">②剛脫離</text>
+  <text x="140" y="194" font-size="7.8" class="lbl" text-anchor="middle">仍向上，開始減速</text>
+  <line x1="192" y1="170" x2="268" y2="170" stroke="var(--ink)" stroke-width="1.2"/>
+  <ellipse cx="230" cy="60" rx="10" ry="13" fill="none" stroke="var(--v2)" stroke-width="1.4"/>
+  <rect x="225" y="71" width="10" height="6" fill="none" stroke="var(--v2)" stroke-width="1.1"/>
+  <circle cx="230" cy="68" r="3.4" fill="var(--v1)"/>
+  <text x="230" y="184" font-size="8.5" class="lbl" text-anchor="middle">③最高點</text>
+  <text x="230" y="194" font-size="7.8" class="lbl" text-anchor="middle">v=0</text>
+  <line x1="282" y1="170" x2="358" y2="170" stroke="var(--ink)" stroke-width="1.2"/>
+  <ellipse cx="320" cy="40" rx="10" ry="13" fill="none" stroke="var(--v2)" stroke-width="1.4"/>
+  <rect x="315" y="51" width="10" height="6" fill="none" stroke="var(--v2)" stroke-width="1.1"/>
+  <circle cx="320" cy="100" r="3.4" fill="var(--v1)"/>
+  <text x="320" y="184" font-size="8.5" class="lbl" text-anchor="middle">④落下中</text>
+  <text x="320" y="194" font-size="7.8" class="lbl" text-anchor="middle">自由落體</text>
+  <line x1="95" y1="90" x2="95" y2="30" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="185" y1="90" x2="185" y2="30" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="275" y1="90" x2="275" y2="30" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="2 2"/>
+</svg>
+<div class="figcap">圖8a：石子脫離氣球過程分格示意圖──①石子隨氣球一同上升；②石子剛脫離氣球，因慣性仍保有氣球當時的向上速度，繼續上升（但已經開始減速）；③到達最高點，v=0；④之後只受重力，自由落下。</div>
+
+<svg class="fig" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="氣球中石子v-t圖(標示關鍵時刻)">
+  <defs>
+    <marker id="ar8" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="50.0" y1="72.0" x2="298.0" y2="72.0"/>
+    <line x1="50.0" y1="110.0" x2="298.0" y2="110.0"/>
+    <line x1="81.0" y1="20" x2="81.0" y2="185"/>
+  </g>
+  <line x1="50.0" y1="185" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar8)"/>
+  <line x1="35.0" y1="110.0" x2="318.0" y2="110.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar8)"/>
+  <text x="18" y="30" font-size="14" class="lbl">v(m/s)</text>
+  <text x="322.0" y="126.0" font-size="14" class="lbl">t(s)</text>
+  <text x="39.0" y="76.0" font-size="11" class="lbl-rm" text-anchor="end">5</text>
+  <text x="39.0" y="114.0" font-size="11" class="lbl-rm" text-anchor="end">0</text>
+  <!-- v(t)=5-10t 直線，僅示意斜率方向與截距，不畫出著地點 -->
+  <line x1="50.0" y1="72.0" x2="298.0" y2="180.0" stroke="var(--v2)" stroke-width="2"/>
+  <circle cx="50.0" cy="72.0" r="3.8" fill="var(--v1)"/>
+  <text x="56.0" y="64.0" font-size="10.5" class="lbl" fill="var(--v1)">t=0秒（脫離氣球）</text>
+  <text x="56.0" y="86.0" font-size="10" class="lbl" fill="var(--v1)">v=+5</text>
+  <circle cx="81.0" cy="110.0" r="3.8" fill="var(--v3)"/>
+  <text x="87.0" y="102.0" font-size="10.5" class="lbl" fill="var(--v3)">最高點</text>
+  <text x="87.0" y="124.0" font-size="10" class="lbl" fill="var(--v3)">v=0</text>
+  <text x="270" y="192" font-size="10" class="lbl" fill="var(--v2)">之後持續遞減……直到著地</text>
+</svg>
+<div class="figcap">圖8b：v-t圖（向上為正）。全程是同一條斜率為 $-g$ 的直線，沒有任何轉折：t=0秒脫離氣球時 $v=+5$，之後沿同一條直線持續遞減，經過最高點（$v=0$），再繼續變負，直到著地。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>「以相對於氣球為靜止開始掉落」是這一題的關鍵字：它的意思是石子脫離的瞬間，相對氣球的速度是0，也就是石子當下的（對地面的）速度，就等於氣球當時的速度，即 $+5\ \text{m/s}$（向上）——石子並不是從靜止（0）開始掉落的。</li>
+<li>脫離氣球之後，石子只受重力，這一整個過程（不論石子是先繼續上升、或已經開始下降）加速度都恆為 $-g$，所以 v-t圖是「同一條斜直線」，沒有轉折。</li>
+<li>石子的初速是向上的（+5），但加速度向下，所以石子會先「以自由落體式的等加速度」繼續上升一小段，到達最高點（v=0）後才開始下降，v 值也就從正的5，沿同一條直線一路遞減，穿過0、變成負值，直到著地。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：算出關鍵時刻</span>
+<div class="step">
+<span class="label">t=0秒（脫離氣球瞬間）</span>
+$$v(0)=+5\ \text{m/s（等於氣球當時的速度）}$$
+</div>
+<div class="step">
+<span class="label">最高點時刻（公式：v=0）</span>
+$$0=5-gt\ \Longrightarrow\ t=\dfrac{5}{g}=\dfrac{5}{10}=0.5\ \text{秒}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+$$v(t) = v_{\text{脫離瞬間}} - gt = 5 - gt$$
+這是一條斜率為 $-g$、y截距為 $+5$ 的直線；當 $t=0$ 時 $v=+5$（不是0），且全程沒有轉折，經過 $t=0.5$秒的最高點（$v=0$）後繼續沿同一條直線遞減成負值，直到著地（題目已知12秒代表的是氣球先上升多久才放開石子，只影響「石子從多高處掉下」，不影響v-t圖本身的斜率與截距，所以這一題不需要算出實際著地的時間或速度）。比對選項，只有(A)是「由正的5開始、直線遞減、穿過0繼續變負」的圖形，其餘選項要嘛y截距錯（從0開始），要嘛出現不該有的曲線轉折。
+</div>
+
+<div class="ans">
+答案：<strong>(A)</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page7')">← 第7題</button>
+<button onclick="showPage('page9')">第9題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page8 -->
+
+<div class="page" id="page9">
+<section id="q9">
+<h2>第 9 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">在直線等加速度運動實驗中，如果打點計時器的打點頻率為50赫茲，今取其中一段打點記錄，並將連續相鄰的點依序編號，測量編號10～15以及編號60～65的點距如圖所示，則加速度的量值約為多少公分/秒²？</p>
+<ul class="opts">
+<li>(A) 70</li>
+<li>(B) 80</li>
+<li>(C) 90</li>
+<li>(D) 100</li>
+<li>(E) 500</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="紙帶打點編號與尺規示意圖(4.5~7.5cm對齊)">
+  <defs>
+    <marker id="ar9" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="4" refY="6" orient="auto">
+      <path d="M0,0 L8,0 L4,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <text x="10" y="20" font-size="10.5" class="lbl" fill="var(--aux)">打點編號</text>
+  <line x1="30" y1="60" x2="161.0" y2="60" stroke="var(--ink)" stroke-width="1"/>
+  <line x1="30" y1="76" x2="161.0" y2="76" stroke="var(--ink)" stroke-width="1.4"/>
+  <circle cx="50.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <line x1="50.0" y1="30" x2="50.0" y2="56" stroke="var(--v2)" stroke-width="1.1" marker-end="url(#ar9)"/>
+  <text x="50.0" y="24" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">10</text>
+  <circle cx="62.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="74.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="86.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="98.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="110.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <line x1="110.0" y1="30" x2="110.0" y2="56" stroke="var(--v2)" stroke-width="1.1" marker-end="url(#ar9)"/>
+  <text x="110.0" y="24" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">15</text>
+  <circle cx="122.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="134.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="146.0" cy="60" r="2.4" fill="var(--v1)"/>
+  <text x="40.0" y="88" font-size="10" class="lbl-rm" text-anchor="middle">4</text>
+  <text x="60.0" y="88" font-size="10" class="lbl-rm" text-anchor="middle">5</text>
+  <text x="80.0" y="88" font-size="10" class="lbl-rm" text-anchor="middle">6</text>
+  <text x="100.0" y="88" font-size="10" class="lbl-rm" text-anchor="middle">7</text>
+  <text x="120.0" y="88" font-size="10" class="lbl-rm" text-anchor="middle">8</text>
+  <text x="140.0" y="88" font-size="10" class="lbl-rm" text-anchor="middle">9</text>
+  <line x1="50.0" y1="60" x2="50.0" y2="80" stroke="var(--v2)" stroke-width="0.8" stroke-dasharray="2 2"/>
+  <text x="50.0" y="97" font-size="8.5" class="lbl" fill="var(--v2)" text-anchor="middle">4.5</text>
+  <line x1="110.0" y1="60" x2="110.0" y2="80" stroke="var(--v2)" stroke-width="0.8" stroke-dasharray="2 2"/>
+  <text x="110.0" y="97" font-size="8.5" class="lbl" fill="var(--v2)" text-anchor="middle">7.5</text>
+  <path d="M 171.0,55 Q 179.0,70 171.0,85 M 179.0,55 Q 187.0,70 179.0,85" fill="none" stroke="var(--ink)" stroke-width="1.2"/>
+  <line x1="210" y1="60" x2="390" y2="60" stroke="var(--ink)" stroke-width="1"/>
+  <line x1="210" y1="76" x2="390" y2="76" stroke="var(--ink)" stroke-width="1.4"/>
+  <circle cx="220" cy="60" r="2.4" fill="var(--v1)"/>
+  <line x1="220" y1="30" x2="220" y2="56" stroke="var(--v2)" stroke-width="1.1" marker-end="url(#ar9)"/>
+  <text x="220" y="24" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">60</text>
+  <circle cx="245" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="273" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="304" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="338" cy="60" r="2.4" fill="var(--v1)"/>
+  <circle cx="375" cy="60" r="2.4" fill="var(--v1)"/>
+  <line x1="375" y1="30" x2="375" y2="56" stroke="var(--v2)" stroke-width="1.1" marker-end="url(#ar9)"/>
+  <text x="375" y="24" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">65</text>
+  <text x="70" y="112" font-size="9.5" class="lbl" fill="var(--aux)" text-anchor="middle">尺（刻度cm）</text>
+</svg>
+<div class="figcap">圖9：紙帶打點編號示意圖（依實際刻度重繪）。左段是連續的9個打點（10~18），10號對齊尺上刻度4.5 cm，15號對齊刻度7.5 cm（藍色虛線標出對齊位置、下方標出讀數），所以 $S_{10\sim15}=7.5-4.5=3$ cm；15號之後紙帶上還接著16、17、18號點，尺的刻度延伸到9 cm，才遇到波浪線（中間省略）。右段是連續的6個打點（60~65），60號、65號分別是頭尾兩點，點距明顯比左段大許多，示意等加速度運動「愈晚點距愈大」的特徵（右段圖為示意，非精確比例，實際讀數 $S_{60\sim65}=13$ cm 以老師提供的原始紙帶為準）。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>打點頻率50赫茲，代表每秒打50個點，所以每兩個相鄰點之間的時間間隔為 $\dfrac{1}{50}=0.02$ 秒。</li>
+<li>編號10到15之間，共有5個間隔（10→11→12→13→14→15），所以這一段所經過的時間是 $5\times0.02=0.1$ 秒；編號60到65之間同理也是0.1秒。</li>
+<li>一小段（多個間隔）的平均速度，恰好等於這一小段「時間中點」那一刻的瞬時速度（中點定理，前提是等加速度運動）。所以「10～15」這一段量到的平均速度，代表的是編號12.5那一刻的瞬時速度；「60～65」這一段代表編號62.5那一刻的瞬時速度。</li>
+<li>兩個瞬時速度之間相差的時間，是從編號12.5到62.5，共50個間隔，即 $50\times0.02=1.0$ 秒；用「速度變化 ÷ 時間」就可以求出加速度。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式</span>
+$$v(12.5)=\dfrac{S_{10\sim15}}{5T},\qquad v(62.5)=\dfrac{S_{60\sim65}}{5T},\qquad a=\dfrac{v(62.5)-v(12.5)}{(62.5-12.5)\,T}$$
+其中 $T=\dfrac{1}{50}=0.02$ 秒為每一個打點間隔的時間。
+</div>
+<div class="step">
+<span class="label">代入（依圖上刻度讀值）</span>
+由尺上讀出 $S_{10\sim15}=3\ \text{cm}$，$S_{60\sim65}=13\ \text{cm}$：
+$$v(12.5)=\dfrac{3}{0.1}=30\ \text{cm/s},\qquad v(62.5)=\dfrac{13}{0.1}=130\ \text{cm/s}$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$a=\dfrac{130-30}{50\times0.02}=\dfrac{100}{1.0}=100\ \text{cm/s}^2$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(D) 100</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page8')">← 第8題</button>
+<button onclick="showPage('page10')">第10題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page9 -->
+
+<div class="page" id="page10">
+<section id="q10">
+<h2>第 10 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">有甲、乙、丙、丁、戊五部公車，在同一地點沿同一直線，每隔 t 秒由靜止開始以等加速度 a，依序開出，當戊車剛要出發時，甲車恰離出發點64米，此時乙、丙兩車相距多遠？</p>
+<ul class="opts">
+<li>(A) 16</li>
+<li>(B) 20</li>
+<li>(C) 24</li>
+<li>(D) 32</li>
+<li>(E) 40</li>
+</ul>
+<p class="qstem">（單位：公尺）</p>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>五部車用「同一個 $a$」從靜止開始加速，只是出發的時間點不同（每隔 $t$ 秒依序出發：甲、乙、丙、丁、戊）。「戊車剛要出發」這個瞬間，甲車已經跑了4個 $t$，乙車3個 $t$，丙車2個 $t$，丁車1個 $t$，戊車剛出發（0個 $t$）。</li>
+<li>五部車此刻的位置，其實就等於「同一個從靜止出發、等加速度運動的物體」在 $t,2t,3t,4t$ 這四個等時距時刻的位置取樣——跟「單一物體等時距取樣、位移比為 $1^2:2^2:3^2:4^2$」是同一件事，只是換成五部車來呈現。</li>
+<li>把每部車的位置寫成「基本單位 $u=\tfrac12at^2$」的倍數：戊＝$0$、丁＝$1u$、丙＝$4u$、乙＝$9u$、甲＝$16u$。相鄰兩部車之間的差，剛好是 $1u,3u,5u,7u$——這就是「從靜止出發的等加速度運動，相鄰等時距位移比為1:3:5:7…」這個規律的具體展現，不需要每次都重新代公式硬算。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 293 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="五車依序出發分格示意圖">
+  <line x1="45" y1="20" x2="273" y2="20" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="1.5 2"/>
+  <text x="2" y="24" font-size="8" class="lbl" fill="var(--aux)">t=0　甲出發</text>
+  <circle cx="55" cy="20" r="3.6" fill="var(--v1)"/>
+  <text x="55" y="14" font-size="9" class="lbl" fill="var(--v1)" text-anchor="middle">甲</text>
+  <line x1="45" y1="54" x2="273" y2="54" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="1.5 2"/>
+  <text x="2" y="58" font-size="8" class="lbl" fill="var(--aux)">t=t　乙出發（甲已跑1u）</text>
+  <circle cx="68" cy="54" r="3.6" fill="var(--v1)"/>
+  <text x="68" y="48" font-size="9" class="lbl" fill="var(--v1)" text-anchor="middle">甲</text>
+  <circle cx="55" cy="54" r="3.6" fill="var(--v2)"/>
+  <text x="55" y="48" font-size="9" class="lbl" fill="var(--v2)" text-anchor="middle">乙</text>
+  <line x1="45" y1="88" x2="273" y2="88" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="1.5 2"/>
+  <text x="2" y="92" font-size="8" class="lbl" fill="var(--aux)">t=2t　丙出發（甲跑4u,乙跑1u）</text>
+  <circle cx="107" cy="88" r="3.6" fill="var(--v1)"/>
+  <text x="107" y="82" font-size="9" class="lbl" fill="var(--v1)" text-anchor="middle">甲</text>
+  <circle cx="68" cy="88" r="3.6" fill="var(--v2)"/>
+  <text x="68" y="82" font-size="9" class="lbl" fill="var(--v2)" text-anchor="middle">乙</text>
+  <circle cx="55" cy="88" r="3.6" fill="var(--v3)"/>
+  <text x="55" y="82" font-size="9" class="lbl" fill="var(--v3)" text-anchor="middle">丙</text>
+  <line x1="45" y1="122" x2="273" y2="122" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="1.5 2"/>
+  <text x="2" y="126" font-size="8" class="lbl" fill="var(--aux)">t=3t　丁出發（甲9u,乙4u,丙1u）</text>
+  <circle cx="172" cy="122" r="3.6" fill="var(--v1)"/>
+  <text x="172" y="116" font-size="9" class="lbl" fill="var(--v1)" text-anchor="middle">甲</text>
+  <circle cx="107" cy="122" r="3.6" fill="var(--v2)"/>
+  <text x="107" y="116" font-size="9" class="lbl" fill="var(--v2)" text-anchor="middle">乙</text>
+  <circle cx="68" cy="122" r="3.6" fill="var(--v3)"/>
+  <text x="68" y="116" font-size="9" class="lbl" fill="var(--v3)" text-anchor="middle">丙</text>
+  <circle cx="55" cy="122" r="3.6" fill="#8e5ec7"/>
+  <text x="55" y="116" font-size="9" class="lbl" fill="#8e5ec7" text-anchor="middle">丁</text>
+  <line x1="45" y1="156" x2="273" y2="156" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="1.5 2"/>
+  <text x="2" y="160" font-size="8" class="lbl" fill="var(--aux)">t=4t　戊出發（甲16u,乙9u,丙4u,丁1u）</text>
+  <circle cx="263" cy="156" r="3.6" fill="var(--v1)"/>
+  <text x="263" y="150" font-size="9" class="lbl" fill="var(--v1)" text-anchor="middle">甲</text>
+  <circle cx="172" cy="156" r="3.6" fill="var(--v2)"/>
+  <text x="172" y="150" font-size="9" class="lbl" fill="var(--v2)" text-anchor="middle">乙</text>
+  <circle cx="107" cy="156" r="3.6" fill="var(--v3)"/>
+  <text x="107" y="150" font-size="9" class="lbl" fill="var(--v3)" text-anchor="middle">丙</text>
+  <circle cx="68" cy="156" r="3.6" fill="#8e5ec7"/>
+  <text x="68" y="150" font-size="9" class="lbl" fill="#8e5ec7" text-anchor="middle">丁</text>
+  <circle cx="55" cy="156" r="3.6" fill="var(--aux)"/>
+  <text x="55" y="150" font-size="9" class="lbl" fill="var(--aux)" text-anchor="middle">戊</text>
+  <line x1="55" y1="12" x2="55" y2="164" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="55" y="8" font-size="8.5" class="lbl" text-anchor="middle">出發點</text>
+</svg>
+<div class="figcap">圖10a：五車依序出發的分格示意圖，由上到下依序是每一部車剛出發的那個瞬間──甲出發、乙出發（甲已跑1u）、丙出發（甲4u、乙1u）、丁出發（甲9u、乙4u、丙1u）、戊出發（甲16u、乙9u、丙4u、丁1u），可以清楚看到甲車的位置隨著時間一路累積成 $1u\to4u\to9u\to16u$，正好是 $1^2u,2^2u,3^2u,4^2u$。</div>
+
+<svg class="fig" viewBox="0 0 320 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="五車相對位置分格示意圖">
+<line x1="25" y1="90" x2="263" y2="90" stroke="var(--ink)" stroke-width="1.4"/><circle cx="40" cy="90" r="4" fill="var(--aux)"/><text x="40" y="75" font-size="10.5" class="lbl" text-anchor="middle" fill="var(--aux)">戊</text><text x="40" y="108" font-size="9" class="lbl-rm" text-anchor="middle">0u</text><circle cx="53" cy="90" r="4" fill="#8e5ec7"/><text x="53" y="75" font-size="10.5" class="lbl" text-anchor="middle" fill="#8e5ec7">丁</text><text x="53" y="108" font-size="9" class="lbl-rm" text-anchor="middle">1u</text><circle cx="92" cy="90" r="4" fill="var(--v3)"/><text x="92" y="75" font-size="10.5" class="lbl" text-anchor="middle" fill="var(--v3)">丙</text><text x="92" y="108" font-size="9" class="lbl-rm" text-anchor="middle">4u</text><circle cx="157" cy="90" r="4" fill="var(--v2)"/><text x="157" y="75" font-size="10.5" class="lbl" text-anchor="middle" fill="var(--v2)">乙</text><text x="157" y="108" font-size="9" class="lbl-rm" text-anchor="middle">9u</text><circle cx="248" cy="90" r="4" fill="var(--v1)"/><text x="248" y="75" font-size="10.5" class="lbl" text-anchor="middle" fill="var(--v1)">甲</text><text x="248" y="108" font-size="9" class="lbl-rm" text-anchor="middle">16u</text><line x1="40" y1="130" x2="53" y2="130" stroke="var(--ink)" stroke-width="1"/><line x1="40" y1="126" x2="40" y2="134" stroke="var(--ink)" stroke-width="1"/><line x1="53" y1="126" x2="53" y2="134" stroke="var(--ink)" stroke-width="1"/><text x="46.5" y="146" font-size="10.5" class="lbl" text-anchor="middle">1單位</text><line x1="53" y1="130" x2="92" y2="130" stroke="var(--ink)" stroke-width="1"/><line x1="53" y1="126" x2="53" y2="134" stroke="var(--ink)" stroke-width="1"/><line x1="92" y1="126" x2="92" y2="134" stroke="var(--ink)" stroke-width="1"/><text x="72.5" y="146" font-size="10.5" class="lbl" text-anchor="middle">3單位</text><line x1="92" y1="130" x2="157" y2="130" stroke="var(--ink)" stroke-width="1"/><line x1="92" y1="126" x2="92" y2="134" stroke="var(--ink)" stroke-width="1"/><line x1="157" y1="126" x2="157" y2="134" stroke="var(--ink)" stroke-width="1"/><text x="124.5" y="146" font-size="10.5" class="lbl" text-anchor="middle">5單位</text><line x1="157" y1="130" x2="248" y2="130" stroke="var(--ink)" stroke-width="1"/><line x1="157" y1="126" x2="157" y2="134" stroke="var(--ink)" stroke-width="1"/><line x1="248" y1="126" x2="248" y2="134" stroke="var(--ink)" stroke-width="1"/><text x="202.5" y="146" font-size="10.5" class="lbl" text-anchor="middle">7單位</text>
+<text x="40" y="55" font-size="9.5" class="lbl">出發點</text>
+</svg>
+<div class="figcap">圖10b：戊車剛出發那一瞬間（即上圖最後一格）的最終相對位置，加上相鄰車距的分段標示。戊、丁、丙、乙、甲依序位在 $0,1u,4u,9u,16u$，相鄰車距依序是 $1u,3u,5u,7u$——正是1:3:5:7的規律。</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（用甲車求出基本單位u）</span>
+$$x_{\text{甲}}=16u=64\ \text{（已知）}$$
+</div>
+<div class="step">
+<span class="label">化簡</span>
+$$u=4\ \text{（單位：公尺）}$$
+</div>
+<div class="step">
+<span class="label">代入乙、丙車位置</span>
+$$x_{\text{乙}}=9u=9\times4=36\ \text{m},\qquad x_{\text{丙}}=4u=4\times4=16\ \text{m}$$
+</div>
+<div class="step">
+<span class="label">結果（也可以直接用比例：乙丙間距＝5u＝5×4）</span>
+$$\Delta x_{\text{乙丙}}=x_{\text{乙}}-x_{\text{丙}}=36-16=5u=20\ \text{m}$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(B) 20</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page9')">← 第9題</button>
+<button onclick="showPage('page11')">第11-12題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page10 -->
+
+<div class="page" id="page11">
+<section id="q11">
+<h2>第 11 題（單選，題組第1小題）</h2>
+<div class="qbox">
+<p class="qstem">由離地相同高度處，於同一瞬間，使甲球與乙球自靜止狀態開始落下，兩球在抵達地面前，除重力外，只受到來自空氣阻力 $F$ 的作用，此阻力與球的下墜速度 $v$ 成正比，即 $F=-kv\ (k \gt 0)$，且兩球的比例常數 $k$ 完全相同，如圖所示為兩球的速度-時間關係圖。</p>
+<p class="qstem">若甲球與乙球的質量分別為 $m_1$ 與 $m_2$，則下列敘述何者正確？</p>
+<ul class="opts">
+<li>(A) $m_1=m_2$，且兩球同時抵達地面</li>
+<li>(B) $m_2 \gt m_1$，且乙球先抵達地面</li>
+<li>(C) $m_2 \lt m_1$，且乙球先抵達地面</li>
+<li>(D) $m_2 \lt m_1$，且兩球同時抵達地面</li>
+<li>(E) $m_2 \gt m_1$，且甲球先抵達地面</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 170" preserveAspectRatio="xMidYMid meet" role="img" aria-label="下墜球的受力分析圖(力圖)">
+  <defs>
+    <marker id="ar11f" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <!-- 左：加速階段(v較小)，重力箭頭明顯長於阻力箭頭 -->
+  <circle cx="90" cy="70" r="14" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.4"/>
+  <text x="90" y="75" font-size="12" class="lbl" text-anchor="middle">球</text>
+  <line x1="90" y1="86" x2="90" y2="140" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar11f)"/>
+  <text x="98" y="125" font-size="12.5" class="lbl" fill="var(--v1)">mg（重力，恆定）</text>
+  <line x1="90" y1="54" x2="90" y2="26" stroke="var(--v2)" stroke-width="2" marker-end="url(#ar11f)"/>
+  <text x="98" y="32" font-size="12.5" class="lbl" fill="var(--v2)">kv（阻力，隨v增大）</text>
+  <text x="90" y="160" font-size="11.5" class="lbl" text-anchor="middle">階段①：v較小時，mg&gt;kv，合力向下，仍在加速</text>
+
+  <!-- 右：終端速度階段，兩箭頭等長 -->
+  <circle cx="270" cy="70" r="14" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.4"/>
+  <text x="270" y="75" font-size="12" class="lbl" text-anchor="middle">球</text>
+  <line x1="270" y1="86" x2="270" y2="128" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar11f)"/>
+  <text x="278" y="115" font-size="12.5" class="lbl" fill="var(--v1)">mg</text>
+  <line x1="270" y1="54" x2="270" y2="12" stroke="var(--v2)" stroke-width="2" marker-end="url(#ar11f)"/>
+  <text x="278" y="30" font-size="12.5" class="lbl" fill="var(--v2)">kv</text>
+  <text x="270" y="160" font-size="11.5" class="lbl" text-anchor="middle">階段②：v=終端速度，mg=kv，合力為0，等速下墜</text>
+</svg>
+<div class="figcap">圖11a：下墜球的受力分析（力圖）。球只受兩力：重力 $mg$（方向、大小恆定）與空氣阻力 $kv$（方向恆與運動方向相反，大小隨速度增加而增加）。剛開始下墜時 $v$ 小，$mg \gt kv$，合力向下、球持續加速；隨著 $v$ 愈來愈大，$kv$ 跟著變大，直到 $kv$ 追上 $mg$、合力變為0，球就以固定的「終端速度」等速下墜——這正是v-t圖最後會趨於水平線的原因。</div>
+
+<svg class="fig" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="甲乙兩球速度-時間關係圖">
+  <defs><marker id="ar11" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="55" y1="55.0" x2="325" y2="55.0"/>
+    <line x1="55" y1="115.0" x2="325" y2="115.0"/>
+    <line x1="109" y1="20" x2="109" y2="175.0"/>
+    <line x1="163" y1="20" x2="163" y2="175.0"/>
+    <line x1="217" y1="20" x2="217" y2="175.0"/>
+    <line x1="271" y1="20" x2="271" y2="175.0"/>
+    <line x1="325" y1="20" x2="325" y2="175.0"/>
+  </g>
+  <line x1="55" y1="175.0" x2="55" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar11)"/>
+  <line x1="55" y1="175.0" x2="337" y2="175.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar11)"/>
+  <text x="20" y="30" font-size="14" class="lbl">v(m/s)</text>
+  <text x="341" y="191.0" font-size="14" class="lbl">t(s)</text>
+  <text x="47" y="59.0" font-size="11" class="lbl-rm" text-anchor="end">20</text>
+  <text x="47" y="119.0" font-size="11" class="lbl-rm" text-anchor="end">10</text>
+  <text x="47" y="179.0" font-size="11" class="lbl-rm" text-anchor="end">0</text>
+  <path d="M 55.0,175.0 L 65.8,163.6 L 76.6,153.2 L 87.4,143.9 L 98.2,135.4 L 109.0,127.8 L 119.8,120.9 L 130.6,114.6 L 141.4,108.9 L 152.2,103.8 L 163.0,99.1 L 173.8,94.9 L 184.6,91.1 L 195.4,87.7 L 206.2,84.6 L 217.0,81.8 L 227.8,79.2 L 238.6,76.9 L 249.4,74.8 L 260.2,72.9 L 271.0,71.2 L 281.8,69.7 L 292.6,68.3 L 303.4,67.0 L 314.2,65.9 L 325.0,64.9" fill="none" stroke="var(--v1)" stroke-width="1.8"/>
+  <path d="M 55.0,175.0 L 65.8,164.1 L 76.6,155.2 L 87.4,147.9 L 98.2,142.0 L 109.0,137.1 L 119.8,133.1 L 130.6,129.8 L 141.4,127.1 L 152.2,124.9 L 163.0,123.1 L 173.8,121.6 L 184.6,120.4 L 195.4,119.5 L 206.2,118.6 L 217.0,118.0 L 227.8,117.4 L 238.6,117.0 L 249.4,116.6 L 260.2,116.3 L 271.0,116.1 L 281.8,115.9 L 292.6,115.7 L 303.4,115.6 L 314.2,115.5 L 325.0,115.4" fill="none" stroke="var(--v2)" stroke-width="1.8"/>
+  <text x="306.1" y="49.0" font-size="11" class="lbl" fill="var(--v1)">乙球</text>
+  <text x="306.1" y="109.0" font-size="11" class="lbl" fill="var(--v2)">甲球</text>
+</svg>
+<div class="figcap">圖11：兩球的v-t關係圖。乙球最終趨近的終端速度（約20 m/s）比甲球（約10 m/s）大，且乙球在每一個時刻的速度都不小於甲球。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>由圖11a的力圖，對下墜中的球，取向下為正，用牛頓第二定律列出運動方程式：合力＝重力－阻力，即 $ma=mg-kv$，兩邊除以 $m$ 得
+$$a=g-\dfrac{k}{m}v$$
+這個式子同時解釋了v-t圖的整個形狀。</li>
+<li>剛開始下墜時 $v=0$，代入上式得 $a=g$——這就是為什麼圖11中甲、乙兩球在 $t=0$ 時的初始斜率是一樣的（兩球都還沒開始感受到阻力，起跑當下都以重力加速度 $g$ 起步）。</li>
+<li>隨著 $v$ 愈來愈大，$\dfrac{k}{m}v$ 這一項愈來愈大，$a$ 就愈來愈小，所以曲線的斜率會愈來愈平緩；當 $v$ 大到讓 $\dfrac{k}{m}v=g$ 時，$a=0$，球不再加速，之後以固定的「終端速度」等速下墜——這就是曲線最後趨於水平的原因，把 $a=0$ 代回原方程式，就是力圖中「$mg=kv_{\text{終端}}$」合力為0的那個狀態，解得
+$$v_{\text{終端}}=\dfrac{mg}{k}$$</li>
+<li>再看 $a=g-\dfrac{k}{m}v$ 這個式子：在同一個速度 $v$ 下，$m$ 愈大，$\dfrac{k}{m}v$ 這一項就愈小，代表 $a$ 愈大——也就是說，比較重的球，在任何相同的速度下，受到的阻力對它的影響（相對於重力而言）比較小，加速度比較大。這正是圖11中乙球（比較重）的曲線，從一開始就持續保持在甲球曲線上方、乙球終端速度也比較高的根本原因。</li>
+<li>兩球同高度、同時刻由靜止下墜，乙球在每一個時刻的速度都不小於甲球（圖上乙球曲線全程在甲球曲線上方），代表乙球下墜的路程增加得比甲球快，同樣的高度乙球會先到達。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(B)(C)(D)(E)</span>
+$$v_{\text{終端}}=\dfrac{mg}{k}$$
+由圖可知乙球終端速度（約20 m/s）大於甲球（約10 m/s），且 $k$ 相同，所以 $m_2 g \gt m_1 g \Rightarrow m_2 \gt m_1$（乙球比較重，這也跟力圖分析的結論一致：較重的球在同速度下加速度較大，終端速度也較高）；又乙球全程速度都比甲球快，所以乙球會先落地。符合這兩個條件的只有(B)。
+</div>
+
+<div class="ans">
+答案：<strong>(B) $m_2 \gt m_1$，且乙球先抵達地面</strong>
+</div>
+</section>
+
+<section id="q12">
+<h2>第 12 題（單選，題組第2小題）</h2>
+<div class="qbox">
+<p class="qstem">承上題設定。若已知甲球質量為0.2公斤，落下過程中重力加速度恆為10公尺/秒²，則比例常數 $k$ 值約為多少公斤/秒？</p>
+<ul class="opts">
+<li>(A) 0.1</li>
+<li>(B) 0.2</li>
+<li>(C) 4</li>
+<li>(D) 10</li>
+<li>(E) 40</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 160 190" preserveAspectRatio="xMidYMid meet" role="img" aria-label="終端速度受力示意圖">
+  <circle cx="80" cy="90" r="14" fill="#f2f4f7" stroke="var(--aux)" stroke-width="1.4"/>
+  <text x="80" y="94" font-size="10" class="lbl" text-anchor="middle">甲球</text>
+  <line x1="80" y1="104" x2="80" y2="150" stroke="var(--v1)" stroke-width="1.8" marker-end="url(#arF1)"/>
+  <defs><marker id="arF1" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v1)"/></marker></defs>
+  <text x="86" y="135" font-size="10" class="lbl" fill="var(--v1)">mg（向下）</text>
+  <line x1="80" y1="76" x2="80" y2="35" stroke="var(--v2)" stroke-width="1.8" marker-end="url(#arF2)"/>
+  <defs><marker id="arF2" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v2)"/></marker></defs>
+  <text x="86" y="50" font-size="10" class="lbl" fill="var(--v2)">kv（空氣阻力，向上）</text>
+  <text x="20" y="175" font-size="10" class="lbl">終端速度：合力＝0 ⇒ mg＝kv</text>
+</svg>
+<div class="figcap">圖12：終端速度時的受力示意圖，重力mg向下、空氣阻力kv向上，兩力大小相等，合力為零。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>沿用上一題的關係：到達終端速度時，重力與空氣阻力大小相等，$m_1g=kv_{\text{終端},1}$。</li>
+<li>由圖上讀出甲球的終端速度（曲線最後趨於水平的高度）約為10 m/s。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式</span>
+$$m_1g=k\,v_{\text{終端},1}\ \Longrightarrow\ k=\dfrac{m_1g}{v_{\text{終端},1}}$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$k=\dfrac{0.2\times10}{10}$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$k=0.2\ \text{kg/s}$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(B) 0.2</strong>
+</div>
+<div class="qnav">
+<button onclick="showPage('page10')">← 第10題</button>
+<button onclick="showPage('page13')">第13題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page11 -->
+
+<div class="page" id="page13">
+<section id="q13">
+<h2>第 13 題（多選，應選2項）</h2>
+<div class="qbox">
+<p class="qstem">將一小球自a處鉛直上拋，到最高處b，再下墜至原處，下列哪一項正確？（空氣阻力忽略）</p>
+<ul class="opts">
+<li>(A) 小球由a→b所受合力向上，由b→a所受合力向下</li>
+<li>(B) 小球在b點瞬間靜止，為靜力平衡，故所受合力為零</li>
+<li>(C) 小球整個過程的平均速度為零</li>
+<li>(D) 小球在b點時速度為零，但加速度不為零</li>
+<li>(E) 小球由a→b速度漸慢，而由b→a速度漸快，故上升時間比下降時間來得長</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>忽略空氣阻力後，小球全程只受重力，合力（也就是加速度方向）從頭到尾都是鉛直向下，不會因為球正在上升或下降而改變方向。</li>
+<li>「速度為零」跟「合力為零」是兩件不同的事：b點瞬間速度雖然是0，但重力仍然存在，並沒有因為球暫時靜止就消失。</li>
+<li>整個過程（a→b→a）出發點與終點是同一個位置，所以整趟的位移為0；平均速度＝位移÷時間，位移為0，平均速度自然也是0，這與中途速度怎麼變化無關。</li>
+<li>上升、下降過程中加速度大小方向都相同（恆為g向下），由對稱性可知上升時間＝下降時間，並不會有一段比較長。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="鉛直上拋a到b到a的v-t圖">
+  <defs><marker id="ar13" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="105.0" y1="20" x2="105.0" y2="175"/>
+    <line x1="55.0" y1="65.0" x2="155.0" y2="65.0"/>
+    <line x1="55.0" y1="135.0" x2="155.0" y2="135.0"/>
+  </g>
+  <line x1="55.0" y1="180" x2="55.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar13)"/>
+  <line x1="40.0" y1="100.0" x2="170.0" y2="100.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar13)"/>
+  <text x="20" y="30" font-size="14" class="lbl">v(向上為正)</text>
+  <text x="173.0" y="116.0" font-size="14" class="lbl">t</text>
+  <text x="44.0" y="69.0" font-size="11" class="lbl-rm" text-anchor="end">+v₀(a點,出發)</text>
+  <text x="44.0" y="104.0" font-size="11" class="lbl-rm" text-anchor="end">0</text>
+  <text x="44.0" y="139.0" font-size="11" class="lbl-rm" text-anchor="end">−v₀(回到a點)</text>
+  <line x1="55.0" y1="65.0" x2="155.0" y2="135.0" stroke="var(--v2)" stroke-width="2"/>
+  <circle cx="55.0" cy="65.0" r="3.4" fill="var(--v2)"/>
+  <circle cx="105.0" cy="100.0" r="3.4" fill="var(--v3)"/>
+  <circle cx="155.0" cy="135.0" r="3.4" fill="var(--v1)"/>
+  <text x="111.0" y="94.0" font-size="11" class="lbl" fill="var(--v3)">b點(最高點,v=0)</text>
+</svg>
+<div class="figcap">圖13：a→b→a全程的v-t圖（向上為正）。全程是同一條直線（斜率恆為−g），從a點出發時v=+v₀，b點（最高點）v=0，回到a點時v=−v₀。這條線沒有任何轉折，代表加速度全程不變。</div>
+
+<div class="calcblock">
+<span class="tag">(A)(B)(C)(D)(E)</span>
+逐項檢查：
+<br>(A) 合力恆為重力，方向全程向下，並非「上升時向上、下降時向下」，(A)錯。
+<br>(B) b點速度為零，但合力＝重力≠0，並非靜力平衡，(B)錯。
+<br>(C) 位移為0（回到原處），平均速度＝位移/時間＝0，(C)對。
+<br>(D) b點速度雖為零，但加速度仍為 $g$（向下），不為零，(D)對。
+<br>(E) 全程加速度量值皆為 $g$、方向不變，由對稱性上升與下降時間相等，並非上升時間較長，(E)錯。
+</div>
+
+<div class="ans">
+答案：<strong>(C)(D)</strong>
+</div>
+<div class="qnav">
+<button onclick="showPage('page11')">← 第11-12題</button>
+<button onclick="showPage('page14')">第14題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page13 -->
+
+<div class="page" id="page14">
+<section id="q14">
+<h2>第 14 題（多選，應選3項）</h2>
+<div class="qbox">
+<p class="qstem">圖為一小石子自樓頂邊緣鉛直拋出，經5秒後抵達地面的速度-時間關係圖為一斜直線，則下列敘述何者正確？</p>
+<ul class="opts">
+<li>(A) 從0至5秒的全程運動中，小石子的位移量值等於路徑長</li>
+<li>(B) 2秒末小石子到達最高點</li>
+<li>(C) 3秒末小石子在樓頂的下方</li>
+<li>(D) 4秒末小石子回到樓頂的高度</li>
+<li>(E) 樓高為25公尺</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 380 280" preserveAspectRatio="xMidYMid meet" role="img" aria-label="小石子拋出過程對照示意圖(上升下降分欄)">
+  <rect x="155" y="127.2" width="40" height="127.8" fill="#eceef1" stroke="var(--aux)" stroke-width="1.2"/>
+  <line x1="20" y1="127.2" x2="360" y2="127.2" stroke="var(--ink)" stroke-width="1.8"/>
+  <text x="300" y="121.2" font-size="12" class="lbl">樓頂 y=0（0秒）</text>
+  <line x1="20" y1="255.0" x2="360" y2="255.0" stroke="var(--ink)" stroke-width="1.8"/>
+  <text x="300" y="249.0" font-size="12" class="lbl">地面 y=−25（5秒末）</text>
+  <line x1="120" y1="127.2" x2="120" y2="25.0" stroke="var(--v2)" stroke-width="2.2"/>
+  <circle cx="120" cy="127.2" r="4.5" fill="var(--v2)"/>
+  <text x="120" y="149.2" font-size="11" class="lbl" fill="var(--v2)" text-anchor="middle">拋出（0秒）</text>
+  <circle cx="120" cy="25.0" r="4.5" fill="var(--v3)"/>
+  <text x="120" y="15.0" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">上升</text>
+  <line x1="230" y1="25.0" x2="230" y2="255.0" stroke="var(--v1)" stroke-width="2.2"/>
+  <circle cx="230" cy="25.0" r="4.5" fill="var(--v3)"/>
+  <circle cx="230" cy="127.2" r="4.5" fill="#8e5ec7"/>
+  <text x="240" y="131.2" font-size="11" class="lbl" fill="#8e5ec7">4秒末回到樓頂高度</text>
+  <circle cx="230" cy="255.0" r="4.5" fill="var(--v1)"/>
+  <text x="230" y="277.0" font-size="11" class="lbl" fill="var(--v1)" text-anchor="middle">著地（5秒末）</text>
+  <line x1="120" y1="25.0" x2="230" y2="25.0" stroke="var(--v3)" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="175.0" y="15.0" font-size="11.5" class="lbl" fill="var(--v3)" text-anchor="middle">最高點 y=+20（2秒末）</text>
+  <text x="175.0" y="41.0" font-size="9" class="lbl" fill="var(--aux)" text-anchor="middle">（同一瞬間，左右分開畫方便看）</text>
+</svg>
+<svg class="fig" viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet" role="img" aria-label="小石子v-t圖，上升與下降兩個三角形面積">
+  <defs><marker id="ar14a" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="162.0" y1="20" x2="162.0" y2="225"/>
+    <line x1="330.0" y1="20" x2="330.0" y2="225"/>
+    <line x1="50.0" y1="30.0" x2="162.0" y2="30.0"/>
+    <line x1="50.0" y1="210.0" x2="330.0" y2="210.0"/>
+  </g>
+  <!-- 三角形T1：0~2秒，時間軸上方，面積=位移(上升20m) -->
+  <polygon points="50.0,102.0 50.0,30.0 162.0,102.0" fill="var(--v2)" fill-opacity="0.28"/>
+  <!-- 三角形T2：2~5秒，時間軸下方，面積=位移量值(下降45m) -->
+  <polygon points="162.0,102.0 330.0,102.0 330.0,210.0" fill="var(--v1)" fill-opacity="0.28"/>
+  <line x1="35.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar14a)"/>
+  <line x1="50.0" y1="225" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar14a)"/>
+  <text x="18" y="28" font-size="13" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="13" class="lbl">t(s)</text>
+  <text x="40.0" y="34.0" font-size="11" class="lbl-rm" text-anchor="end">20</text>
+  <text x="40.0" y="106.0" font-size="11" class="lbl-rm" text-anchor="end">0</text>
+  <text x="40.0" y="214.0" font-size="11" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="50.0" y1="30.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <circle cx="162.0" cy="102.0" r="3.6" fill="var(--v3)"/>
+  <text x="162.0" y="94.0" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">t=2s（最高點）</text>
+  <text x="106.0" y="62.0" font-size="11.5" class="lbl" fill="var(--v2)" text-anchor="middle">T1</text><text x="106.0" y="75.0" font-size="11.5" class="lbl" fill="var(--v2)" text-anchor="middle">面積=20</text>
+  <text x="246.0" y="162.0" font-size="11.5" class="lbl" fill="var(--v1)" text-anchor="middle">T2</text><text x="246.0" y="175.0" font-size="11.5" class="lbl" fill="var(--v1)" text-anchor="middle">面積=45</text>
+</svg>
+</div>
+<div class="figcap">圖14a（左）：拋出過程的位置對照示意圖，上升、下降分左右兩欄畫，避免同一條鉛垂線重疊看不清楚。圖14b（右）：同一組運動的v-t圖，取向上為正。整條線是同一條斜直線（加速度固定），跟時間軸的交點在t=2秒，恰好把整個面積分成「時間軸上方的T1」與「時間軸下方的T2」兩個直角三角形──面積就是位移，這是接下來解每一個選項的共同工具。</div>
+
+<div class="concept">
+<span class="tag">觀念（v-t圖＋面積法，不用先列y(t)公式）</span>
+<ul class="concept-list">
+<li>v-t圖上，一段時間內圖形與時間軸圍出的「面積」就是這段時間的位移；面積在時間軸上方算正（往上移動），下方算負（往下移動）。</li>
+<li>圖形是同一條斜直線，跟時間軸只交於一點（t=2秒）——這一點速度為零，正是最高點，且把圖形自然分成兩個直角三角形：T1（0~2秒，軸上方）、T2（2~5秒，軸下方）。</li>
+<li>T1是直角三角形，兩股為2（秒）與20（m/s），面積＝$\tfrac12\times2\times20=20$，代表「上升位移」是20m（樓頂上方20m，也就是最高點的位置）。</li>
+<li>T2也是直角三角形，用相似三角形先求出兩股：T2與T1的斜邊其實是同一條直線的延伸，直線每過1秒，速度量值固定增加「$20\div2=10$」（由T1的兩股比例直接得出，不需要另外承認$g=10$這個物理量）；T2的「秒數」股是$5-2=3$，所以「速度」股＝$10\times3=30$，面積＝$\tfrac12\times3\times30=45$，代表「下降位移量值」是45m。</li>
+<li>要判斷3秒末、4秒末在樓頂上方或下方，只要在T2內部、從同一個頂點（t=2秒那一點）再切出更小的相似三角形即可——不需要另外代入y(t)公式重新計算。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<svg class="fig" viewBox="0 0 360 235" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖:T1與T2兩三角形面積">
+  <defs><marker id="arA" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="35.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arA)"/>
+  <line x1="50.0" y1="225" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arA)"/>
+  <text x="18" y="28" font-size="12" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="12" class="lbl">t(s)</text>
+  <text x="40.0" y="34.0" font-size="10.5" class="lbl-rm" text-anchor="end">20</text>
+  <text x="40.0" y="106.0" font-size="10.5" class="lbl-rm" text-anchor="end">0</text>
+  <text x="40.0" y="214.0" font-size="10.5" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="50.0" y1="30.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="162.0" y1="20" x2="162.0" y2="220"/>
+  </g>
+  <polygon points="50.0,102.0 50.0,30.0 162.0,102.0" fill="var(--v2)" fill-opacity="0.3"/>
+  <polygon points="162.0,102.0 330.0,102.0 330.0,210.0" fill="var(--v1)" fill-opacity="0.3"/>
+  <text x="106.0" y="62.0" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">T1=20</text>
+  <text x="246.0" y="172.0" font-size="10.5" class="lbl" fill="var(--v1)" text-anchor="middle">T2=45</text>
+</svg>
+$$\text{位移}=T1-T2=20-45=-25\ \text{m（量值25m)}\qquad \text{路徑長}=T1+T2=20+45=65\ \text{m}$$
+位移量值25m，路徑長65m，兩者不相等（因為中途變號，折返了一次），(A)錯。
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<svg class="fig" viewBox="0 0 360 235" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖:與時間軸交點即最高點">
+  <defs><marker id="arB" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="35.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arB)"/>
+  <line x1="50.0" y1="225" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arB)"/>
+  <text x="18" y="28" font-size="12" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="12" class="lbl">t(s)</text>
+  <text x="40.0" y="34.0" font-size="10.5" class="lbl-rm" text-anchor="end">20</text>
+  <text x="40.0" y="106.0" font-size="10.5" class="lbl-rm" text-anchor="end">0</text>
+  <text x="40.0" y="214.0" font-size="10.5" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="50.0" y1="30.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="162.0" y1="20" x2="162.0" y2="220"/>
+  </g>
+  <circle cx="162.0" cy="102.0" r="5" fill="var(--v3)"/>
+  <text x="162.0" y="92.0" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">t=2s,v=0（最高點）</text>
+</svg>
+v-t直線與時間軸的交點正好在 $t=2$ 秒（T1、T2的分界），也就是速度為零的瞬間，就是最高點，(B)對。
+</div>
+
+<svg class="fig" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="下降三角形以相似三角形內部切割(t=3,t=4)">
+  <defs><marker id="ar14b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="218.0" y1="20" x2="218.0" y2="195"/>
+    <line x1="274.0" y1="20" x2="274.0" y2="195"/>
+    <line x1="330.0" y1="20" x2="330.0" y2="195"/>
+  </g>
+  <!-- 最小三角形 2->3 -->
+  <polygon points="162.0,102.0 218.0,102.0 218.0,138.0" fill="var(--v3)" fill-opacity="0.4"/>
+  <!-- 中三角形 2->4 的外框(不重複塗滿2->3部分，只描邊) -->
+  <polygon points="162.0,102.0 274.0,102.0 274.0,174.0" fill="none" stroke="var(--v2)" stroke-width="1.8" stroke-dasharray="4 2"/>
+  <!-- 大三角形 2->5 外框 -->
+  <polygon points="162.0,102.0 330.0,102.0 330.0,210.0" fill="none" stroke="var(--v1)" stroke-width="1.8"/>
+  <line x1="147.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar14b)"/>
+  <line x1="162.0" y1="195" x2="162.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar14b)"/>
+  <text x="132.0" y="28" font-size="13" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="13" class="lbl">t(s)</text>
+  <text x="156.0" y="118.0" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <text x="218.0" y="118.0" font-size="11" class="lbl-rm" text-anchor="middle">3</text>
+  <text x="274.0" y="118.0" font-size="11" class="lbl-rm" text-anchor="middle">4</text>
+  <text x="330.0" y="118.0" font-size="11" class="lbl-rm" text-anchor="middle">5</text>
+  <text x="134.0" y="142.0" font-size="10.5" class="lbl-rm" text-anchor="end">−10</text>
+  <text x="134.0" y="178.0" font-size="10.5" class="lbl-rm" text-anchor="end">−20</text>
+  <text x="134.0" y="214.0" font-size="10.5" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="162.0" y1="102.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <text x="195.6" y="109.2" font-size="10" class="lbl" fill="var(--v3)">底1:高10</text>
+  <text x="234.8" y="152.4" font-size="10" class="lbl" fill="var(--v2)">底2:高20</text>
+  <text x="279.6" y="199.2" font-size="10" class="lbl" fill="var(--v1)">底3:高30</text>
+</svg>
+<div class="figcap">圖14c：把T2內部再用相似三角形切出兩個更小的三角形，三個三角形都共用同一個頂點（t=2秒、v=0那一點），且底邊都在同一條直線上，所以「底：高」的比例都相同：底1（2→3秒）對高10、底2（2→4秒）對高20、底3（2→5秒）對高30，恰好是1:2:3。</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<svg class="fig" viewBox="0 0 360 235" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖:2到3秒小三角形">
+  <defs><marker id="arC" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="35.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arC)"/>
+  <line x1="50.0" y1="225" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arC)"/>
+  <text x="18" y="28" font-size="12" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="12" class="lbl">t(s)</text>
+  <text x="40.0" y="34.0" font-size="10.5" class="lbl-rm" text-anchor="end">20</text>
+  <text x="40.0" y="106.0" font-size="10.5" class="lbl-rm" text-anchor="end">0</text>
+  <text x="40.0" y="214.0" font-size="10.5" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="50.0" y1="30.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="162.0" y1="20" x2="162.0" y2="220"/>
+  </g>
+  <polygon points="162.0,102.0 218.0,102.0 218.0,138.0" fill="var(--v3)" fill-opacity="0.4"/>
+  <text x="190.0" y="112.8" font-size="10.5" class="lbl" fill="var(--v3)" text-anchor="middle">底1,高10</text>
+  <text x="190.0" y="159.6" font-size="10" class="lbl" fill="var(--v3)" text-anchor="middle">面積=5</text>
+</svg>
+$$\text{三角形(2~3秒)：底}=1,\ \text{高}=10\times\tfrac13\times3=10\ \Longrightarrow\ \text{面積}=\tfrac12\times1\times10=5$$
+$3$秒末的位置 $=$ 最高點 $-$ 這一小段面積 $=20-5=15\ \text{m}$（還在樓頂「上方」15m，不是下方），(C)錯。
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<svg class="fig" viewBox="0 0 360 235" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖:2到4秒三角形">
+  <defs><marker id="arD" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="35.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arD)"/>
+  <line x1="50.0" y1="225" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arD)"/>
+  <text x="18" y="28" font-size="12" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="12" class="lbl">t(s)</text>
+  <text x="40.0" y="34.0" font-size="10.5" class="lbl-rm" text-anchor="end">20</text>
+  <text x="40.0" y="106.0" font-size="10.5" class="lbl-rm" text-anchor="end">0</text>
+  <text x="40.0" y="214.0" font-size="10.5" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="50.0" y1="30.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="162.0" y1="20" x2="162.0" y2="220"/>
+  </g>
+  <polygon points="162.0,102.0 274.0,102.0 274.0,174.0" fill="var(--v2)" fill-opacity="0.35"/>
+  <text x="218.0" y="123.6" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">底2,高20</text>
+  <text x="218.0" y="188.4" font-size="10" class="lbl" fill="var(--v2)" text-anchor="middle">面積=20</text>
+</svg>
+$$\text{三角形(2~4秒)：底}=2,\ \text{高}=30\times\tfrac23=20\ \Longrightarrow\ \text{面積}=\tfrac12\times2\times20=20$$
+$4$秒末的位置 $=20-20=0\ \text{m}$，恰好回到樓頂高度，(D)對。
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<svg class="fig" viewBox="0 0 360 235" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖:T1與T2兩三角形面積">
+  <defs><marker id="arE" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="35.0" y1="102.0" x2="345.0" y2="102.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arE)"/>
+  <line x1="50.0" y1="225" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#arE)"/>
+  <text x="18" y="28" font-size="12" class="lbl">v(m/s)</text>
+  <text x="348.0" y="118.0" font-size="12" class="lbl">t(s)</text>
+  <text x="40.0" y="34.0" font-size="10.5" class="lbl-rm" text-anchor="end">20</text>
+  <text x="40.0" y="106.0" font-size="10.5" class="lbl-rm" text-anchor="end">0</text>
+  <text x="40.0" y="214.0" font-size="10.5" class="lbl-rm" text-anchor="end">−30</text>
+  <line x1="50.0" y1="30.0" x2="330.0" y2="210.0" stroke="var(--ink)" stroke-width="2"/>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="162.0" y1="20" x2="162.0" y2="220"/>
+  </g>
+  <polygon points="50.0,102.0 50.0,30.0 162.0,102.0" fill="var(--v2)" fill-opacity="0.3"/>
+  <polygon points="162.0,102.0 330.0,102.0 330.0,210.0" fill="var(--v1)" fill-opacity="0.3"/>
+  <text x="106.0" y="62.0" font-size="10.5" class="lbl" fill="var(--v2)" text-anchor="middle">T1=20</text>
+  <text x="246.0" y="172.0" font-size="10.5" class="lbl" fill="var(--v1)" text-anchor="middle">T2=45</text>
+</svg>
+由(A)已經算出：全程淨位移量值為 $|T1-T2|=|20-45|=25\ \text{m}$，即地面在樓頂下方25公尺處，樓高為25公尺，(E)對。
+</div>
+
+<div class="ans">
+答案：<strong>(B)(D)(E)</strong>
+</div>
+<div class="qnav">
+<button onclick="showPage('page13')">← 第13題</button>
+<button onclick="showPage('page15')">第15題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page14 -->
+
+<div class="page" id="page15">
+<section id="q15">
+<h2>第 15 題（多選，應選2項）</h2>
+<div class="qbox">
+<p class="qstem">一質點沿水平直線運動時，緊急減速至停止。若此質點速度由v降到零時，其位移為x，平均加速度為a，經過時間為t，則質點在減速停止期間，不論質點停下的過程為何，下列哪些敘述恆為正確？</p>
+<ul class="opts">
+<li>(A) 位移 $x$ 等於 $vt+\frac12 at^2$</li>
+<li>(B) 位移 $x$ 等於 $\dfrac{v^2}{2a}$</li>
+<li>(C) 平均速度為 $\dfrac{x}{t}$</li>
+<li>(D) 平均加速度為 $-\dfrac{v}{t}$</li>
+<li>(E) 平均加速度等於 $\dfrac{-v^2}{2x}$</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>題目特別強調「不論質點停下的過程為何」——也就是說減速的過程不一定是等加速度（可能忽快忽慢），所以只有「定義式」（對任何運動過程都成立的式子）才會恆為正確；只在「等加速度」前提下才成立的公式（例如 $x=v_0t+\frac12at^2$、$v^2=v_0^2+2ax$）在這裡不能直接套用。</li>
+<li>「平均速度」的定義，永遠是「位移 ÷ 時間」，不管中途怎麼變化都成立。</li>
+<li>「平均加速度」的定義，永遠是「速度變化量 ÷ 時間」，同樣不管中途過程如何都成立。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(B)</span>
+$$x=v_0t+\tfrac12at^2,\qquad x=\dfrac{v^2}{2a}$$
+這兩個式子都是由「等加速度運動」推導出來的公式，只有在加速度真的固定不變時才成立；題目明確說「不論停下的過程為何」，所以這兩式不能保證恆成立，(A)(B)都錯。
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+平均速度的定義就是「位移÷時間」，是任何運動都成立的定義式，與加速度是否固定無關：
+$$v_{\text{平}}=\dfrac{x}{t}$$
+(C)對。
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+平均加速度的定義就是「速度變化量÷時間」，同樣不論過程如何都成立：
+$$a_{\text{平}}=\dfrac{0-v}{t}=-\dfrac{v}{t}$$
+(D)對。
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+$$a_{\text{平}}=\dfrac{-v^2}{2x}$$
+這個式子是把「等加速度」才成立的 $v^2=2ax$ 拿來湊出來的，同樣只在等加速度前提下成立，題目已排除這個前提，(E)錯。
+</div>
+
+<div class="ans">
+答案：<strong>(C)(D)</strong>
+</div>
+<div class="qnav">
+<button onclick="showPage('page14')">← 第14題</button>
+<button onclick="showPage('page16')">第16題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page15 -->
+
+<div class="page" id="page16">
+<section id="q16">
+<h2>第 16 題（填充，5分）</h2>
+<div class="qbox">
+<p class="qstem">直線運動定律實驗：得一紙帶紀錄如下圖，假定計時器的週期為 $\dfrac{1}{12}$ 秒，則物體的加速度大約為多少 cm/s²？【　　】</p>
+<p class="qstem">（圖中依序標出四段點距：3.9公分、6.3公分、8.7公分、11.1公分）</p>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>紙帶上每一段標出來的「點距」，不一定剛好是相鄰兩個點之間的距離——有時候紙帶上的點太密，圖上只挑出每隔幾個點才標一次，所以公式中真正要用的取樣時距 $T$，必須先數清楚「每一段點距，實際跨過了幾個計時器週期」，不能直接假設 $T$ 就等於計時器的週期 $\dfrac1{12}$ 秒。</li>
+<li>只要確認每一段點距所跨的計時器週期數相同（也就是每一段所代表的時間 $T$ 都相等），等加速度運動就會有「相鄰兩段點距的差＝$aT^2$（定值）」這個關係，可以直接用來求加速度。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="等取樣時距相鄰位移差證明圖">
+  <defs><marker id="ar16" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="50.0" y1="20" x2="50.0" y2="180"/>
+    <line x1="88.0" y1="20" x2="88.0" y2="180"/>
+    <line x1="126.0" y1="20" x2="126.0" y2="180"/>
+    <line x1="164.0" y1="20" x2="164.0" y2="180"/>
+  </g>
+  <line x1="50.0" y1="185" x2="50.0" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar16)"/>
+  <line x1="35.0" y1="170.0" x2="179.0" y2="170.0" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar16)"/>
+  <text x="20" y="30" font-size="14" class="lbl">v</text>
+  <text x="182.0" y="186.0" font-size="14" class="lbl">t</text>
+  <!-- S_n 梯形 (第n段, t0~t1) -->
+  <polygon points="50.0,170.0 50.0,152.0 88.0,134.0 88.0,170.0"
+           fill="var(--v2)" fill-opacity="0.25" stroke="var(--v2)" stroke-width="1" stroke-dasharray="2 2"/>
+  <!-- S_{n+1} 梯形 (第n+1段, t1~t2) -->
+  <polygon points="88.0,170.0 88.0,134.0 126.0,116.0 126.0,170.0"
+           fill="var(--v3)" fill-opacity="0.30" stroke="var(--v3)" stroke-width="1"/>
+  <!-- v(t)直線 -->
+  <polyline points="50.0,152.0 88.0,134.0 126.0,116.0 164.0,98.0" fill="none" stroke="var(--ink)" stroke-width="1.8"/>
+  <!-- 高度差 aT 的小矩形，疊在S_{n+1}梯形左上緣，凸顯多出來的高度 -->
+  <rect x="85.0" y="116.0" width="3" height="18.0" fill="var(--v1)" fill-opacity="0.5"/>
+  <text x="66.0" y="164.0" font-size="10" class="lbl" fill="var(--v2)" text-anchor="middle">S_n</text>
+  <text x="113.0" y="152.0" font-size="10" class="lbl" fill="var(--v3)" text-anchor="middle">S_(n+1)</text>
+  <text x="50.0" y="184.0" font-size="10" class="lbl-rm" text-anchor="middle">nT</text>
+  <text x="88.0" y="184.0" font-size="10" class="lbl-rm" text-anchor="middle">(n+1)T</text>
+  <text x="126.0" y="184.0" font-size="10" class="lbl-rm" text-anchor="middle">(n+2)T</text>
+  <text x="39.0" y="155.0" font-size="9.5" class="lbl-rm" text-anchor="end">v_n</text>
+  <text x="39.0" y="137.0" font-size="9.5" class="lbl-rm" text-anchor="end">v_(n+1)</text>
+  <text x="39.0" y="119.0" font-size="9.5" class="lbl-rm" text-anchor="end">v_(n+2)</text>
+</svg>
+<div class="figcap">圖16：v-t圖證明「相鄰位移差＝aT²」。v(t)是等加速度運動的速度直線，取連續兩段等時距T：第n段位移S_n是藍色梯形面積，第n+1段位移S_{n+1}是綠色梯形面積。這兩個梯形同樣寬（都是T），但S_{n+1}的高度（v_{n+1}到v_{n+2}）比S_n的高度（v_n到v_{n+1}）多了一段紅色小矩形，高度為aT（因為速度每過一個T就多增加aT）。這塊多出來的紅色矩形，面積＝寬×高＝T×aT＝aT²，也就是兩段位移的差。</div>
+
+<div class="concept">
+<span class="tag">觀念（用圖16證明aT²關係）</span>
+<ul class="concept-list">
+<li>把v-t圖橫軸切成等寬的T一段一段，每一段位移S，就是這一段梯形的面積：（上底＋下底）×高÷2──也就是這一段時間內的位移。</li>
+<li>因為是等加速度，每過一個T，速度固定增加aT，所以相鄰兩段梯形的「左邊界高度」剛好差aT、「右邊界高度」也剛好差aT——兩個梯形形狀相同，只是整體往上平移了aT。</li>
+<li>兩個形狀相同、只是垂直平移了aT的梯形，面積差＝底邊寬度(T) × 平移量(aT) ＝ aT²，這就是相鄰位移差恆為aT²的幾何原因。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="兩個相同形狀梯形垂直平移aT的證明圖">
+  <defs>
+    <marker id="ar16p" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="55" y1="220" x2="175" y2="220" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="182" y="224" font-size="13" class="lbl">t</text>
+
+  <!-- S_n：實心藍色梯形 -->
+  <polygon points="70.0,220.0 70.0,160.0 160.0,120.0 160.0,220.0" fill="var(--v2)" fill-opacity="0.3" stroke="var(--v2)" stroke-width="1.6"/>
+  <text x="115.0" y="194.0" font-size="12" class="lbl" fill="var(--v2)" text-anchor="middle">S_n</text>
+
+  <!-- S_(n+1)：同形狀，虛線外框，整體往上平移了aT -->
+  <polygon points="70.0,175.0 70.0,115.0 160.0,75.0 160.0,175.0" fill="none" stroke="var(--v3)" stroke-width="1.8" stroke-dasharray="5 3"/>
+  <text x="115.0" y="133.0" font-size="12" class="lbl" fill="var(--v3)" text-anchor="middle">S_(n+1)</text>
+
+  <!-- 平移箭頭 aT，畫在左邊界，垂直獨立一欄，不與其他文字同高度 -->
+  <line x1="40" y1="160.0" x2="40" y2="115.0" stroke="var(--v1)" stroke-width="1.8" marker-end="url(#ar16p)"/>
+  <text x="32" y="141.5" font-size="12" class="lbl" fill="var(--v1)" text-anchor="end">aT</text>
+
+  <!-- 多出來的紅色窄條：T x aT -->
+  <rect x="70.0" y="115.0" width="7" height="45" fill="var(--v1)" fill-opacity="0.55"/>
+
+  <!-- T 寬度標示，放在圖形正下方，遠離其他標籤 -->
+  <line x1="70.0" y1="236" x2="160.0" y2="236" stroke="var(--ink)" stroke-width="1"/>
+  <line x1="70.0" y1="232" x2="70.0" y2="240" stroke="var(--ink)" stroke-width="1"/>
+  <line x1="160.0" y1="232" x2="160.0" y2="240" stroke="var(--ink)" stroke-width="1"/>
+  <text x="115.0" y="252" font-size="12" class="lbl" text-anchor="middle">寬度都是T</text>
+
+  <!-- 「T×aT窄條」的說明文字，放在圖形右側空白處，往下錯開，不與S_(n+1)或aT箭頭同高 -->
+  <text x="180" y="125.0" font-size="11" class="lbl" fill="var(--v1)">← 多出來的窄條</text>
+  <text x="180" y="141.0" font-size="11" class="lbl" fill="var(--v1)">寬T、高aT</text>
+  <text x="180" y="157.0" font-size="11" class="lbl" fill="var(--v1)">面積＝T×aT＝aT²</text>
+</svg>
+<div class="figcap">圖16b：把S_n、S_(n+1)畫在同一個時間區間（同樣寬度T）上直接對照──藍色實心是S_n，綠色虛線外框是S_(n+1)，兩者形狀完全相同，只是整體往上平移了aT（紅色箭頭）。平移之後多出來的部分，就是圖上那一小條寬T、高aT的窄條，面積＝T×aT＝aT²，這就是相鄰位移差恆為aT²的直接證明。</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">確認公差</span>
+$$6.3-3.9=2.4,\quad 8.7-6.3=2.4,\quad 11.1-8.7=2.4\ \text{(cm)}$$
+四段點距的公差恆為 $2.4$ cm，確認是等加速度運動，且 $aT^2=2.4$ cm。
+</div>
+<div class="step">
+<span class="label">公式</span>
+$$a=\dfrac{\Delta S}{T^2},\qquad T=n\times\dfrac{1}{12}\ \text{秒（}n\text{＝每段點距實際跨過的計時器週期數，數紙帶圖上的點）}$$
+</div>
+<div class="step">
+<span class="label">數點（每段點距實際跨過4個計時器週期，即紙帶上每隔3個點才取一次）</span>
+$$n=4\ \Longrightarrow\ T=4\times\dfrac{1}{12}=\dfrac13\ \text{秒}$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$a=\dfrac{2.4}{\left(\frac13\right)^2}=2.4\times9$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$a=21.6\ \text{cm/s}^2$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>21.6 cm/s²</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page15')">← 第15題</button>
+<button onclick="showPage('page17')">第17題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page16 -->
+
+<div class="page" id="page17">
+<section id="q17">
+<h2>第 17 題（填充，每格5分）</h2>
+<div class="qbox">
+<p class="qstem">某生利用紙帶打點的方法，分析作等加速度直線運動的滑車時，得到紙帶上的打點如下圖所示（A、B、C、D四點依序排列，AB間距記為 $x_1$，CD間距記為 $x_2$）。</p>
+<p class="qstem">若相鄰兩點的時距為0.1s，$x_1=4\ \text{cm}$，$x_2=12\ \text{cm}$，則</p>
+<ul class="opts">
+<li>(1) 滑車的加速度為【　　】</li>
+<li>(2) A點處的速率為多少？【　　】</li>
+<li>(3) A至D的平均速率為【　　】</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 420 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="滑車紙帶ABCD四點示意圖">
+  <defs>
+    <marker id="ar17a" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L8,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+    <marker id="ar17b" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="1" refY="3.5" orient="auto">
+      <path d="M8,0 L0,3.5 L8,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="60" x2="400" y2="60" stroke="var(--ink)" stroke-width="1.2"/>
+  <circle cx="40" cy="60" r="4" fill="var(--v1)"/>
+  <circle cx="100" cy="60" r="4" fill="var(--v1)"/>
+  <circle cx="220" cy="60" r="4" fill="var(--v1)"/>
+  <circle cx="380" cy="60" r="4" fill="var(--v1)"/>
+  <text x="40" y="44" font-size="13" class="lbl" text-anchor="middle">A</text>
+  <text x="100" y="44" font-size="13" class="lbl" text-anchor="middle">B</text>
+  <text x="220" y="44" font-size="13" class="lbl" text-anchor="middle">C</text>
+  <text x="380" y="44" font-size="13" class="lbl" text-anchor="middle">D</text>
+  <!-- x1: AB -->
+  <line x1="40" y1="85" x2="100" y2="85" stroke="var(--v2)" stroke-width="1.3" marker-start="url(#ar17b)" marker-end="url(#ar17a)"/>
+  <text x="70.0" y="100" font-size="11.5" class="lbl" fill="var(--v2)" text-anchor="middle">x₁</text>
+  <!-- BC: 未量測，僅示意 -->
+  <line x1="100" y1="85" x2="220" y2="85" stroke="var(--aux)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="160.0" y="100" font-size="10.5" class="lbl" fill="var(--aux)" text-anchor="middle">（未量，待補）</text>
+  <!-- x2: CD -->
+  <line x1="220" y1="85" x2="380" y2="85" stroke="var(--v2)" stroke-width="1.3" marker-start="url(#ar17b)" marker-end="url(#ar17a)"/>
+  <text x="300.0" y="100" font-size="11.5" class="lbl" fill="var(--v2)" text-anchor="middle">x₂</text>
+  <text x="210" y="120" font-size="10" class="lbl" fill="var(--aux)" text-anchor="middle">A、B、C、D為連續打點，相鄰時距皆為0.1s（點距隨速度增加而變大，圖為示意，非精確比例）</text>
+</svg>
+<div class="figcap">圖17：紙帶上A、B、C、D四個連續打點示意圖，AB間距為 $x_1$、CD間距為 $x_2$，中間的BC未直接標出（需要用等差關係先補出來）。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>A、B、C、D是連續且等時距（每段都是0.1s）的四個點，中間還夾著一段 BC（沒有直接量到，但可以用等差關係推出來）。</li>
+<li>等加速度運動中，相鄰等時距的位移，會形成一個「公差固定」的等差數列，公差＝$aT^2$；已知 AB＝$x_1$、CD＝$x_2$（中間跳過BC），可以先把BC補出來，再求出公差、進而求出加速度。</li>
+<li>一小段的平均速度，等於這段「時間中點」那一刻的瞬時速度（中點定理）；要求「A點」（不是AB段中點）的瞬時速度，需要把AB段的平均速度，再往回外推半個時距。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：先補出BC</span>
+<div class="step">
+<span class="label">公式</span>
+AB、BC、CD是連續三段等時距位移，形成公差固定的等差數列：$BC-AB=CD-BC$。
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$2\,BC = x_1+x_2 = 4+12$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$BC=8\ \text{cm}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(1) 加速度</span>
+<div class="step">
+<span class="label">公式</span>
+$$a=\dfrac{BC-AB}{T^2}$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$a=\dfrac{8-4}{(0.1)^2}$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$a=400\ \text{cm/s}^2=4\ \text{m/s}^2$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(2) A點的速率</span>
+<div class="step">
+<span class="label">公式（先求AB段中點的瞬時速度，即B點稍前半個時距處）</span>
+$$v_{\text{AB中點}}=\dfrac{AB}{T}=\dfrac{4}{0.1}=40\ \text{cm/s}\quad(\text{這是A、B之間「時間中點」那一刻的速度，不是A點本身的速度})$$
+</div>
+<div class="step">
+<span class="label">外推（從AB中點，往回推半個時距，用加速度反推）</span>
+$$v_A=v_{\text{AB中點}}-a\times\dfrac{T}{2}$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$v_A=40-400\times0.05$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$v_A=20\ \text{cm/s}=0.2\ \text{m/s}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(2) 另解：往前多外推一個點O</span>
+<div class="step">
+<span class="label">觀念</span>
+AB、BC、CD這個等差數列（公差＝$aT^2=4$）不只能往後推，也能往前推：在A的前面再多取一個時距T，推出一個點O，讓O、A、B變成連續三個「等時距T」的點，這樣一來，A點就恰好是O到B這段時間的「時間中點」，可以直接用中點定理，不必再另外用加速度反推半個時距。
+</div>
+<div class="step">
+<span class="label">公式（往前推出OA，用同一個公差）</span>
+$$OA=AB-aT^2$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$OA=4-4=0\ \text{cm}\quad(\text{代表O點與A點是同一個位置})$$
+這個推算是純粹依照「相鄰位移差恆為$aT^2$」這條等加速度的代數規律，往前多推一段而已，跟O點實際上有沒有物理意義無關，所以算出來的$OA$不論是正、是負、還是0，都是合理的結果：$OA \gt 0$代表O在A的後方（跟AB同方向）；$OA=0$代表滑車在O這一時刻的位置恰好跟A重合（例如折返瞬間）；$OA \lt 0$則代表O在A的前方（跟AB反方向），例如滑車在O、A之間曾經折返。不論哪一種情形，$v_A=\dfrac{OA+AB}{2T}$這個中點定理的算法都一樣成立。
+</div>
+<div class="step">
+<span class="label">中點定理：O、A、B等時距，A是時間中點，$v_A$＝O到B的平均速度</span>
+$$v_A=\dfrac{OA+AB}{2T}=\dfrac{0+4}{2\times0.1}$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$v_A=20\ \text{cm/s}=0.2\ \text{m/s}\quad(\text{與外推法算出的結果一致})$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(3) A至D的平均速率</span>
+<div class="step">
+<span class="label">公式</span>
+$$v_{\text{平},A\to D}=\dfrac{AB+BC+CD}{3T}$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$v_{\text{平},A\to D}=\dfrac{4+8+12}{3\times0.1}$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$v_{\text{平},A\to D}=\dfrac{24}{0.3}=80\ \text{cm/s}=0.8\ \text{m/s}$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(1) 400 cm/s²（4 m/s²）　(2) 20 cm/s（0.2 m/s）　(3) 80 cm/s（0.8 m/s）</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page16')">← 第16題</button>
+<button onclick="showPage('page18')">第18題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page17 -->
+
+<div class="page" id="page18">
+<section id="q18">
+<h2>第 18 題（挑戰題，多選，應選3項，10→6→2→0）</h2>
+<div class="qbox">
+<p class="qstem">有一石子由5層樓高的鐘樓上自由落下，如圖所示，已知每層樓的高度均為 $h$，則下列有關石子運動的敘述何者正確？</p>
+<ul class="opts">
+<li>(A) 石子經 $\sqrt{10h/g}$ 秒落至地面</li>
+<li>(B) 石子著地的速度為 $\sqrt{10gh}$</li>
+<li>(C) 石子落經 p、q 兩處與 q、f 兩處的時間比為 $\sqrt2-1:\sqrt3-\sqrt2$</li>
+<li>(D) 石子落經 p、q、f 三處的速率比為 $1:2:3$</li>
+<li>(E) 落經 p、q、f 三處的加速度比為 $1:\sqrt2:\sqrt3$</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 200 240" preserveAspectRatio="xMidYMid meet" role="img" aria-label="鐘樓自由落體示意圖">
+  <rect x="150" y="30" width="30" height="140" fill="#f2f4f7" stroke="var(--aux)" stroke-width="1.2"/>
+  <line x1="150" y1="58" x2="180" y2="58" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="150" y1="86" x2="180" y2="86" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="150" y1="114" x2="180" y2="114" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="150" y1="142" x2="180" y2="142" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <circle cx="165" cy="34" r="3" fill="var(--v1)"/>
+  <line x1="120" y1="30" x2="120" y2="170" stroke="var(--ink)" stroke-width="1.4" marker-start="url(#dot)" />
+  <text x="108" y="100.0" font-size="13" class="lbl" text-anchor="middle">5h</text>
+  <text x="188" y="62" font-size="12" class="lbl">p</text>
+  <text x="188" y="90" font-size="12" class="lbl">q</text>
+  <text x="188" y="118" font-size="12" class="lbl">f</text>
+  <text x="188" y="174" font-size="12" class="lbl">地面</text>
+  <line x1="60" y1="170" x2="200" y2="170" stroke="var(--ink)" stroke-width="1.6"/>
+</svg>
+<svg class="fig" viewBox="0 0 340 230" preserveAspectRatio="xMidYMid meet" role="img" aria-label="石子落經p q f與地面的v-t圖(等比例，面積正確對應h,2h,3h,5h)">
+  <defs><marker id="ar18b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <g stroke="#e3e6ea" stroke-width="0.8">
+  <line x1="55.0" y1="174.6" x2="224.2" y2="174.6"/>
+  <line x1="55.0" y1="159.2" x2="224.2" y2="159.2"/>
+  <line x1="55.0" y1="143.8" x2="224.2" y2="143.8"/>
+  <line x1="55.0" y1="128.3" x2="224.2" y2="128.3"/>
+  <line x1="55.0" y1="112.9" x2="224.2" y2="112.9"/>
+  <line x1="55.0" y1="97.5" x2="224.2" y2="97.5"/>
+  <line x1="55.0" y1="82.1" x2="224.2" y2="82.1"/>
+  <line x1="55.0" y1="66.7" x2="224.2" y2="66.7"/>
+  <line x1="55.0" y1="51.3" x2="224.2" y2="51.3"/>
+  <line x1="55.0" y1="35.8" x2="224.2" y2="35.8"/>
+  </g>
+  <line x1="55.0" y1="195" x2="55.0" y2="30.8" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ar18b)"/>
+  <line x1="40.0" y1="190.0" x2="234.2" y2="190.0" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ar18b)"/>
+  <text x="24" y="33.8" font-size="16" font-weight="700" class="lbl">v</text>
+  <text x="240.2" y="208.0" font-size="16" font-weight="700" class="lbl">t</text>
+  <polyline points="55.0,190.0 189.2,55.8" fill="none" stroke="var(--v2)" stroke-width="2.4"/>
+  <line x1="175.0" y1="70.0" x2="175.0" y2="190.0" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <circle cx="175.0" cy="70.0" r="3" fill="var(--aux)"/>
+  <line x1="115.0" y1="130.0" x2="115.0" y2="190.0" stroke="var(--v1)" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <circle cx="115.0" cy="130.0" r="4.2" fill="var(--v1)"/>
+  <text x="115.0" y="206.0" font-size="13" font-weight="700" class="lbl-rm" fill="var(--v1)" text-anchor="middle">t_p</text>
+  <line x1="139.9" y1="105.1" x2="139.9" y2="190.0" stroke="var(--v3)" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <circle cx="139.9" cy="105.1" r="4.2" fill="var(--v3)"/>
+  <text x="139.9" y="222.0" font-size="13" font-weight="700" class="lbl-rm" fill="var(--v3)" text-anchor="middle">t_q</text>
+  <line x1="158.9" y1="86.1" x2="158.9" y2="190.0" stroke="#8e5ec7" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <circle cx="158.9" cy="86.1" r="4.2" fill="#8e5ec7"/>
+  <text x="158.9" y="206.0" font-size="13" font-weight="700" class="lbl-rm" fill="#8e5ec7" text-anchor="middle">t_f</text>
+  <line x1="189.2" y1="55.8" x2="189.2" y2="190.0" stroke="var(--aux)" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <circle cx="189.2" cy="55.8" r="4.2" fill="var(--aux)"/>
+  <text x="189.2" y="222.0" font-size="13" font-weight="700" class="lbl-rm" fill="var(--aux)" text-anchor="middle">t_地</text>
+  <line x1="55.0" y1="130.0" x2="115.0" y2="130.0" stroke="var(--v1)" stroke-width="0.9" stroke-dasharray="1.5 2"/>
+  <text x="46.0" y="135.0" font-size="12.5" font-weight="700" class="lbl-rm" fill="var(--v1)" text-anchor="end">v_p</text>
+  <line x1="55.0" y1="105.1" x2="139.9" y2="105.1" stroke="var(--v3)" stroke-width="0.9" stroke-dasharray="1.5 2"/>
+  <text x="46.0" y="110.1" font-size="12.5" font-weight="700" class="lbl-rm" fill="var(--v3)" text-anchor="end">v_q</text>
+  <line x1="55.0" y1="86.1" x2="158.9" y2="86.1" stroke="#8e5ec7" stroke-width="0.9" stroke-dasharray="1.5 2"/>
+  <text x="46.0" y="91.1" font-size="12.5" font-weight="700" class="lbl-rm" fill="#8e5ec7" text-anchor="end">v_f</text>
+</svg>
+</div>
+<div class="figcap">圖18a（左）：鐘樓位置示意圖，p、q、f分別是落下1、2、3層樓（即1h、2h、3h）時的位置。圖18b（右）：對應的v-t圖，橫軸(t)、縱軸(v)用同一個比例尺繪製，按照 $t_p:t_q:t_f:t_{\text{地面}}=1:\sqrt2:\sqrt3:\sqrt5$ 的實際比例繪製（因為 $v=gt$，v-t圖是一條由原點出發的直線，各點的時間座標就依這個比例分布，不是均勻等距）。因為橫、縱兩軸比例尺相同，圖上從原點到p、q、f、地面各點所圍出的三角形面積，也正好呈現 $1:2:3:5$（即 $h:2h:3h:5h$）的比例，跟位移＝面積的關係一致。f、地面之間灰色的那條虛線與小圓點，是鐘樓第4層樓的分界（對應 $\sqrt{4h/g}$），沒有另外取名字標號，只是把它畫出來，讓圖上5段面積都各自等於1個h，跟5層樓的鐘樓完整對應。圖上只標簡短的t_p、t_q、t_f、t_地，完整的時間算式列在下方「基本量」。</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>石子從頂端由靜止自由落下，落下的「總距離」（不是高度差，是從頂端算起累計下墜的距離）分別為：p處＝$h$，q處＝$2h$，f處＝$3h$，地面＝$5h$。</li>
+<li>自由落體從靜止出發，下墜距離 $y$ 與所花時間 $t$ 的關係是 $y=\tfrac12gt^2$，可以反過來寫成 $t=\sqrt{\dfrac{2y}{g}}$，用這個式子分別算出到達p、q、f、地面各自所需的時間。</li>
+<li>自由落體全程只受重力，加速度永遠是同一個 $g$，不會因為落下的距離不同而改變大小或方向。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：用相似三角形＋面積比＝邊長平方比，求出t_p:t_q:t_f</span>
+<svg class="fig" viewBox="0 0 320 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="OPQF相似三角形，面積比等於邊長平方比">
+  <defs><marker id="ar18d" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="55.0" y1="195" x2="55.0" y2="56.1" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ar18d)"/>
+  <line x1="40.0" y1="190.0" x2="213.9" y2="190.0" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ar18d)"/>
+  <text x="24" y="59.1" font-size="16" font-weight="700" class="lbl">v</text>
+  <text x="219.9" y="208.0" font-size="16" font-weight="700" class="lbl">t</text>
+  <polygon points="55.0,190.0 158.9,86.1 158.9,190.0" fill="#8e5ec7" fill-opacity="0.15" stroke="#8e5ec7" stroke-width="1.3" stroke-dasharray="4 2"/>
+  <polygon points="55.0,190.0 139.9,105.1 139.9,190.0" fill="var(--v3)" fill-opacity="0.28" stroke="var(--v3)" stroke-width="1.5"/>
+  <polygon points="55.0,190.0 115.0,130.0 115.0,190.0" fill="var(--v1)" fill-opacity="0.4" stroke="var(--v1)" stroke-width="1.6"/>
+  <polyline points="55.0,190.0 158.9,86.1" fill="none" stroke="var(--ink)" stroke-width="2.2"/>
+  <text x="47.0" y="206.0" font-size="13" font-weight="700" class="lbl" text-anchor="end">O</text>
+  <text x="101.0" y="174.0" font-size="11.5" font-weight="700" class="lbl" fill="var(--v1)" text-anchor="middle">面積=h</text>
+  <text x="131.4" y="154.0" font-size="11.5" font-weight="700" class="lbl" fill="var(--v3)" text-anchor="middle">面積=2h</text>
+  <text x="159.4" y="132.0" font-size="11.5" font-weight="700" class="lbl" fill="#8e5ec7" text-anchor="middle">面積=3h</text>
+  <circle cx="115.0" cy="130.0" r="4.5" fill="var(--v1)"/>
+  <text x="115.0" y="120.0" font-size="13" font-weight="700" class="lbl" fill="var(--v1)" text-anchor="middle">P</text>
+  <rect x="109.0" y="184.0" width="6" height="6" fill="none" stroke="var(--v1)" stroke-width="1"/>
+  <circle cx="139.9" cy="105.1" r="4.5" fill="var(--v3)"/>
+  <text x="139.9" y="95.1" font-size="13" font-weight="700" class="lbl" fill="var(--v3)" text-anchor="middle">Q</text>
+  <rect x="133.9" y="184.0" width="6" height="6" fill="none" stroke="var(--v3)" stroke-width="1"/>
+  <circle cx="158.9" cy="86.1" r="4.5" fill="#8e5ec7"/>
+  <text x="158.9" y="76.1" font-size="13" font-weight="700" class="lbl" fill="#8e5ec7" text-anchor="middle">F</text>
+  <rect x="152.9" y="184.0" width="6" height="6" fill="none" stroke="#8e5ec7" stroke-width="1"/>
+  <line x1="115.0" y1="208.0" x2="139.9" y2="208.0" stroke="var(--v3)" stroke-width="1.6"/><line x1="115.0" y1="204.0" x2="115.0" y2="212.0" stroke="var(--v3)" stroke-width="1.6"/><line x1="139.9" y1="204.0" x2="139.9" y2="212.0" stroke="var(--v3)" stroke-width="1.6"/><text x="127.4" y="223.0" font-size="10.5" font-weight="700" class="lbl" fill="var(--v3)" text-anchor="middle">t_(p→q)</text>
+  <line x1="139.9" y1="224.0" x2="158.9" y2="224.0" stroke="#8e5ec7" stroke-width="1.6"/><line x1="139.9" y1="220.0" x2="139.9" y2="228.0" stroke="#8e5ec7" stroke-width="1.6"/><line x1="158.9" y1="220.0" x2="158.9" y2="228.0" stroke="#8e5ec7" stroke-width="1.6"/><text x="149.4" y="239.0" font-size="10.5" font-weight="700" class="lbl" fill="#8e5ec7" text-anchor="middle">t_(q→f)</text>
+</svg>
+<div class="figcap">圖18c：v-t圖是一條過原點O的直線（$v=gt$），所以O到P、Q、F三點所圍出的直角三角形，都共用頂點O、共用同一條斜邊方向，屬於相似三角形。這三個三角形的面積就是石子落下的位移，題目已經給了：面積依序是 $h$、$2h$、$3h$。相似圖形「面積比＝邊長平方比」，所以邊長（時間 $t$，也就是速度 $v$，因為 $v=gt$）的比＝面積比開根號＝$\sqrt{h}:\sqrt{2h}:\sqrt{3h}=1:\sqrt2:\sqrt3$。這個比例同時就是(C)(D)兩題的答案來源，不需要分開再各自計算。</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 160 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="O到P單獨三角形，面積=h">
+  <defs><marker id="ar18tp" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/></marker></defs>
+  <line x1="40" y1="135" x2="40" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar18tp)"/>
+  <line x1="28" y1="130" x2="140" y2="130" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar18tp)"/>
+  <text x="20" y="26" font-size="13" font-weight="700" class="lbl">v</text>
+  <text x="146" y="146" font-size="13" font-weight="700" class="lbl">t</text>
+  <polygon points="40,130 86.0,84.0 86.0,130" fill="var(--v1)" fill-opacity="0.4" stroke="var(--v1)" stroke-width="1.8"/>
+  <text x="34" y="146" font-size="12" font-weight="700" class="lbl" text-anchor="end">O</text>
+  <circle cx="86.0" cy="84.0" r="4.2" fill="var(--v1)"/>
+  <text x="86.0" y="75.0" font-size="13" font-weight="700" class="lbl" fill="var(--v1)" text-anchor="middle">P</text>
+  <rect x="80.0" y="124" width="6" height="6" fill="none" stroke="var(--v1)" stroke-width="1"/>
+  <text x="63.0" y="113.0" font-size="13" font-weight="700" class="lbl" fill="var(--v1)" text-anchor="middle">面積=h</text>
+</svg>
+<svg class="fig" viewBox="0 0 160 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="O到Q單獨三角形，面積=2h">
+  <defs><marker id="ar18tq" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/></marker></defs>
+  <line x1="40" y1="135" x2="40" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar18tq)"/>
+  <line x1="28" y1="130" x2="140" y2="130" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar18tq)"/>
+  <text x="20" y="26" font-size="13" font-weight="700" class="lbl">v</text>
+  <text x="146" y="146" font-size="13" font-weight="700" class="lbl">t</text>
+  <polygon points="40,130 105.1,64.9 105.1,130" fill="var(--v3)" fill-opacity="0.32" stroke="var(--v3)" stroke-width="1.8"/>
+  <text x="34" y="146" font-size="12" font-weight="700" class="lbl" text-anchor="end">O</text>
+  <circle cx="105.1" cy="64.9" r="4.2" fill="var(--v3)"/>
+  <text x="105.1" y="55.9" font-size="13" font-weight="700" class="lbl" fill="var(--v3)" text-anchor="middle">Q</text>
+  <rect x="99.1" y="124" width="6" height="6" fill="none" stroke="var(--v3)" stroke-width="1"/>
+  <text x="72.5" y="103.5" font-size="13" font-weight="700" class="lbl" fill="var(--v3)" text-anchor="middle">面積=2h</text>
+</svg>
+<svg class="fig" viewBox="0 0 160 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="O到F單獨三角形，面積=3h">
+  <defs><marker id="ar18tf" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/></marker></defs>
+  <line x1="40" y1="135" x2="40" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar18tf)"/>
+  <line x1="28" y1="130" x2="140" y2="130" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar18tf)"/>
+  <text x="20" y="26" font-size="13" font-weight="700" class="lbl">v</text>
+  <text x="146" y="146" font-size="13" font-weight="700" class="lbl">t</text>
+  <polygon points="40,130 119.7,50.3 119.7,130" fill="#8e5ec7" fill-opacity="0.22" stroke="#8e5ec7" stroke-width="1.8"/>
+  <text x="34" y="146" font-size="12" font-weight="700" class="lbl" text-anchor="end">O</text>
+  <circle cx="119.7" cy="50.3" r="4.2" fill="#8e5ec7"/>
+  <text x="119.7" y="41.3" font-size="13" font-weight="700" class="lbl" fill="#8e5ec7" text-anchor="middle">F</text>
+  <rect x="113.7" y="124" width="6" height="6" fill="none" stroke="#8e5ec7" stroke-width="1"/>
+  <text x="79.8" y="96.2" font-size="13" font-weight="700" class="lbl" fill="#8e5ec7" text-anchor="middle">面積=3h</text>
+</svg>
+</div>
+<div class="figcap">圖18c的三個三角形（O到P、O到Q、O到F）分開單獨畫一次：三個三角形形狀相同（相似），只是大小不同，面積依序是h、2h、3h——拆開看更清楚每一個三角形各自對應哪一段距離，避免跟疊在一起的版本搞混。</div>
+<div class="step">
+<span class="label">公式（面積比＝邊長平方比）</span>
+$$\dfrac{\text{面積}_Q}{\text{面積}_P}=\left(\dfrac{t_q}{t_p}\right)^2,\qquad \dfrac{\text{面積}_F}{\text{面積}_P}=\left(\dfrac{t_f}{t_p}\right)^2$$
+</div>
+<div class="step">
+<span class="label">代入</span>
+$$\dfrac{2h}{h}=\left(\dfrac{t_q}{t_p}\right)^2=2\ \Longrightarrow\ \dfrac{t_q}{t_p}=\sqrt2,\qquad \dfrac{3h}{h}=\left(\dfrac{t_f}{t_p}\right)^2=3\ \Longrightarrow\ \dfrac{t_f}{t_p}=\sqrt3$$
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$t_p:t_q:t_f=1:\sqrt2:\sqrt3\qquad(\text{同時也是}\ v_p:v_q:v_f\ \text{的比，因為}\ v=gt)$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+地面對應下墜總距離 $5h$，跟前面同一套相似三角形比例延伸：$\dfrac{5h}{h}=\left(\dfrac{t_{\text{地面}}}{t_p}\right)^2=5\ \Longrightarrow\ t_{\text{地面}}=\sqrt5\,t_p=\sqrt5\sqrt{\dfrac{2h}{g}}=\sqrt{\dfrac{10h}{g}}$，與(A)相符，(A)對。
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+$$v_{\text{地面}}^2=2g\times5h=10gh\ \Longrightarrow\ v_{\text{地面}}=\sqrt{10gh}$$
+(B)對。
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+承上，$t_p:t_q:t_f=1:\sqrt2:\sqrt3$ 這三個點已經照比例畫在圖18c的t軸上（見P、Q、F的括號標示），兩段差可以直接讀出來：
+$$t_{p\to q}:t_{q\to f}=(\sqrt2-1):(\sqrt3-\sqrt2)$$
+與(C)相符，(C)對。
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+承上，$v_p:v_q:v_f$ 跟 $t_p:t_q:t_f$ 是同一個比（因為 $v=gt$，同一條直線），所以
+$$v_p:v_q:v_f=1:\sqrt2:\sqrt3$$
+並不是 $1:2:3$，(D)錯。
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+自由落體全程只受重力，加速度恆為同一個 $g$，三處加速度比應為 $1:1:1$，並非 $1:\sqrt2:\sqrt3$（那其實是速率比，不是加速度比），(E)錯。
+</div>
+
+<div class="ans">
+答案：<strong>(A)(B)(C)</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page17')">← 第17題</button>
+<button onclick="showPage('page19')">第19題 →</button>
+</div>
+</section>
+
+
+
+</div><!-- /page18 -->
+
+<div class="page" id="page19">
+<section id="q19">
+<h2>第 19 題（單選）</h2>
+<div class="qbox">
+<p class="qstem">把自由落體運動下落的總距離分成長度相等的三段。按從上到下的順序，經過這三段路程的平均速度的比是</p>
+<ul class="opts">
+<li>(A) $1:(\sqrt2+1):(\sqrt3+\sqrt2)$</li>
+<li>(B) $1:4:9$</li>
+<li>(C) $1:\sqrt2:\sqrt3$</li>
+<li>(D) $1:3:5$</li>
+<li>(E) $1:1:1$</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+<li>這一題是把總距離分成「長度相等」的三段（不是「時間相等」的三段），跟平常常見的1:3:5那種等時距分段不一樣，不能直接套用等時距的結論。</li>
+<li>設每一段長度為 $d$，累計距離依序是 $d,2d,3d$；v-t圖上，從原點到「累計距離達到 $d,2d,3d$」那三個時刻，各自圍出一個直角三角形，三個三角形共用頂點（原點）、共用同一條斜邊方向，是相似三角形。</li>
+<li>相似三角形「面積比＝邊長平方比」：面積比就是 $d:2d:3d=1:2:3$，所以對應的累計時間比＝面積比開根號＝$1:\sqrt2:\sqrt3$——不需要先各自代入 $y=\tfrac12gt^2$ 解出 $t_1,t_2,t_3$ 的個別數值，直接用比例就能繼續往下推。</li>
+<li>設累計時間為 $T_1,T_2,T_3$（$T_1$是走完第一段d那一刻，$T_2$是走完前兩段2d那一刻，$T_3$是走完全部3d那一刻），則 $T_1:T_2:T_3=1:\sqrt2:\sqrt3$；每一段各自花費的時間，用相鄰累計時間相減就好：第一段＝$T_1$，第二段＝$T_2-T_1$，第三段＝$T_3-T_2$。</li>
+<li>每一段的平均速度＝這一段的長度（都是$d$，固定）÷ 這一段花費的時間；因為長度都相同，比較平均速度，其實就是在比較「花費時間的倒數」。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 300 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="三段等長位移的相似三角形v-t圖(累計面積d,2d,3d)">
+  <defs><marker id="ar19n" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/></marker></defs>
+  <line x1="55.0" y1="180" x2="55.0" y2="68.3" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ar19n)"/>
+  <line x1="40.0" y1="175.0" x2="184.7" y2="175.0" stroke="var(--ink)" stroke-width="1.8" marker-end="url(#ar19n)"/>
+  <text x="24" y="71.3" font-size="15" font-weight="700" class="lbl">v</text>
+  <text x="188.7" y="191.0" font-size="15" font-weight="700" class="lbl">t</text>
+  <polygon points="55.0,175.0 134.7,95.3 134.7,175.0" fill="#8e5ec7" fill-opacity="0.16" stroke="#8e5ec7" stroke-width="1.3" stroke-dasharray="4 2"/>
+  <polygon points="55.0,175.0 120.1,109.9 120.1,175.0" fill="var(--v3)" fill-opacity="0.28" stroke="var(--v3)" stroke-width="1.5"/>
+  <polygon points="55.0,175.0 101.0,129.0 101.0,175.0" fill="var(--v1)" fill-opacity="0.42" stroke="var(--v1)" stroke-width="1.6"/>
+  <polyline points="55.0,175.0 134.7,95.3" fill="none" stroke="var(--ink)" stroke-width="2.2"/>
+  <text x="48.0" y="190.0" font-size="12" font-weight="700" class="lbl" text-anchor="end">O</text>
+  <circle cx="101.0" cy="129.0" r="4.2" fill="var(--v1)"/>
+  <rect x="95.0" y="169.0" width="6" height="6" fill="none" stroke="var(--v1)" stroke-width="1"/>
+  <circle cx="120.1" cy="109.9" r="4.2" fill="var(--v3)"/>
+  <rect x="114.1" y="169.0" width="6" height="6" fill="none" stroke="var(--v3)" stroke-width="1"/>
+  <circle cx="134.7" cy="95.3" r="4.2" fill="#8e5ec7"/>
+  <rect x="128.7" y="169.0" width="6" height="6" fill="none" stroke="#8e5ec7" stroke-width="1"/>
+  <text x="89.0" y="161.0" font-size="11" font-weight="700" class="lbl" fill="var(--v1)" text-anchor="middle">面積=d</text>
+  <text x="112.5" y="145.0" font-size="11" font-weight="700" class="lbl" fill="var(--v3)" text-anchor="middle">面積=2d</text>
+  <text x="135.4" y="127.0" font-size="11" font-weight="700" class="lbl" fill="#8e5ec7" text-anchor="middle">面積=3d</text>
+  <text x="101.0" y="191.0" font-size="11.5" font-weight="700" class="lbl-rm" fill="var(--v1)" text-anchor="middle">T₁</text>
+  <text x="120.1" y="191.0" font-size="11.5" font-weight="700" class="lbl-rm" fill="var(--v3)" text-anchor="middle">T₂</text>
+  <text x="134.7" y="191.0" font-size="11.5" font-weight="700" class="lbl-rm" fill="#8e5ec7" text-anchor="middle">T₃</text>
+</svg>
+<div class="figcap">圖19：v-t圖，三個相似三角形（O到T₁、O到T₂、O到T₃）用巢狀塗色表示，面積依序是 $d,2d,3d$。因為面積比＝邊長平方比，累計時間比 $T_1:T_2:T_3=1:\sqrt2:\sqrt3$ 直接由面積比開根號得出，不必個別解 $y=\tfrac12gt^2$。</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（相似三角形，邊長比＝面積比開根號）</span>
+$$T_1:T_2:T_3=\sqrt{d}:\sqrt{2d}:\sqrt{3d}=1:\sqrt2:\sqrt3$$
+</div>
+<div class="step">
+<span class="label">設 $T_1=k$，代入求出各段花費的時間</span>
+$$\text{第一段花費}=T_1=k,\quad \text{第二段花費}=T_2-T_1=(\sqrt2-1)k,\quad \text{第三段花費}=T_3-T_2=(\sqrt3-\sqrt2)k$$
+</div>
+<div class="step">
+<span class="label">公式：各段平均速度（段長皆為d，除以各自花費時間）</span>
+$$v_{\text{平},1}=\dfrac{d}{k},\qquad v_{\text{平},2}=\dfrac{d}{(\sqrt2-1)k},\qquad v_{\text{平},3}=\dfrac{d}{(\sqrt3-\sqrt2)k}$$
+</div>
+<div class="step">
+<span class="label">化簡（比較倒數比，分母有理化）</span>
+$$v_{\text{平},1}:v_{\text{平},2}:v_{\text{平},3} = 1:\dfrac{1}{\sqrt2-1}:\dfrac{1}{\sqrt3-\sqrt2}$$
+把 $\dfrac{1}{\sqrt2-1}$ 乘上 $\dfrac{\sqrt2+1}{\sqrt2+1}$ 有理化，得 $\sqrt2+1$；同理 $\dfrac{1}{\sqrt3-\sqrt2}$ 有理化後得 $\sqrt3+\sqrt2$。
+</div>
+<div class="step">
+<span class="label">結果</span>
+$$v_{\text{平},1}:v_{\text{平},2}:v_{\text{平},3} = 1:(\sqrt2+1):(\sqrt3+\sqrt2)$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>(A) $1:(\sqrt2+1):(\sqrt3+\sqrt2)$</strong>
+</div>
+
+<div class="qnav">
+<button onclick="showPage('page18')">← 第18題</button>
+<button disabled>第19題 →</button>
+</div>
+</section>
+
+
+</div><!-- /page19 -->
+
+
+<div id="zoomOverlay"><div id="zoomInner"></div></div>
+
+<script>
+  function showPage(id){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p.id === id); });
+    var sel = document.getElementById('pageSelect');
+    if (sel) sel.value = id;
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  var pageSelectEl = document.getElementById('pageSelect');
+  if (pageSelectEl){ pageSelectEl.addEventListener('change', function(){ showPage(this.value); }); }
+
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('.katex-display, .katex');
+    if (e.target.closest('#zoomOverlay')) return;
+    if (!el) return;
+    var target = el.closest('.katex-display') || el;
+    var overlay = document.getElementById('zoomOverlay');
+    var inner = document.getElementById('zoomInner');
+    inner.innerHTML = target.outerHTML;
+    overlay.classList.add('show');
+  });
+  document.getElementById('zoomOverlay').addEventListener('click', function(){ this.classList.remove('show'); });
+</script>
+
+</body>
+</html>
