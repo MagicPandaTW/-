@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>李鋒物理 高二物B上小考(5) 詳解</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });"></script>
+
+<style>
+  :root{
+    --ink:#1a1a1a; --aux:#8a8a8a;
+    --v1:#c62828; --v2:#1565c0; --v3:#2e7d32;
+    --fill:#f2f4f7; --bg:#ffffff; --line:#e5e7eb;
+    --fs-h1:clamp(20px,5vw,26px); --fs-h2:clamp(16px,4.2vw,20px);
+    --fs-body:clamp(15px,4vw,17px); --fs-small:clamp(13px,3.4vw,14px);
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;
+    line-height:1.7; -webkit-text-size-adjust:100%;
+  }
+  body{ max-width:720px; margin:0 auto; padding:16px 16px 48px; }
+  h1{ font-size:var(--fs-h1); margin:0 0 4px; }
+  h2{ font-size:var(--fs-h2); margin:28px 0 10px; padding-top:14px; border-top:1px solid var(--line); }
+  .subtitle{ font-size:var(--fs-small); color:var(--aux); margin-bottom:20px; }
+  p, li{ font-size:var(--fs-body); }
+
+  .qbox{
+    background:var(--fill); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; margin:16px 0; font-size:var(--fs-body);
+  }
+  .qstem{ margin:0 0 8px; }
+  .opts{ margin:0; padding:0; list-style:none; }
+  .opts li{ margin:6px 0; padding-left:2.4em; text-indent:-2.4em; }
+
+  .fig{ display:block; width:100%; max-width:520px; height:auto; margin:1.2em auto; overflow:visible; }
+  .figrow{ display:flex; flex-wrap:wrap; gap:1em; justify-content:center; margin:1.2em 0; }
+  .figrow .fig{ flex:1 1 260px; margin:0.4em auto; }
+  .figcap{ text-align:center; font-size:var(--fs-small); color:var(--aux); margin-top:-0.6em; margin-bottom:1.2em; }
+  .lbl{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; font-style:italic; }
+  .lbl-rm{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; }
+
+  .ans{ background:#e8f5e9; border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; }
+  .flag{ color:#e65100; font-weight:bold; }
+
+  .concept{ background:#eef4fb; border-left:4px solid var(--v2); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .concept .tag, .flow .tag, .calcblock .tag, .basecalc .tag{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; color:#fff;
+    padding:2px 8px; border-radius:4px; margin-bottom:6px;
+  }
+  .concept .tag{ background:var(--v2); }
+  .concept-list{ list-style:none; margin:8px 0 0; padding:0; }
+  .concept-list li{ position:relative; margin:8px 0; padding-left:1.3em; }
+  .concept-list li::before{ content:"●"; position:absolute; left:0; top:0.15em; font-size:0.55em; color:var(--v2); }
+
+  .flow{ background:var(--fill); border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .flow .tag{ background:var(--aux); }
+  .flow ol{ margin:6px 0 0; padding-left:1.3em; }
+  .flow li{ margin:4px 0; }
+
+  .calcblock{ border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; background:#f4faf5; }
+  .calcblock .tag{ background:var(--v3); }
+  .calcblock .katex-display{ text-align:left; margin:8px 0; }
+
+  .basecalc{ border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; background:var(--fill); }
+  .basecalc .tag{ background:var(--aux); }
+  .basecalc .katex-display{ text-align:left; margin:8px 0; }
+
+  .step{ margin:12px 0; }
+  .step .label{ font-weight:600; color:var(--v2); }
+
+  .pager{ position:sticky; top:0; background:var(--bg); z-index:10; border-bottom:1px solid var(--line); padding:8px 0 0; margin-bottom:14px; }
+  .tabs{ display:none; }
+  .pagesel{ display:block; }
+  .pagesel select{
+    width:100%; font-size:var(--fs-body); padding:8px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); margin-bottom:8px;
+  }
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  .qnav{ display:flex; justify-content:space-between; margin:24px 0 6px; }
+  .qnav button{ border:1px solid var(--line); background:var(--fill); color:var(--ink); font-size:var(--fs-small); padding:8px 14px; border-radius:8px; cursor:pointer; }
+  .qnav button:disabled{ opacity:0.4; cursor:default; }
+
+  .katex{ cursor:pointer; } .katex-display{ cursor:pointer; }
+  #zoomOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:999; -webkit-tap-highlight-color:transparent; }
+  #zoomOverlay.show{ display:flex; }
+  #zoomInner{ background:var(--bg); border-radius:12px; padding:24px 20px; max-width:92vw; max-height:80vh; overflow:auto; box-shadow:0 8px 30px rgba(0,0,0,0.25); font-size:clamp(22px,7vw,34px); }
+
+  .keytable{ width:100%; border-collapse:collapse; font-size:var(--fs-small); margin:10px 0; }
+  .keytable th, .keytable td{ border:1px solid var(--line); padding:6px 8px; text-align:center; }
+  .keytable th{ background:var(--fill); }
+  .campv1{ color:var(--v1); font-weight:700; }
+  .campv2{ color:var(--v2); font-weight:700; }
+</style>
+</head>
+<body>
+
+<h1>李鋒物理 高二物B上小考試題卷(5) 詳解</h1>
+<div class="subtitle">考試範圍：1-1.1-2　共12題（1-9多選，10-12填充）</div>
+
+<nav class="pager">
+  <div class="tabs" id="tabs"></div>
+  <div class="pagesel" id="pagesel">
+    <select id="pageSelect">
+      <option value="page1">第1題</option>
+      <option value="page2">第2題</option>
+      <option value="page3">第3題</option>
+      <option value="page4">第4題</option>
+      <option value="page5">第5題</option>
+      <option value="page6">第6題</option>
+      <option value="page7">第7題</option>
+      <option value="page8">第8題</option>
+      <option value="page9">第9題</option>
+      <option value="page10">第10題</option>
+      <option value="page11">第11題</option>
+      <option value="page12">第12題</option>
+    </select>
+  </div>
+</nav>
+
+<div class="page active" id="page1">
+<section id="q1">
+<h2>第 1 題</h2>
+
+<div class="qbox">
+<p class="qstem">下列有關運動狀態之描述，何者為正確？</p>
+<ul class="opts">
+  <li>(A) 加速度逐漸減小時，速度可能逐漸增大</li>
+  <li>(B) 加速度不為零時，其瞬時速度必不為零</li>
+  <li>(C) 瞬時速度持續為零時，此時加速度必為零</li>
+  <li>(D) 加速度最大時，速度必達最大值</li>
+  <li>(E) 一物自高處自由落下後，速度漸增快，加速度亦漸增大</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<p>判斷「速率是變快還是變慢」，可以把相關的物理量分成兩個陣營，陣營內部的方向永遠一致：</p>
+<ul class="concept-list">
+  <li><span class="campv1">陣營一（描述「位置怎麼變」）</span>：速度、運動方向、位移，三者方向永遠相同。</li>
+  <li><span class="campv2">陣營二（描述「速度怎麼變」）</span>：加速度、合力、運動狀態改變的方向，三者方向永遠相同。</li>
+  <li>在同一瞬間（或同一段時距）比較這兩個陣營的方向：兩陣營同方向 → 速率變快（加速）；兩陣營反方向 → 速率變慢（減速）。</li>
+  <li>這個規則只比較「同一時刻／同一段時距內」兩陣營的方向關係，不需要比較不同時刻的大小。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<p>「加速度逐漸減小」只是描述加速度的<strong>大小</strong>正在變小，不代表加速度已經變號或消失。只要加速度的方向仍與速度方向相同（陣營二仍與陣營一同方向），速度就仍在增大，只是增大的速度變慢了。故(A)可能成立，正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<p>反例：鉛直上拋的物體在最高點那一瞬間，瞬時速度 $v=0$，但加速度仍是 $a=-g\neq0$（重力從未消失）。故「加速度不為零時瞬時速度必不為零」不成立，(B)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<p>注意這裡是「瞬時速度<strong>持續</strong>為零」，也就是一段時間內速度恆為 $0$（不是只有某一瞬間為零），代表物體在這段時間完全靜止不動、位置沒有改變，速度既然是常數 $0$，其變化率（加速度）必為 $0$。故(C)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>加速度最大，只代表「速度改變得最快」，不代表速度本身的數值最大。以簡諧運動為例，最大加速度發生在位移最大的位置，此時瞬時速度恰好為 $0$。故(D)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>自由落體的加速度恆為重力加速度 $g$，全程數值不變（不會漸增大），只有速度會隨時間漸增。故(E)錯誤。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(A)(C)</strong>
+</div>
+<div class="qnav">
+  <button disabled>← 第1題</button>
+  <button onclick="showPage('page2')">第2題 →</button>
+</div>
+</section>
+</div><!-- /page1 -->
+
+<div class="page" id="page2">
+<section id="q2">
+<h2>第 2 題</h2>
+
+<div class="qbox">
+<p class="qstem">下列敘述何者正確？</p>
+<ul class="opts">
+  <li>(A) $x-t$ 圖中，曲線與時間座標軸所包含之面積表示速度變化量</li>
+  <li>(B) $v-t$ 圖中，曲線與時間座標軸所包含之面積表示位置變化量</li>
+  <li>(C) $v-t$ 圖中，曲線上任一點的切線斜率等於相對應時刻的瞬時加速度</li>
+  <li>(D) $v-t$ 圖中，曲線上任意兩點縱座標差與橫座標差之比值等於此時距內的平均加速度</li>
+  <li>(E) $a-t$ 圖中，曲線與時間座標軸所包含之面積表示速度</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<p>三種運動學圖形的「斜率」與「面積」各自代表什麼物理量，整理如下表：</p>
+<table class="keytable">
+<tr><th>圖形</th><th>斜率（微分）</th><th>面積（積分）</th></tr>
+<tr><td>$x-t$ 圖</td><td>瞬時速度 $v$</td><td>沒有常用的物理意義</td></tr>
+<tr><td>$v-t$ 圖</td><td>瞬時加速度 $a$</td><td>位置變化量（位移）$\Delta x$</td></tr>
+<tr><td>$a-t$ 圖</td><td>沒有常用的物理意義</td><td>速度變化量 $\Delta v$</td></tr>
+</table>
+<ul class="concept-list">
+  <li>「斜率」是微分關係：$x-t$ 圖的斜率是 $v$，$v-t$ 圖的斜率是 $a$；也就是 $v=\dfrac{dx}{dt}$、$a=\dfrac{dv}{dt}$。</li>
+  <li>「面積」是積分關係，但積分只能把「改變量」找回來，找不回一開始的常數（初始值）：對 $v-t$ 圖取面積，得到的是這段時間內位置的<strong>改變量</strong> $\Delta x$，不是 $x$ 本身；同理對 $a-t$ 圖取面積，得到的是速度的<strong>改變量</strong> $\Delta v$，不是 $v$ 本身。這是因為微分會讓常數項（初始位置、初始速度）直接消失，所以反過來積分回去，永遠補不回那個消失的常數，只能得到「這段時間內變化了多少」。</li>
+  <li>$x-t$ 圖對時間積分（面積）沒有對應到課程中會用到的物理量，$a-t$ 圖的面積也不是速度本身，而是速度的改變量，這是最常見的誤答陷阱。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(E)</span>
+<p>由上表，$x-t$ 圖的面積不是「速度變化量」，故(A)錯誤；$a-t$ 圖的面積是「速度變化量 $\Delta v$」而不是速度本身，故(E)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<p>$v-t$ 圖的面積正是位置變化量（位移），(B)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<p>$v-t$ 圖上任一點切線斜率 $=\dfrac{dv}{dt}=$ 該時刻的瞬時加速度，(C)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>$v-t$ 圖上任兩點的縱座標差為 $\Delta v$，橫座標差為 $\Delta t$，其比值
+$$\dfrac{\Delta v}{\Delta t}=a_{\text{平}}$$
+正是這段時距內的平均加速度，(D)正確。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(B)(C)(D)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page1')">← 第1題</button>
+  <button onclick="showPage('page3')">第3題 →</button>
+</div>
+</section>
+</div><!-- /page2 -->
+
+<div class="page" id="page3">
+<section id="q3">
+<h2>第 3 題</h2>
+
+<div class="qbox">
+<p class="qstem">火箭自地面垂直向上發射，待燃料用盡落回地面之速度－時間關係圖如下圖所示，若 $BD=2AB$，重力加速度為 $g$，則下列敘述何者正確？</p>
+<ul class="opts">
+  <li>(A) $D$ 時刻燃料用盡</li>
+  <li>(B) $D$ 時刻到達最高點</li>
+  <li>(C) 最大速率：落地速率 $=2:3$</li>
+  <li>(D) $\triangle ADC$ 面積 $=\triangle DEF$ 面積</li>
+  <li>(E) 上升過程加速度大小為 $g$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 340 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="火箭v-t圖">
+  <defs>
+    <marker id="ar3" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="50" y1="245" x2="50" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar3)"/>
+  <line x1="35" y1="140" x2="310" y2="140" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar3)"/>
+  <text x="30" y="30" font-size="14" class="lbl">v</text>
+  <text x="298" y="158" font-size="14" class="lbl">t</text>
+
+  <!-- 上升段 A-C，下降段 C-F（單一直線，斜率恆為-g，因燃料用盡後只受重力） -->
+  <line x1="50" y1="140" x2="90" y2="60" stroke="var(--v1)" stroke-width="1.8"/>
+  <line x1="90" y1="60" x2="268" y2="238" stroke="var(--v2)" stroke-width="1.8"/>
+
+  <!-- 虛線輔助 -->
+  <line x1="90" y1="60" x2="90" y2="140" stroke="var(--aux)" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <line x1="268" y1="140" x2="268" y2="238" stroke="var(--aux)" stroke-width="1.1" stroke-dasharray="3 3"/>
+
+  <circle cx="50" cy="140" r="3.5" fill="var(--ink)"/>
+  <circle cx="90" cy="140" r="3.5" fill="var(--ink)"/>
+  <circle cx="90" cy="60" r="3.5" fill="var(--v1)"/>
+  <circle cx="170" cy="140" r="3.5" fill="var(--ink)"/>
+  <circle cx="268" cy="140" r="3.5" fill="var(--ink)"/>
+  <circle cx="268" cy="238" r="3.5" fill="var(--v2)"/>
+
+  <text x="42" y="160" font-size="13" class="lbl" text-anchor="middle">A</text>
+  <text x="90" y="160" font-size="13" class="lbl" text-anchor="middle">B</text>
+  <text x="90" y="48" font-size="13" class="lbl" text-anchor="middle">C</text>
+  <text x="170" y="128" font-size="13" class="lbl" text-anchor="middle">D</text>
+  <text x="268" y="128" font-size="13" class="lbl" text-anchor="middle">E</text>
+  <text x="280" y="242" font-size="13" class="lbl" text-anchor="middle">F</text>
+</svg>
+<div class="figcap">圖3：紅線為燃料燃燒中的上升段（A→C），藍線為燃料用盡後只受重力的自由飛行段（C→D→F，同一條直線、斜率恆為 $-g$）</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li><strong>A</strong>：$t=0$，火箭剛從地面發射，$v=0$。</li>
+  <li><strong>B</strong>：燃料恰好用盡的時刻。從 $A$ 到 $B$ 這段，火箭由引擎推動加速上升，圖上是 A-C 這段線（斜率較陡，代表加速度比 $g$ 大）。</li>
+  <li><strong>C</strong>：燃料用盡當下的速度，也是全程的最大速度（因為 $B$ 之後只剩重力減速，速度只會愈來愈小）。</li>
+  <li><strong>D</strong>：$C$ 之後速度持續遞減（只受重力，斜率為 $-g$），減到 $v=0$ 的那一刻就是「上升到最高點」，之後速度轉為負（開始下墜）。所以 $D$ 是到達最高點的時刻，不是燃料用盡的時刻（燃料用盡在 $B$）。</li>
+  <li><strong>F</strong>：火箭落回地面那一瞬間的速度（方向向下，取為負值）。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+<p>設 $AB=T_0$，已知 $BD=2AB=2T_0$。$B$ 到 $D$ 這段只受重力，速度由最大值 $v_C$ 均勻減到 $0$，斜率大小為 $g$：</p>
+$$\begin{aligned}
+v_C&=g\times BD=2gT_0
+\end{aligned}$$
+<p>$A$ 到 $B$ 這段，加速度為：</p>
+$$\begin{aligned}
+a_{\text{上升}}&=\dfrac{v_C}{AB}=\dfrac{2gT_0}{T_0}=2g
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<p>由觀念段可知，燃料用盡的時刻是 $B$，不是 $D$。(A)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<p>$D$ 是速度減為 $0$ 的時刻，也就是最高點，(B)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<p>因為火箭從地面出發、最後也落回地面，全程淨位移為 $0$，所以「上升總高度」（面積 $\triangle ADC$）必須等於「下降總高度」（面積 $\triangle DEF$）。</p>
+<div class="step">
+<span class="label">列式：</span>
+$$\begin{aligned}
+\triangle ADC \text{面積} &= \tfrac12 (AD)(v_C)=\tfrac12(3T_0)(2gT_0)=3gT_0^2\\
+\triangle DEF \text{面積} &= \tfrac12 (DE)(v_F)
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+<p>$C$ 到 $F$ 是同一條直線（斜率恆為 $-g$），所以 $\triangle BDC$ 與 $\triangle DEF$ 相似（同樣的斜率），
+$$\dfrac{v_C}{BD}=\dfrac{v_F}{DE}=g \;\Rightarrow\; v_F=\dfrac{v_C}{BD}\cdot DE=\dfrac{v_C}{2T_0}\cdot DE$$
+代入 $\triangle DEF$ 面積 $=3gT_0^2$：
+$$\tfrac12(DE)\left(\dfrac{v_C}{2T_0}DE\right)=3gT_0^2 \;\Rightarrow\; DE^2=\dfrac{12gT_0^3}{v_C}=\dfrac{12gT_0^3}{2gT_0}=6T_0^2$$
+$$DE=\sqrt6\,T_0$$
+</p>
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+v_F&=g\times DE=\sqrt6\,gT_0\\
+v_C:v_F&=2gT_0:\sqrt6\,gT_0=2:\sqrt6\approx2:2.45
+\end{aligned}$$
+<p>不是 $2:3$，(C)錯誤。</p>
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>由觀念段說明：火箭從地面出發、又落回地面，淨位移為 $0$，上升面積必等於下降面積，即 $\triangle ADC$ 面積 $=\triangle DEF$ 面積，(D)正確（數值上兩者皆為 $3gT_0^2$，已在(C)中算出）。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>「上升過程」包含 $A\to B$（引擎推動，加速度為 $2g$，見基本量）與 $B\to D$（燃料用盡後只受重力，加速度大小為 $g$）兩段，兩段加速度並不相同，並非全程都是 $g$。(E)錯誤。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(B)(D)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page2')">← 第2題</button>
+  <button onclick="showPage('page4')">第4題 →</button>
+</div>
+</section>
+</div><!-- /page3 -->
+
+<div class="page" id="page4">
+<section id="q4">
+<h2>第 4 題</h2>
+
+<div class="qbox">
+<p class="qstem">在直線上作運動的一質點，其位置隨時間變化的關係式為 $x(t)=5+8t-2t^2$（SI制），則下列有關質點運動的敘述何者正確？</p>
+<ul class="opts">
+  <li>(A) 3秒內的位移為 $+11\ m$</li>
+  <li>(B) 3秒內的路徑長為 $10\ m$</li>
+  <li>(C) 最大正向位移 $+13\ m$</li>
+  <li>(D) 3秒末的瞬時速度為 $-4\ m/s$</li>
+  <li>(E) 3秒末的速率漸增當中</li>
+</ul>
+</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+<li>先列出 $x(t)$，微分算出 $v(t)$、$a(t)$。</li>
+<li>由 $a(t)$ 判斷：$x(t)$ 是二次函數，代表這是等加速度運動。</li>
+<li>利用 $v(t)$ 畫出 v-t 圖，後續選項以此圖為主解題。</li>
+</ol>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+x(t)&=5+8t-2t^2\\
+v(t)&=\dfrac{dx}{dt}=8-4t\\
+a(t)&=\dfrac{dv}{dt}=-4\ (\text{m/s}^2,\ \text{定值，故為等加速度運動})
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">關鍵值：</span>
+$$\begin{aligned}
+v(0)&=8\ m/s, \quad v(2)=0, \quad v(3)=8-4(3)=-4\ m/s\\
+x(0)&=5,\quad x(2)=5+16-8=13,\quad x(3)=5+24-18=11
+\end{aligned}$$
+<p>由 $v(2)=0$ 可知質點在 $t=2$ 秒時瞬時靜止、方向反轉，這是全程唯一的轉折點。</p>
+</div>
+</div>
+
+<svg class="fig" viewBox="0 0 210 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Q4 v-t圖">
+  <defs>
+    <marker id="ar4" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="50" y1="196" x2="50" y2="10" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <line x1="35" y1="130" x2="190" y2="130" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <text x="20" y="20" font-size="13" class="lbl">v(m/s)</text>
+  <text x="178" y="148" font-size="13" class="lbl">t(s)</text>
+  <text x="42" y="134" font-size="11" class="lbl-rm" text-anchor="end">0</text>
+
+  <!-- 正位移三角形 0~2秒 -->
+  <polygon points="50,18 130,130 50,130" fill="var(--v1)" fill-opacity="0.28"/>
+  <!-- 負位移三角形 2~3秒 -->
+  <polygon points="130,130 170,186 170,130" fill="var(--v2)" fill-opacity="0.3"/>
+
+  <line x1="50" y1="18" x2="170" y2="186" stroke="var(--ink)" stroke-width="1.8"/>
+  <line x1="130" y1="130" x2="130" y2="18" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 3"/>
+
+  <circle cx="50" cy="18" r="3.5" fill="var(--v1)"/>
+  <circle cx="130" cy="130" r="3.5" fill="var(--ink)"/>
+  <circle cx="170" cy="186" r="3.5" fill="var(--v2)"/>
+
+  <text x="42" y="14" font-size="12" class="lbl" text-anchor="end">v(0)=8</text>
+  <text x="130" y="146" font-size="12" class="lbl" text-anchor="middle">t=2</text>
+  <text x="176" y="190" font-size="12" class="lbl">v(3)=-4</text>
+  <text x="70" y="78" font-size="12" class="lbl-rm" fill="var(--v1)">面積=8</text>
+  <text x="145" y="168" font-size="12" class="lbl-rm" fill="var(--v2)">面積=-4</text>
+</svg>
+<div class="figcap">圖4：v-t圖為單一直線（等加速度），紅色三角形為 0~2秒的正位移，藍色三角形為 2~3秒的負位移</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\Delta x = x(3)-x(0)$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\Delta x = 11-5=+6\ m$$
+</div>
+<p>3秒內的位移是 $+6\ m$，不是 $+11\ m$（$+11$ 其實是 $x(3)$ 本身的數值，不是位移）。(A)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<p>因為速度在 $t=2$ 秒變號（質點折返），位移與路徑長不同，路徑長要把兩段區間的距離量值相加：</p>
+<div class="step">
+<span class="label">公式：</span>
+$$\text{路徑長}=|x(2)-x(0)|+|x(3)-x(2)|$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\text{路徑長}=|13-5|+|11-13|=8+2=10\ m$$
+</div>
+<p>與圖上紅色三角形面積 $8$（0~2秒位移量值）加上藍色三角形面積 $4$（2~3秒位移量值）一致，(B)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<p>最大正向位移發生在轉折點 $t=2$（此後開始往回走），應以出發點 $x(0)$ 為基準計算：</p>
+$$\Delta x_{\max}=x(2)-x(0)=13-5=+8\ m$$
+<p>不是 $+13\ m$（同(A)的陷阱，$13$ 只是 $x(2)$ 本身）。(C)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+$$v(3)=8-4(3)=-4\ m/s$$
+<p>與選項相符，(D)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>在 $t=3$ 秒，$v(3)=-4$（負），$a=-4$（負），兩者同號，代表陣營一與陣營二同方向，速率正在增加。(E)正確。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(B)(D)(E)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page3')">← 第3題</button>
+  <button onclick="showPage('page5')">第5題 →</button>
+</div>
+</section>
+</div><!-- /page4 -->
+
+<div class="page" id="page5">
+<section id="q5">
+<h2>第 5 題</h2>
+
+<div class="qbox">
+<p class="qstem">某質點位置與時間的關係為 $x(t)=16t^2$（單位：$x$ 米，$t$ 秒），下列敘述何者<strong>錯誤</strong>？</p>
+<ul class="opts">
+  <li>(A) 其軌跡為拋物線</li>
+  <li>(B) 其 $x-t$ 圖為凹向上的拋物線</li>
+  <li>(C) 2秒至2.1秒內的平均速度為 $65.6\ m/s$</li>
+  <li>(D) 2秒末的瞬時速度為 $64\ m/s$</li>
+  <li>(E) 2秒末的瞬時加速度為 $64\ m/s^2$</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>題目只給了一個位置變數 $x(t)$，代表這是<strong>一維直線運動</strong>：質點只在一條直線上前後移動，實際「軌跡」（走過的路徑形狀）就是一條直線，不是拋物線。</li>
+  <li>「拋物線」指的是 $x-t$ <strong>圖形</strong>的形狀（因為 $x=16t^2$ 是二次函數），這是把「時間」和「位置」畫成平面座標圖後才會看到的形狀，跟質點在真實空間中怎麼走（軌跡）是兩件不同的事，不可混淆。</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid meet" role="img" aria-label="實際軌跡示意">
+  <defs>
+    <marker id="ar5a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="50" x2="140" y2="50" stroke="var(--v1)" stroke-width="2.2" marker-end="url(#ar5a)"/>
+  <circle cx="60" cy="50" r="4" fill="var(--v1)"/>
+  <text x="80" y="75" font-size="12" class="lbl" text-anchor="middle">實際軌跡：一條直線</text>
+</svg>
+<svg class="fig" viewBox="0 0 160 170" preserveAspectRatio="xMidYMid meet" role="img" aria-label="x-t圖形示意">
+  <defs>
+    <marker id="ar5b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="30" y1="150" x2="30" y2="14" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar5b)"/>
+  <line x1="20" y1="150" x2="130" y2="150" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar5b)"/>
+  <path d="M30,150 Q70,150 110,22" fill="none" stroke="var(--v2)" stroke-width="2"/>
+  <text x="24" y="24" font-size="12" class="lbl">x</text>
+  <text x="118" y="163" font-size="12" class="lbl">t</text>
+  <text x="80" y="163" font-size="12" class="lbl" text-anchor="middle">x-t圖：凹向上的拋物線</text>
+</svg>
+</div>
+<div class="figcap">圖5：左圖是質點在真實空間中的軌跡（直線）；右圖是把 $(t,x)$ 畫成座標圖後看到的形狀（拋物線），兩者不是同一件事</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+x(t)&=16t^2\\
+v(t)&=\dfrac{dx}{dt}=32t\\
+a(t)&=\dfrac{dv}{dt}=32\ (\text{m/s}^2,\ \text{定值})
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<p>如觀念段所述，這是一維直線運動，實際軌跡是一條直線，不是拋物線；拋物線是 $x-t$ <strong>圖形</strong>的形狀。敘述錯誤（題目要找的正是「錯誤」的選項）。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+$$x(t)=16t^2$$
+<p>係數為正，$x-t$ 圖確實是凹向上（開口向上）的拋物線，敘述正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<div class="step">
+<span class="label">公式：</span>
+$$v_{\text{平}}=\dfrac{x(2.1)-x(2)}{2.1-2}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$x(2)=16(2)^2=64,\qquad x(2.1)=16(2.1)^2=70.56$$
+$$v_{\text{平}}=\dfrac{70.56-64}{0.1}=65.6\ m/s$$
+</div>
+<p>與敘述相符，正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+$$v(2)=32(2)=64\ m/s$$
+<p>與敘述相符，正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>由基本量，$a(t)=32\ m/s^2$ 是與時間無關的定值，2秒末的瞬時加速度應為 $32\ m/s^2$，不是 $64\ m/s^2$（$64$ 其實是這一瞬間的速度數值，混淆了 $v$ 與 $a$）。敘述錯誤。</p>
+</div>
+
+<div class="ans">
+答案（找出「錯誤」的選項）：<strong>(A)(E)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page4')">← 第4題</button>
+  <button onclick="showPage('page6')">第6題 →</button>
+</div>
+</section>
+</div><!-- /page5 -->
+
+<div class="page" id="page6">
+<section id="q6">
+<h2>第 6 題</h2>
+
+<div class="qbox">
+<p class="qstem">一質點由靜止沿直線運動，14秒內其加速度 $a$ 對時間 $t$ 之關係如圖，何者正確？</p>
+<ul class="opts">
+  <li>(A) 14秒內距出發點最遠的時刻為 $t=14$ 秒</li>
+  <li>(B) 14秒內的平均速度為零</li>
+  <li>(C) 14秒內的平均加速度為零</li>
+  <li>(D) $t=6$ 秒與 $t=10$ 秒，質點的速度相等</li>
+  <li>(E) 質點於 $t=6$ 至 $t=8$ 秒的平均速度，大於 $t=8$ 至 $t=10$ 秒的平均速度</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 220 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="a-t圖">
+  <defs>
+    <marker id="ar6a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="170" x2="40" y2="16" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar6a)"/>
+  <line x1="30" y1="100" x2="200" y2="100" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar6a)"/>
+  <text x="20" y="26" font-size="12" class="lbl">a(m/s²)</text>
+  <text x="190" y="118" font-size="12" class="lbl">t(s)</text>
+
+  <!-- a-t: (0,6)-(4,6)-(12,-6)-(14,-6)；比例 6px/單位, x0=40,y(a=0)=100 -->
+  <polyline points="40,52 64,52 112,148 128,148" fill="none" stroke="var(--v1)" stroke-width="2"/>
+  <line x1="64" y1="100" x2="64" y2="16" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <line x1="88" y1="100" x2="88" y2="16" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <line x1="112" y1="100" x2="112" y2="16" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <text x="64" y="112" font-size="10" class="lbl-rm" text-anchor="middle">4</text>
+  <text x="88" y="112" font-size="10" class="lbl-rm" text-anchor="middle">8</text>
+  <text x="112" y="112" font-size="10" class="lbl-rm" text-anchor="middle">12</text>
+</svg>
+<div class="figcap">圖6a：原始 a-t 圖（對稱於 $t=8$：$0\sim4$秒定值 $+6$，$4\sim12$秒線性降到 $-6$，$12\sim14$秒定值 $-6$）</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+<li>從靜止出發，先用「面積＝速度變化量」把關鍵時刻的速度算出來。</li>
+<li>畫出對應的 v-t 圖。</li>
+<li>觀察到 a-t 圖以 $t=8$ 為中心呈現「點對稱」（$a(8+s)=-a(8-s)$），據此直接推論 v-t 圖以 $t=8$ 為中心「鏡射對稱」，不需要每個選項都重新硬算。</li>
+</ol>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：關鍵時刻的速度</span>
+<div class="step">
+<span class="label">公式：</span>
+$$v(t_2)=v(t_1)+(\,a\text{-}t\text{圖從}t_1\text{到}t_2\text{的面積}\,)$$
+</div>
+<div class="step">
+<span class="label">代入（逐段用梯形/三角形面積）：</span>
+$$\begin{aligned}
+v(4)&=0+6\times4=24\ m/s\\
+v(8)&=v(4)+\tfrac12(4)(6)=24+12=36\ m/s\\
+v(12)&=v(8)+\tfrac12(4)(-6)=36-12=24\ m/s\\
+v(14)&=v(12)+(-6)(2)=24-12=12\ m/s
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">對稱性：</span>
+<p>$4\sim12$秒這段 a-t 圖以 $(8,0)$ 為對稱中心（$a(8+s)=-a(8-s)$），把它對時間積分後，可得 $v(t)$ 在這段以 $t=8$ 為軸「鏡射對稱」：$v(8-s)=v(8+s)$。於是不需要再對每個時刻重算，直接可得
+$$v(6)=v(10)=33\ m/s$$
+（可用面積驗證：$v(6)=v(4)+\tfrac12(6+3)(2)=24+9=33$；$v(10)=v(8)+\tfrac12(0-3)(2)=36-3=33$，兩者一致）。</p>
+</div>
+</div>
+
+<svg class="fig" viewBox="0 0 220 280" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖">
+  <defs>
+    <marker id="ar6b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="260" x2="60" y2="16" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar6b)"/>
+  <line x1="45" y1="250" x2="160" y2="250" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar6b)"/>
+  <text x="20" y="26" font-size="12" class="lbl">v(m/s)</text>
+  <text x="150" y="266" font-size="12" class="lbl">t(s)</text>
+
+  <line x1="60" y1="178" x2="144" y2="178" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <text x="55" y="181" font-size="10" class="lbl-rm" text-anchor="end">12</text>
+  <line x1="60" y1="106" x2="144" y2="106" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <text x="55" y="109" font-size="10" class="lbl-rm" text-anchor="end">24</text>
+  <line x1="60" y1="34" x2="144" y2="34" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <text x="55" y="37" font-size="10" class="lbl-rm" text-anchor="end">36</text>
+
+  <path d="M60,250 L84,106 Q108,-38 132,106 L144,178 L144,250 Z"
+        fill="var(--v3)" fill-opacity="0.18" stroke="none"/>
+  <path d="M60,250 L84,106 Q108,-38 132,106 L144,178"
+        fill="none" stroke="var(--v2)" stroke-width="2"/>
+
+  <line x1="96" y1="52" x2="96" y2="250" stroke="var(--v1)" stroke-width="0.9" stroke-dasharray="2 3"/>
+  <line x1="120" y1="52" x2="120" y2="250" stroke="var(--v1)" stroke-width="0.9" stroke-dasharray="2 3"/>
+  <circle cx="96" cy="52" r="3.2" fill="var(--v1)"/>
+  <circle cx="120" cy="52" r="3.2" fill="var(--v1)"/>
+  <text x="96" y="264" font-size="10" class="lbl" text-anchor="middle">t=6</text>
+  <text x="120" y="264" font-size="10" class="lbl" text-anchor="middle">t=10</text>
+  <text x="108" y="24" font-size="11" class="lbl" text-anchor="middle">v(6)=v(10)=33</text>
+</svg>
+<div class="figcap">圖6b：對應的 v-t 圖（$4\sim12$秒為拋物線段，其餘為直線段），綠色面積＝14秒內的總位移；紅色虛線標出 $t=6$、$t=10$ 兩點等高</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<p>由基本量可見 $v(4),v(6),v(8),v(10),v(12),v(14)$ 全部大於 $0$，代表質點全程都往正方向前進，從未折返，位移持續增加。因此離出發點最遠的時刻就是最後時刻 $t=14$秒，(A)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+$$v_{\text{平}}=\dfrac{x(14)-x(0)}{14}$$
+<p>因為質點全程往同一方向前進（見(A)），位移不為零，平均速度也不為零。(B)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+$$a_{\text{平}}=\dfrac{v(14)-v(0)}{14}=\dfrac{12-0}{14}=\dfrac{6}{7}\ m/s^2\neq0$$
+<p>(C)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>由基本量的對稱性分析，$v(6)=v(10)=33\ m/s$，(D)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>因為 $v(t)$ 在 $4\sim12$秒這段是以 $t=8$ 為軸鏡射對稱（$v(8-s)=v(8+s)$），把「$6\to8$秒」與「$8\to10$秒」這兩段面積（位移）拿來比較，其實是同一段對稱曲線的鏡射結果，面積必定相等：
+$$x(8)-x(6)=x(10)-x(8)$$
+兩段時距同樣是2秒，故平均速度也相等，並非「大於」的關係。(E)錯誤。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(A)(D)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page5')">← 第5題</button>
+  <button onclick="showPage('page7')">第7題 →</button>
+</div>
+</section>
+</div><!-- /page6 -->
+
+<div class="page" id="page7">
+<section id="q7">
+<h2>第 7 題</h2>
+
+<div class="qbox">
+<p class="qstem">小鋒子上山速率為 $v$，下山的速率為 $u$，今上山後又下山，回到原出發點。則下列何者正確？</p>
+<ul class="opts">
+  <li>(A) 平均速度大小為 $\dfrac12(u+v)$</li>
+  <li>(B) 平均速率為 $\dfrac12(u+v)$</li>
+  <li>(C) 平均速度、平均速率均為 $0$</li>
+  <li>(D) 平均速度大小為 $0$</li>
+  <li>(E) 平均速率為 $2\left(\dfrac{uv}{u+v}\right)$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 260 110" preserveAspectRatio="xMidYMid meet" role="img" aria-label="上山下山示意圖">
+  <defs>
+    <marker id="ar7" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="90" x2="60" y2="20" stroke="var(--v1)" stroke-width="2.4" marker-end="url(#ar7)"/>
+  <text x="30" y="58" font-size="13" class="lbl" fill="var(--v1)">上山 v</text>
+  <line x1="180" y1="20" x2="180" y2="90" stroke="var(--v2)" stroke-width="2.4" marker-end="url(#ar7)"/>
+  <text x="192" y="58" font-size="13" class="lbl" fill="var(--v2)">下山 u</text>
+  <line x1="60" y1="20" x2="180" y2="20" stroke="var(--aux)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="120" y="14" font-size="11" class="lbl-rm" text-anchor="middle">同一山頂位置，畫開方便看</text>
+  <circle cx="60" cy="90" r="3.5" fill="var(--ink)"/>
+  <circle cx="180" cy="90" r="3.5" fill="var(--ink)"/>
+  <text x="60" y="105" font-size="11" class="lbl" text-anchor="middle">出發點</text>
+  <text x="180" y="105" font-size="11" class="lbl" text-anchor="middle">回到出發點</text>
+</svg>
+<div class="figcap">圖7：上山與下山是同一段距離的來回，分開兩欄畫避免與同一條線重疊混淆</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>平均速度 $=\dfrac{\text{位移}}{\text{時間}}$：因為最後回到原出發點，全程位移為 $0$，所以平均速度必為 $0$（與路徑長、花了多久都無關）。</li>
+  <li>平均速率 $=\dfrac{\text{總路徑長}}{\text{總時間}}$：這是純量，要用總距離除以總時間，不能直接對兩段的速率取算術平均 $\dfrac12(u+v)$（因為上山、下山各自花的時間不同，時間短的那一段對平均速率的影響應該更小）。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+<p>設山路單程距離為 $d$：</p>
+<div class="step">
+<span class="label">公式：</span>
+$$t_{\text{上}}=\dfrac{d}{v},\qquad t_{\text{下}}=\dfrac{d}{u}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\text{總路徑長}=2d,\qquad \text{總時間}=\dfrac{d}{v}+\dfrac{d}{u}=\dfrac{d(u+v)}{uv}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\text{平均速率}=\dfrac{2d}{\dfrac{d(u+v)}{uv}}=\dfrac{2uv}{u+v}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(C)(B)</span>
+<p>(A) 平均速度大小應為 $0$（位移為零），不是 $\dfrac12(u+v)$，錯誤。
+(B) 平均速率應為 $\dfrac{2uv}{u+v}$（見基本量），不是 $\dfrac12(u+v)$（算術平均與調和平均不同），錯誤。
+(C) 平均速度確實為 $0$，但平均速率是 $\dfrac{2uv}{u+v}$，一般不為 $0$（除非 $u$ 或 $v$ 為 $0$），故「均為 $0$」的敘述不成立，錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>位移為 $0$，平均速度大小為 $0$，正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>與基本量算出的 $\dfrac{2uv}{u+v}=2\left(\dfrac{uv}{u+v}\right)$ 完全相符，正確。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(D)(E)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page6')">← 第6題</button>
+  <button onclick="showPage('page8')">第8題 →</button>
+</div>
+</section>
+</div><!-- /page7 -->
+
+<div class="page" id="page8">
+<section id="q8">
+<h2>第 8 題</h2>
+
+<div class="qbox">
+<p class="qstem">在東、西向直線道路上行駛的甲、乙、丙、丁四輛汽車，以東方為正，其 $x-t$ 圖或 $v-t$ 圖分別如下圖所示，下列何者正確？</p>
+<ul class="opts">
+  <li>(A) 如果為 $x-t$ 圖，丙車等速度移動。</li>
+  <li>(B) 如果為 $v-t$ 圖，甲車恆在乙車的西方。</li>
+  <li>(C) 如果為 $x-t$ 圖，甲車的加速度恆等於乙車。</li>
+  <li>(D) 如果為 $v-t$ 圖，當乙、丙速度相同時，丙車的位移比乙車位移大。</li>
+  <li>(E) 如果為 $v-t$ 圖，當乙、丙速度相同時，丁車的速度向東，加速度也向西。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 260 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="甲乙丙丁四車圖形">
+  <defs>
+    <marker id="ar8" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="230" x2="60" y2="16" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar8)"/>
+  <line x1="45" y1="220" x2="250" y2="220" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar8)"/>
+  <text x="18" y="26" font-size="12" class="lbl">縱軸(x或v)</text>
+  <text x="228" y="238" font-size="12" class="lbl">時間 t</text>
+
+  <line x1="60" y1="220" x2="135" y2="70" stroke="var(--v1)" stroke-width="2"/>
+  <line x1="60" y1="220" x2="235" y2="103.3" stroke="var(--v2)" stroke-width="2"/>
+  <line x1="60" y1="120" x2="235" y2="120" stroke="#6a1b9a" stroke-width="2"/>
+  <line x1="60" y1="120" x2="235" y2="195" stroke="var(--v3)" stroke-width="2"/>
+
+  <circle cx="110" cy="120" r="3.2" fill="var(--ink)"/>
+  <circle cx="210" cy="120" r="3.2" fill="var(--ink)"/>
+
+  <text x="140" y="65" font-size="13" class="lbl" fill="var(--v1)">甲</text>
+  <text x="238" y="100" font-size="13" class="lbl" fill="var(--v2)">乙</text>
+  <text x="238" y="118" font-size="13" class="lbl" fill="#6a1b9a">丙</text>
+  <text x="238" y="199" font-size="13" class="lbl" fill="var(--v3)">丁</text>
+</svg>
+<div class="figcap">圖8：甲、乙兩線從原點出發（斜率不同）；丙為水平線、丁為向下傾斜線，兩者從縱軸上同一點出發；黑點標出乙丙交點與甲丙交點</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<p>同一張圖，當成 $x-t$ 圖與當成 $v-t$ 圖，代表的物理意義完全不同，逐一拆開討論：</p>
+<ul class="concept-list">
+  <li><strong>若為 $x-t$ 圖</strong>：甲、乙從原點出發的兩條直線，代表「初始位置為 $0$、以等速度移動」；丙是水平線，代表「位置固定不變」，也就是<strong>靜止</strong>（速度為 $0$），不是「以某個等速度在移動」；丁的直線向下傾斜，代表以固定負速度（向西）移動。</li>
+  <li><strong>若為 $v-t$ 圖</strong>：甲、乙從 $v=0$ 出發並等加速度增加；丙的速度固定不變（水平線＝等速度），丁的速度由某正值等加速度遞減。$v-t$ 圖只能告訴我們「怎麼動」，並不能告訴我們「一開始在哪裡」，因此不能單憑 $v-t$ 圖判斷兩車誰在誰的東邊或西邊。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<p>若為 $x-t$ 圖，丙的位置線是水平線，代表丙的位置從頭到尾都沒有改變，也就是<strong>靜止不動</strong>，並不是「以某個等速度在移動」（移動代表位置持續改變）。(A)敘述不精確，錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<p>若為 $v-t$ 圖，圖上完全沒有「初始位置」的資訊；即使甲車速度全程都比乙車快，也無法判斷兩車出發時誰在東邊、誰在西邊（也可能乙車一開始就領先甲車很多，甲車追不上）。(B)無法由 $v-t$ 圖判定為恆成立，錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<p>若為 $x-t$ 圖，甲、乙都是直線，兩者都代表等速度運動，加速度皆為 $0$：
+$$a_{\text{甲}}=0=a_{\text{乙}}$$
+故「甲車的加速度恆等於乙車」成立（兩者恆為 $0$，當然相等），(C)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>若為 $v-t$ 圖：乙車從 $v=0$ 開始等加速度增加，丙車全程維持定速 $v_0$（圖中黑點即乙、丙交會、速度相同的時刻，設為 $t^{*}$）。在 $0\sim t^{*}$ 這段時間，丙車全程都以 $v_0$ 移動，而乙車的速度是從 $0$ 慢慢爬升到 $v_0$，全程都比丙車慢（尚未追上）。因此在同樣的時間 $0\sim t^{*}$ 內，丙車的位移（面積）大於乙車的位移（面積）。(D)正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>丁車與丙車從縱軸上同一點（同一初速 $v_0$）出發，丁車的速度隨時間等加速度遞減。由圖可知，乙、丙速度相同的時刻 $t^{*}$（黑點）發生在丁車的速度尚未降到 $0$ 之前（丁車此時仍在時間軸上方），代表此刻丁車速度仍為正值，也就是仍向東；而丁車的速度持續遞減，代表其加速度方向向西。(E)正確。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(C)(D)(E)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page7')">← 第7題</button>
+  <button onclick="showPage('page9')">第9題 →</button>
+</div>
+</section>
+</div><!-- /page8 -->
+
+<div class="page" id="page9">
+<section id="q9">
+<h2>第 9 題</h2>
+
+<div class="qbox">
+<p class="qstem">有關加速度的性質，下列何者正確？</p>
+<ul class="opts">
+  <li>(A) 產生加速度的原因為物體受到外力作用</li>
+  <li>(B) 加速度與速度方向垂直時，物體速度方向會改變</li>
+  <li>(C) 加速度與速度方向相平行時，物體速度大小會改變</li>
+  <li>(D) 將一物體鉛直向上拋射時，最高點的加速度值為零</li>
+  <li>(E) 一物體作等加速度運動時，其運動軌跡必為拋物線</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>加速度的來源：由牛頓第二定律 $\vec F_{\text{合}}=m\vec a$，物體受到「合力」不為零時才會產生加速度，這裡的「外力」應理解為「合力」。</li>
+  <li>加速度可以拆成兩個獨立效果，視加速度方向與速度方向的關係而定：
+    <br>－ 加速度與速度<strong>平行（或反平行）</strong>：只改變速度的<strong>大小</strong>（快慢），不改變方向 → 直線運動的加速/減速。
+    <br>－ 加速度與速度<strong>垂直</strong>：只改變速度的<strong>方向</strong>，不改變大小 → 等速率圓周運動就是典型例子。
+    <br>－ 加速度與速度<strong>既不平行也不垂直</strong>：大小、方向同時改變 → 一般拋體運動。</li>
+  <li>「等加速度運動」只代表加速度向量固定不變（大小、方向都不變），並不保證軌跡是拋物線：只有當加速度方向與初速度方向不平行時，軌跡才會是拋物線；如果加速度方向與初速度方向平行（或初速度為零），軌跡就是直線。</li>
+  <li>鉛直拋體全程只受重力，加速度全程恆為 $g$（方向向下），即使在最高點瞬時速度為零，加速度仍然是 $g$，不會消失。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+<p>更精確地說是「合力」造成加速度，但「外力」在此處泛指造成運動狀態改變的力，敘述方向正確，正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<p>加速度垂直於速度時，只改變速度的方向、不改變大小，敘述「速度方向會改變」正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+<p>加速度平行於速度時，只改變速度的大小、不改變方向，敘述正確。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+<p>鉛直上拋在最高點，瞬時<strong>速度</strong>為零，但<strong>加速度</strong>仍是 $g$（重力從未消失），並非為零。(D)錯誤。</p>
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+<p>反例：物體沿直線做等加速度運動（例如煞車中的汽車），加速度方向全程與速度方向平行，軌跡是直線，不是拋物線。只有加速度方向與初速度方向不平行時，等加速度運動的軌跡才會是拋物線。(E)錯誤。</p>
+</div>
+
+<div class="ans">
+答案：<strong>(A)(B)(C)</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page8')">← 第8題</button>
+  <button onclick="showPage('page10')">第10題 →</button>
+</div>
+</section>
+</div><!-- /page9 -->
+
+<div class="page" id="page10">
+<section id="q10">
+<h2>第 10 題</h2>
+
+<div class="qbox">
+<p class="qstem">一質點在一直線上作運動，若其速度對於時間的函數關係圖如下圖所示，則此質點會在一線段內作往返運動。試問：當質點的速率恰為最大速率的一半時，質點距中央位置的距離為　　　　？（設最大速率為 $V$，週期為 $T$）</p>
+</div>
+
+<svg class="fig" viewBox="0 0 300 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t三角波">
+  <defs>
+    <marker id="ar10a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="230" x2="60" y2="16" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar10a)"/>
+  <line x1="45" y1="140" x2="290" y2="140" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar10a)"/>
+  <text x="30" y="26" font-size="12" class="lbl">v</text>
+  <text x="278" y="158" font-size="12" class="lbl">t</text>
+
+  <polyline points="60,240 110,140 160,40 210,140 260,240" fill="none" stroke="var(--v1)" stroke-width="2"/>
+
+  <line x1="160" y1="40" x2="160" y2="140" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <line x1="110" y1="140" x2="110" y2="16" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <line x1="210" y1="140" x2="210" y2="16" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+
+  <!-- t=T/4：v=0，質點瞬間靜止、正要折返，是位置的「端點」 -->
+  <circle cx="110" cy="140" r="4" fill="var(--v3)"/>
+  <text x="110" y="118" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">v=0：端點</text>
+
+  <!-- t=0, T/2, T：|v|=V最大，質點正通過「中央位置」，共三個時刻 -->
+  <circle cx="60" cy="240" r="4" fill="#6a1b9a"/>
+  <circle cx="160" cy="40" r="4" fill="#6a1b9a"/>
+  <circle cx="260" cy="240" r="4" fill="#6a1b9a"/>
+  <text x="160" y="18" font-size="11" class="lbl" fill="#6a1b9a" text-anchor="middle">v=V最大：通過中央位置</text>
+  <text x="60" y="16" font-size="10" class="lbl" fill="#6a1b9a" text-anchor="middle">中央</text>
+  <text x="260" y="16" font-size="10" class="lbl" fill="#6a1b9a" text-anchor="middle">中央</text>
+
+  <!-- t=T/8 標記，速率=V/2 -->
+  <line x1="85" y1="190" x2="85" y2="140" stroke="var(--v2)" stroke-width="0.9" stroke-dasharray="2 3"/>
+  <circle cx="85" cy="190" r="3.2" fill="var(--v2)"/>
+
+  <text x="160" y="253" font-size="12" class="lbl" text-anchor="middle">T/2</text>
+  <text x="210" y="158" font-size="12" class="lbl" text-anchor="middle">T</text>
+  <text x="45" y="243" font-size="12" class="lbl" text-anchor="end">-V</text>
+  <text x="85" y="253" font-size="11" class="lbl" text-anchor="middle">T/8</text>
+  <text x="97" y="182" font-size="11" class="lbl" fill="var(--v2)">-V/2</text>
+</svg>
+<div class="figcap">圖10a：v-t 三角波。綠點 $t=T/4$（$v=0$，是位置的端點，最遠離中央）；<strong>紫點共三個</strong> $t=0,\ T/2,\ T$（$|v|=V$ 最大，這三個時刻都是質點通過中央位置的瞬間）；藍點標出速率恰為 $V/2$ 的時刻 $t=T/8$</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+<li>先用 v-t 圖的面積，算出質點在幾個關鍵時刻（$T/4,T/2,3T/4,T$）的位移，並列出 $x(t)$ 的完整分段公式。</li>
+<li>依據公式畫出對應的 x-t 圖，找出「中央位置」在哪裡。</li>
+<li>找出「速率恰為最大速率一半」發生在哪個時刻，標上記號。</li>
+<li>另外畫出相似三角形圖解，用面積比（＝相似比的平方）直接算出答案，不用逐段硬套公式。</li>
+</ol>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：由v-t圖面積求 $x(t)$ 的完整分段公式</span>
+<div class="step">
+<span class="label">公式（$0\sim T/2$ 這段，速度由 $-V$ 線性升到 $+V$）：</span>
+$$v(t)=-V+\dfrac{4V}{T}t\qquad(0\le t\le T/2)$$
+</div>
+<div class="step">
+<span class="label">代入（對 $v(t)$ 積分，設 $x(0)=0$）：</span>
+$$x(t)=\displaystyle\int_0^t v\,dt'=-Vt+\dfrac{2V}{T}t^2\qquad(0\le t\le T/2)$$
+</div>
+<div class="step">
+<span class="label">同理列出 $T/2\sim T$ 這段：</span>
+$$v(t)=V-\dfrac{4V}{T}\left(t-\dfrac T2\right)\qquad\Rightarrow\qquad
+x(t)=V\left(t-\dfrac T2\right)-\dfrac{2V}{T}\left(t-\dfrac T2\right)^{2}\qquad(T/2\le t\le T)$$
+</div>
+<div class="step">
+<span class="label">代入關鍵時刻，得到各點位置：</span>
+$$\begin{aligned}
+x(T/4)&=-V\!\left(\dfrac T4\right)+\dfrac{2V}{T}\!\left(\dfrac T4\right)^{2}=-\dfrac{VT}{8}\\
+x(T/2)&=-V\!\left(\dfrac T2\right)+\dfrac{2V}{T}\!\left(\dfrac T2\right)^{2}=0\\
+x(3T/4)&=V\!\left(\dfrac T4\right)-\dfrac{2V}{T}\!\left(\dfrac T4\right)^{2}=+\dfrac{VT}{8}\\
+x(T)&=0
+\end{aligned}$$
+<p>由第一段公式代入 $t=T/8$，也可直接算出這一題要的位置：$x(T/8)=-V\!\left(\dfrac T8\right)+\dfrac{2V}{T}\!\left(\dfrac T8\right)^2=-\dfrac{3VT}{32}$（下面用相似三角形再驗證一次這個結果）。</p>
+</div>
+</div>
+
+<svg class="fig" viewBox="0 0 260 240" preserveAspectRatio="xMidYMid meet" role="img" aria-label="推導出的x-t圖">
+  <defs>
+    <marker id="ar10b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="220" x2="40" y2="16" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar10b)"/>
+  <line x1="25" y1="100" x2="240" y2="100" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar10b)"/>
+  <text x="16" y="26" font-size="12" class="lbl">x</text>
+  <text x="228" y="118" font-size="12" class="lbl">t</text>
+  <line x1="40" y1="100" x2="240" y2="100" stroke="var(--v2)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="196" y="94" font-size="11" class="lbl" fill="var(--v2)">中央位置</text>
+
+  <path d="M40,100 Q84,220 128,100 Q172,-20 216,100" fill="none" stroke="var(--v1)" stroke-width="2"/>
+
+  <circle cx="84" cy="160" r="3.2" fill="var(--v3)"/>
+  <circle cx="172" cy="40" r="3.2" fill="var(--v3)"/>
+  <circle cx="128" cy="100" r="4" fill="#6a1b9a"/>
+  <circle cx="62" cy="145" r="3" fill="var(--v2)"/>
+  <text x="84" y="176" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">t=T/4，端點 x=-VT/8</text>
+  <text x="172" y="30" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">t=3T/4，端點 x=+VT/8</text>
+  <text x="128" y="118" font-size="11" class="lbl" fill="#6a1b9a" text-anchor="middle">t=T/2，中央位置</text>
+  <text x="62" y="130" font-size="10" class="lbl" fill="var(--v2)" text-anchor="middle">t=T/8</text>
+</svg>
+<div class="figcap">圖10b：由 $x(t)$ 分段公式精確畫出的 x-t 圖（曲線段皆為真實拋物線，非折線近似）。質點在 $x=\pm VT/8$ 之間往返，$x=0$（即 $t=0,T/2,T,\dots$，速率恰為最大值 $V$ 的時刻）就是「中央位置」</div>
+
+<svg class="fig" viewBox="0 0 340 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="位置數線">
+  <line x1="55" y1="70" x2="285" y2="70" stroke="var(--ink)" stroke-width="1.8"/>
+
+  <!-- 左端點 -VT/8 -->
+  <line x1="70" y1="60" x2="70" y2="80" stroke="var(--v3)" stroke-width="2"/>
+  <circle cx="70" cy="70" r="4" fill="var(--v3)"/>
+  <text x="70" y="98" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">端點</text>
+  <text x="70" y="112" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">x=-VT/8</text>
+
+  <!-- T/8時刻位置 -->
+  <line x1="95" y1="64" x2="95" y2="76" stroke="var(--v2)" stroke-width="1.6"/>
+  <circle cx="95" cy="70" r="3.2" fill="var(--v2)"/>
+  <text x="95" y="52" font-size="10" class="lbl" fill="var(--v2)" text-anchor="middle">t=T/8</text>
+
+  <!-- 中央位置 0，也就是起點 -->
+  <line x1="170" y1="56" x2="170" y2="84" stroke="#6a1b9a" stroke-width="2.4"/>
+  <circle cx="170" cy="70" r="5" fill="#6a1b9a"/>
+  <text x="170" y="30" font-size="12" class="lbl" fill="#6a1b9a" text-anchor="middle">中央位置（起點）</text>
+  <text x="170" y="44" font-size="12" class="lbl" fill="#6a1b9a" text-anchor="middle">x=0</text>
+
+  <!-- 右端點 +VT/8 -->
+  <line x1="270" y1="60" x2="270" y2="80" stroke="var(--v3)" stroke-width="2"/>
+  <circle cx="270" cy="70" r="4" fill="var(--v3)"/>
+  <text x="270" y="98" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">端點</text>
+  <text x="270" y="112" font-size="11" class="lbl" fill="var(--v3)" text-anchor="middle">x=+VT/8</text>
+
+  <!-- 標出答案距離：0到T/8位置 -->
+  <line x1="95" y1="82" x2="170" y2="82" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 3"/>
+  <text x="132" y="96" font-size="10" class="lbl-rm" text-anchor="middle">距離=3VT/32</text>
+</svg>
+<div class="figcap">位置數線：質點只在 $x=-VT/8$ 到 $x=+VT/8$ 這段線上來回移動，起點 $x=0$（紫點）正是中央位置；$t=T/8$ 時（藍點）距中央位置 $\dfrac{3}{32}VT$</div>
+
+<div class="concept">
+<span class="tag">相似三角形圖解</span>
+<p>由圖10a可知：$0\sim T/4$ 這段是一個直角三角形（速度由 $-V$ 線性升到 $0$）；而 $T/8\sim T/4$ 這一小段，跟整個 $0\sim T/4$ 是<strong>同一條斜直線</strong>切出來的相似三角形。兩個三角形的時間底邊比：</p>
+<ul class="concept-list">
+<li>大三角形（$0\sim T/4$）：底邊長 $T/4$</li>
+<li>小三角形（$T/8\sim T/4$）：底邊長 $T/4-T/8=T/8$</li>
+<li>相似比 $=\dfrac{T/8}{T/4}=\dfrac12$，故面積比 $=\left(\dfrac12\right)^2=\dfrac14$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 140 210 215" preserveAspectRatio="xMidYMid meet" role="img" aria-label="相似三角形圖解">
+  <defs>
+    <marker id="ar10c" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="50" y1="345" x2="50" y2="150" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar10c)"/>
+  <line x1="35" y1="190" x2="190" y2="190" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar10c)"/>
+  <text x="30" y="163" font-size="12" class="lbl">v</text>
+  <text x="178" y="208" font-size="12" class="lbl">t</text>
+
+  <!-- 答案梯形 0~T/8：綠色 -->
+  <polygon points="50,330 85,260 85,190 50,190" fill="var(--v3)" fill-opacity="0.35"/>
+  <!-- 相似小三角形 T/8~T/4：藍色 -->
+  <polygon points="85,260 120,190 85,190" fill="var(--v2)" fill-opacity="0.4"/>
+  <!-- 大三角形 0~T/4：紅色虛線外框（參考用） -->
+  <polygon points="50,330 120,190 50,190" fill="none" stroke="var(--v1)" stroke-width="1.6" stroke-dasharray="4 3"/>
+
+  <line x1="85" y1="190" x2="85" y2="260" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 3"/>
+
+  <circle cx="50" cy="330" r="3.2" fill="var(--v1)"/>
+  <circle cx="85" cy="260" r="3.2" fill="var(--v2)"/>
+  <circle cx="120" cy="190" r="3.2" fill="var(--ink)"/>
+
+  <text x="42" y="334" font-size="11" class="lbl" text-anchor="end">-V</text>
+  <text x="42" y="264" font-size="11" class="lbl" text-anchor="end" fill="var(--v2)">-V/2</text>
+  <text x="50" y="206" font-size="10" class="lbl" text-anchor="middle">0</text>
+  <text x="85" y="206" font-size="10" class="lbl" text-anchor="middle">T/8</text>
+  <text x="120" y="206" font-size="10" class="lbl" text-anchor="middle">T/4</text>
+
+  <text x="55" y="300" font-size="12" class="lbl-rm" fill="var(--v3)">答案區</text>
+  <text x="96" y="230" font-size="11" class="lbl-rm" fill="var(--v2)">小△</text>
+  <text x="100" y="170" font-size="11" class="lbl-rm" fill="var(--v1)">大△（虛線）</text>
+</svg>
+<div class="figcap">圖10c：紅色虛線為大三角形（$0\sim T/4$，面積 $=\frac{VT}{8}$）；藍色為相似的小三角形（$T/8\sim T/4$，相似比 $\frac12$，面積 $=\frac14\times\frac{VT}{8}$）；綠色梯形（大減小）就是 $0\sim T/8$ 的位移量值，也就是本題答案</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\left|\Delta x_{0\to T/8}\right|=\text{大三角形面積}-\text{小三角形面積}=\text{大三角形面積}\times\left(1-\dfrac14\right)$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+\text{大三角形面積}&=\tfrac12\left(\dfrac T4\right)(V)=\dfrac{VT}{8}\\
+\left|\Delta x_{0\to T/8}\right|&=\dfrac{VT}{8}\times\dfrac34=\dfrac{3VT}{32}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+<p>由圖10b可知 $x(0)=0$ 恰好就是中央位置，所以質點在速率恰為最大速率一半的時刻，距中央位置的距離就是 $\dfrac{3}{32}VT$，與基本量中用公式直接代入 $t=T/8$ 算出的結果一致。</p>
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>$\dfrac{3}{32}VT$</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page9')">← 第9題</button>
+  <button onclick="showPage('page11')">第11題 →</button>
+</div>
+</section>
+</div><!-- /page10 -->
+
+<div class="page" id="page11">
+<section id="q11">
+<h2>第 11 題</h2>
+
+<div class="qbox">
+<p class="qstem">一人自初速 $2\ m/s$ 開始運動，向右為正，其加速度對時間之關係如下圖，則此人離出發點右邊最遠為　　　　$m$。</p>
+</div>
+
+<svg class="fig" viewBox="0 0 200 140" preserveAspectRatio="xMidYMid meet" role="img" aria-label="a-t圖">
+  <defs>
+    <marker id="ar11a" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="120" x2="40" y2="14" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar11a)"/>
+  <line x1="28" y1="70" x2="180" y2="70" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar11a)"/>
+  <text x="18" y="24" font-size="11" class="lbl">a(m/s²)</text>
+  <text x="168" y="88" font-size="11" class="lbl">t(s)</text>
+
+  <polyline points="40,30 70,30 130,110" fill="none" stroke="var(--v1)" stroke-width="2"/>
+  <line x1="130" y1="110" x2="130" y2="70" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 3"/>
+  <polyline points="130,70 160,70" fill="none" stroke="var(--v1)" stroke-width="2"/>
+
+  <line x1="70" y1="70" x2="70" y2="14" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <line x1="130" y1="70" x2="130" y2="14" stroke="var(--aux)" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <text x="70" y="82" font-size="10" class="lbl-rm" text-anchor="middle">2</text>
+  <text x="130" y="82" font-size="10" class="lbl-rm" text-anchor="middle">6</text>
+  <text x="36" y="34" font-size="10" class="lbl-rm" text-anchor="end">5</text>
+  <text x="36" y="114" font-size="10" class="lbl-rm" text-anchor="end">-5</text>
+</svg>
+<div class="figcap">圖11a：a-t圖（$0\sim2$秒 $a=+5$，$2\sim6$秒 $a=-5$，$6\sim8$秒 $a=0$）</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+<li>先由 a-t 圖的面積，畫出 v-t 圖，並算出對應時刻的速度。</li>
+<li>找出速度變號（$v=0$）的時刻，這就是「離出發點最遠」的時刻。</li>
+<li>把 $0$ 到這個時刻的位移，拆成矩形／三角形（梯形）分割面積計算。</li>
+</ol>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：由a-t圖面積求速度</span>
+<div class="step">
+<span class="label">公式代入：</span>
+$$\begin{aligned}
+v(2)&=v(0)+a\times \Delta t=2+5(2)=12\ m/s\\
+v(t)&=12-5(t-2)\quad(2\le t\le6)
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">找最遠時刻（$v=0$）：</span>
+$$12-5(t-2)=0 \;\Rightarrow\; t-2=2.4 \;\Rightarrow\; t=4.4\ \text{秒}$$
+<p>在 $t=4.4$ 秒之前，此人持續向右移動（$v \gt 0$）；過了這一刻，速度變負，開始往回走。所以 $t=4.4$ 秒就是離出發點右邊最遠的時刻。</p>
+</div>
+</div>
+
+<svg class="fig" viewBox="0 0 220 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t圖與分割面積">
+  <defs>
+    <marker id="ar11b" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="330" x2="60" y2="10" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar11b)"/>
+  <line x1="45" y1="200" x2="200" y2="200" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar11b)"/>
+  <text x="24" y="20" font-size="12" class="lbl">v(m/s)</text>
+  <text x="188" y="218" font-size="12" class="lbl">t(s)</text>
+
+  <!-- 梯形1: 0~2秒, v:2→12 -->
+  <polygon points="60,170 90,20 90,200 60,200" fill="var(--v1)" fill-opacity="0.28"/>
+  <!-- 三角形2: 2~4.4秒, v:12→0 -->
+  <polygon points="90,20 126,200 90,200" fill="var(--v2)" fill-opacity="0.28"/>
+
+  <polyline points="60,170 90,20 150,320 180,320" fill="none" stroke="var(--ink)" stroke-width="1.8"/>
+  <line x1="126" y1="200" x2="126" y2="20" stroke="var(--aux)" stroke-width="0.9" stroke-dasharray="2 3"/>
+
+  <circle cx="60" cy="170" r="3.2" fill="var(--ink)"/>
+  <circle cx="90" cy="20" r="3.2" fill="var(--v1)"/>
+  <circle cx="126" cy="200" r="3.2" fill="var(--v2)"/>
+
+  <text x="40" y="174" font-size="11" class="lbl" text-anchor="end">v(0)=2</text>
+  <text x="98" y="18" font-size="11" class="lbl">v(2)=12</text>
+  <text x="126" y="216" font-size="11" class="lbl" text-anchor="middle">t=4.4</text>
+  <text x="74" y="120" font-size="11" class="lbl-rm" fill="var(--v1)">面積=14</text>
+  <text x="106" y="150" font-size="11" class="lbl-rm" fill="var(--v2)">面積=14.4</text>
+</svg>
+<div class="figcap">圖11b：v-t圖分割為紅色梯形（$0\sim2$秒）與藍色三角形（$2\sim4.4$秒），兩塊面積相加即為最遠位移</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\Delta x_{\text{最遠}}=\underbrace{\tfrac12(v_0+v_2)(2)}_{\text{梯形}}+\underbrace{\tfrac12(v_2)(4.4-2)}_{\text{三角形}}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\Delta x_{\text{最遠}}=\tfrac12(2+12)(2)+\tfrac12(12)(2.4)$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\Delta x_{\text{最遠}}=14+14.4=28.4\ m$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>$28.4\ m$</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page10')">← 第10題</button>
+  <button onclick="showPage('page12')">第12題 →</button>
+</div>
+</section>
+</div><!-- /page11 -->
+
+<div class="page" id="page12">
+<section id="q12">
+<h2>第 12 題</h2>
+
+<div class="qbox">
+<p class="qstem">王同學投擲溜溜球(Yo-Yo球)。溜溜球以每秒 $1$ 公尺的速率向下擲出，在 $2$ 秒後以相同速率、相反方向回到他的手中(王同學手的位置未變)，假設向下為正。溜溜球自離開王同學手中到回到他手中的平均速度及平均加速度，各為 $X\ m/s$ 與 $Y\ m/s^2$，表示 $(X,Y)$？（用正負號描述方向）【93學測改】</p>
+</div>
+
+<svg class="fig" viewBox="0 0 220 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="溜溜球運動示意圖">
+  <defs>
+    <marker id="ar12" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <!-- 向下為正的座標指示 -->
+  <line x1="20" y1="20" x2="20" y2="60" stroke="var(--ink)" stroke-width="1.4" marker-end="url(#ar12)"/>
+  <text x="26" y="45" font-size="11" class="lbl">正方向</text>
+
+  <!-- 去程（下降） -->
+  <circle cx="80" cy="20" r="5" fill="var(--v1)"/>
+  <text x="80" y="12" font-size="11" class="lbl" text-anchor="middle">手(t=0)</text>
+  <line x1="80" y1="28" x2="80" y2="120" stroke="var(--v1)" stroke-width="2.2" marker-end="url(#ar12)"/>
+  <text x="95" y="80" font-size="12" class="lbl" fill="var(--v1)">初速 v₀=+1 m/s</text>
+  <circle cx="80" cy="130" r="4" fill="var(--v1)"/>
+
+  <!-- 回程（上升），畫在右側欄位避免與去程重疊 -->
+  <circle cx="150" cy="130" r="4" fill="var(--v2)"/>
+  <line x1="150" y1="120" x2="150" y2="28" stroke="var(--v2)" stroke-width="2.2" marker-end="url(#ar12)"/>
+  <text x="165" y="80" font-size="12" class="lbl" fill="var(--v2)">末速 v=-1 m/s</text>
+  <circle cx="150" cy="20" r="5" fill="var(--v2)"/>
+  <text x="150" y="12" font-size="11" class="lbl" text-anchor="middle">手(t=2秒)</text>
+
+  <line x1="80" y1="130" x2="150" y2="130" stroke="var(--aux)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="115" y="145" font-size="10" class="lbl-rm" text-anchor="middle">同一位置(手)，畫開方便看</text>
+</svg>
+<div class="figcap">圖12：去程（紅，向下擲出）與回程（藍，向上返回）畫在不同欄位，兩端都回到同一隻手的位置</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>題目已設定「向下為正」，所以初速度（向下擲出）取正值，末速度（向上返回）取負值。</li>
+  <li>「手的位置未變」是關鍵：溜溜球從手中離開、又回到手中同一個位置，代表這整段運動的<strong>淨位移為零</strong>。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$v_0=+1\ m/s\ (\text{向下擲出，向下為正})$$
+$$v=-1\ m/s\ (\text{以相同速率反方向回到手中，即向上})$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：平均速度 X</span>
+<div class="step">
+<span class="label">公式：</span>
+$$X=v_{\text{平}}=\dfrac{\text{位移}}{\text{時間}}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+<p>溜溜球離開手中又回到同一個位置，位移 $=0$：</p>
+$$X=\dfrac{0}{2}=0\ m/s$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：平均加速度 Y</span>
+<div class="step">
+<span class="label">公式：</span>
+$$Y=a_{\text{平}}=\dfrac{v-v_0}{\Delta t}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$Y=\dfrac{(-1)-(+1)}{2}=\dfrac{-2}{2}=-1\ m/s^2$$
+</div>
+</div>
+
+<div class="ans">
+答案：<strong>$(X,Y)=(0,-1)$</strong>
+</div>
+<div class="qnav">
+  <button onclick="showPage('page11')">← 第11題</button>
+  <button disabled>第12題 →</button>
+</div>
+</section>
+</div><!-- /page12 -->
+
+<div id="zoomOverlay"><div id="zoomInner"></div></div>
+
+<script>
+  function showPage(id){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p.id === id); });
+    var sel = document.getElementById('pageSelect');
+    if (sel) sel.value = id;
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  var pageSelectEl = document.getElementById('pageSelect');
+  if (pageSelectEl){ pageSelectEl.addEventListener('change', function(){ showPage(this.value); }); }
+
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('.katex-display, .katex');
+    if (e.target.closest('#zoomOverlay')) return;
+    if (!el) return;
+    var target = el.closest('.katex-display') || el;
+    var overlay = document.getElementById('zoomOverlay');
+    var inner = document.getElementById('zoomInner');
+    inner.innerHTML = target.outerHTML;
+    overlay.classList.add('show');
+  });
+  document.getElementById('zoomOverlay').addEventListener('click', function(){ this.classList.remove('show'); });
+</script>
+
+</body>
+</html>
