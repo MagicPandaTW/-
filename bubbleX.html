@@ -62,6 +62,29 @@
   #overlay.show{display:flex;}
   #ovTitle{font-size:25px;font-weight:700;letter-spacing:.05em;}
   #ovStars{font-size:30px;letter-spacing:.14em;height:36px;}
+  #ovCat{display:none;flex-direction:column;align-items:center;gap:5px;margin:-2px 0 2px;}
+  #ovCat.show{display:flex;}
+  #ovCat svg{width:112px;height:112px;overflow:visible;cursor:pointer;}
+  #ovCat .say{
+    font-size:14px;font-weight:700;letter-spacing:.06em;
+    background:linear-gradient(180deg,#fff5d6,#ffd166 55%,#ff9f45);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+  /* 貓的呼吸、尾巴、眨眼、耳朵抽動 */
+  @keyframes catBreathe{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-2px) scale(1.015,.985)}}
+  @keyframes catTail{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(15deg)}}
+  @keyframes catBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+  @keyframes catEar{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-11deg)}}
+  @keyframes catHop{0%{transform:translateY(0) scaleY(1)}22%{transform:translateY(2px) scaleY(.86)}
+    55%{transform:translateY(-26px) scaleY(1.1)}80%{transform:translateY(1px) scaleY(.92)}100%{transform:translateY(0) scaleY(1)}}
+  #catBody{animation:catBreathe 3.1s ease-in-out infinite;transform-origin:50% 92%;}
+  #catTail{animation:catTail 2.3s ease-in-out infinite;transform-origin:22px 58px;}
+  #catEyeL,#catEyeR{animation:catBlink 4.4s ease-in-out infinite;transform-origin:center;}
+  #catEarL{animation:catEar 5.7s ease-in-out infinite;transform-origin:34px 26px;}
+  #catEarR{animation:catEar 5.7s ease-in-out .4s infinite;transform-origin:62px 26px;}
+  #ovCat.hop #catBody{animation:catHop .62s cubic-bezier(.3,.8,.4,1);}
+  @media (prefers-reduced-motion:reduce){#ovCat *{animation:none!important;}}
   #ovText{font-size:13.5px;color:var(--dim);max-width:310px;}
   #ovExtra{display:flex;flex-direction:column;align-items:center;gap:9px;max-width:330px;}
   #ovExtra:empty{display:none;}
@@ -98,11 +121,56 @@
   <div id="overlay" class="show">
     <div id="ovTitle">Bubble X</div>
     <div id="ovStars"></div>
+    <div id="ovCat">
+      <svg viewBox="0 0 96 96" role="img" aria-label="一隻可愛的橘白小貓">
+        <ellipse cx="48" cy="88" rx="26" ry="4.5" fill="rgba(0,0,0,.35)"/>
+        <g id="catBody">
+          <!-- 尾巴 -->
+          <path id="catTail" d="M24 60 Q6 56 9 40 Q10 33 17 33"
+                fill="none" stroke="#f0b45e" stroke-width="7.5" stroke-linecap="round"/>
+          <!-- 身體 -->
+          <ellipse cx="48" cy="63" rx="23" ry="21" fill="#f7c873"/>
+          <path d="M31 76 Q48 88 65 76 Q58 82 48 82 Q38 82 31 76Z" fill="#fff4dd"/>
+          <ellipse cx="48" cy="71" rx="13" ry="11" fill="#fff4dd"/>
+          <!-- 前腳 -->
+          <ellipse cx="36" cy="80" rx="7" ry="5" fill="#fff4dd"/>
+          <ellipse cx="60" cy="80" rx="7" ry="5" fill="#fff4dd"/>
+          <!-- 耳朵 -->
+          <g id="catEarL"><path d="M30 34 L31 14 L47 26Z" fill="#f7c873"/></g>
+          <g id="catEarR"><path d="M66 34 L65 14 L49 26Z" fill="#f7c873"/></g>
+          <!-- 頭 -->
+          <circle cx="48" cy="38" r="21" fill="#f7c873"/>
+          <!-- 內耳畫在頭之後才不會被蓋住 -->
+          <path d="M33.6 26 L33.9 18.6 L41.6 24.4Z" fill="#ffb3c6"/>
+          <path d="M62.4 26 L62.1 18.6 L54.4 24.4Z" fill="#ffb3c6"/>
+          <!-- 額頭白斑 -->
+          <path d="M40 23 Q48 18.5 56 23 Q48 27.5 40 23Z" fill="#fff4dd"/>
+          <!-- 眼睛 -->
+          <g id="catEyeL"><ellipse cx="39" cy="38" rx="4" ry="5.2" fill="#2a2216"/>
+            <circle cx="40.4" cy="36" r="1.5" fill="#fff"/></g>
+          <g id="catEyeR"><ellipse cx="57" cy="38" rx="4" ry="5.2" fill="#2a2216"/>
+            <circle cx="58.4" cy="36" r="1.5" fill="#fff"/></g>
+          <!-- 鼻子與嘴 -->
+          <path d="M45.6 45.5 L50.4 45.5 L48 48.4Z" fill="#ff8fa3"/>
+          <path d="M48 48.4 Q44.4 52.4 41.6 49.2 M48 48.4 Q51.6 52.4 54.4 49.2"
+                fill="none" stroke="#2a2216" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- 腮紅 -->
+          <ellipse cx="32" cy="45" rx="4.6" ry="3" fill="#ffb3c6" opacity=".55"/>
+          <ellipse cx="64" cy="45" rx="4.6" ry="3" fill="#ffb3c6" opacity=".55"/>
+          <!-- 鬍鬚 -->
+          <g stroke="#fff4dd" stroke-width="1.4" stroke-linecap="round" opacity=".85">
+            <path d="M30 44 L18 41"/><path d="M30 47.5 L18 48"/>
+            <path d="M66 44 L78 41"/><path d="M66 47.5 L78 48"/>
+          </g>
+        </g>
+      </svg>
+      <div class="say">小貓超級可愛的</div>
+    </div>
     <div id="ovText">泡泡會慢慢降下來，碰到底線就結束囉。<br>打斷支撐讓泡泡整串掉下來，會有驚喜！
     <br><br><span style="color:#ffd166">✱ 爆炸泡</span>　會炸掉周圍一圈<br>
     <span style="color:#ffd166">↔ 整列泡</span>　會清掉一整列<br>
     <span style="color:#ffd166">+2 泡</span>　下降延後兩發<br>
-    <span style="color:#ffd166">🎁 禮物泡</span>　打掉就開箱，但有三分之一是壞的<br><span style="color:#ff8fa3">🫧 逆流</span>／<span style="color:#c8a0ff">💫 亂彈</span>／<span style="color:#ff8fa3">🤡 小丑</span>　小心這三個！</div>
+    <span style="color:#ffd166">🎁 禮物泡</span>　打掉就開箱，但有三分之一是壞的<br><span style="color:#ff8fa3">🌊 逆流</span>／<span style="color:#c8a0ff">💫 亂彈</span>／<span style="color:#ff8fa3">🤡 小丑</span>　小心這三個！</div>
     <div id="ovExtra"></div>
     <button id="btn">開始第 1 關</button>
   </div>
@@ -390,6 +458,7 @@ const AUDIO = (function(){
     scope:  () => Array.from({length:8}, (_,k)=>({i:k*2,   deg:sdeg(k*2),  dur:.20, v:'bell',    g:.08, o:24})),
     lift:   () => Array.from({length:6}, (_,k)=>({i:k*2,   deg:sdeg(k),    dur:.16, v:'marimba', g:.11, o:12})),
     dye:    () => Array.from({length:4}, (_,k)=>({i:k*4,   deg:sdeg(k*2),  dur:.40, v:'choir',   g:.12, o:12})),
+    cat:    () => [0,3,5,8,11].map((i,k)=>       ({i, deg:sdeg([0,2,1,3,2][k]), dur:.14, v:'pluck', g:.10, o:24})),
     // 事件
     clown:  () => [0,4,8,12].map((i,k)=>        ({i, deg:[0,4,8,4][k],     dur:.20, v:'sqr',     g:.13, o:12})),
     surge:  () => Array.from({length:8}, (_,k)=>({i:k*2, deg:[0,5,10,15][k%4], dur:.18, v:'bell', g:.09, o:12})),
@@ -397,7 +466,7 @@ const AUDIO = (function(){
     fanfare:() => [0,2,4,6,8].map((i,k)=>       ({i, deg:[0,4,7,11,12][k],  dur:.30, v:'sqr',    g:.13, o:12}))
   };
   const RIFF_FOR = {fire:'fire', bomb:'bomb', bowl:'bowl', rain:'rain', magnet:'magnet',
-                    pierce:'pierce', purge:'purge', dye:'dye', lift:'lift'};
+                    pierce:'pierce', purge:'purge', dye:'dye', cat:'cat', lift:'lift'};
   function playRiff(name){
     if (!RIFFS[name]) name = 'fanfare';
     riffPend = name;                          // 等下一個小節線
@@ -563,7 +632,7 @@ const AUDIO = (function(){
       if (i%8===6 && Math.random() < .40*v)            // 故意走音
         tone(t, mtof(root+13), .18, 'square', .10*v, master, 25);
     }
-    if (EL.bubbles > .28){                             // 🫧 逆流：咕嚕咕嚕
+    if (EL.bubbles > .28){                             // 🌊 逆流：咕嚕咕嚕
       const v = EL.bubbles;
       if (Math.random() < .30*v) noise(t, .06, 'bandpass', 500+Math.random()*2400, .09*v, master, 7);
       if (i%4===2 && Math.random() < .55*v)
@@ -840,6 +909,74 @@ const AUDIO = (function(){
     },
     ui(){ if(!ctx||!on) return; noise(ctx.currentTime,.03,'highpass',3000,.12); },
     /* 保齡球：低沉滾動聲 */
+    /* ══════════════════════════════════════════════════════════
+       🐱 貓叫聲：共振峰合成
+       聲源＝鋸齒波（模擬聲帶，基頻 350～900Hz），
+       經過兩個會掃頻的帶通濾波器＝共振峰 F1/F2，母音就是這兩個值的軌跡。
+       貓的母音路徑大致是 /m/(300,1100) → /e/(600,1800) → /a/(900,1400)
+       → /o/(500,900) → /u/(350,700)，閉口收尾。
+       九種叫聲差在：時長、基頻走向、母音路徑、顫音與振幅調變。
+       ══════════════════════════════════════════════════════════ */
+    meow(seed){
+      if (!ctx || !on) return;
+      const t = ctx.currentTime;
+      const K = [
+        // [名稱, 時長, f0起, f0中, f0尾, F1路徑, F2路徑, 顫音Hz, 顫抖AM, 音量]
+        ['mew 短促',    .20, 720, 880, 640, [420, 820, 620],  [1650,1900,1300], 0,  0,  .17],
+        ['meow 標準',   .46, 470, 640, 360, [300, 900, 480],  [1100,1800, 880], 5,  0,  .19],
+        ['meoooow 長',  .78, 420, 580, 300, [320, 950, 400],  [1050,1750, 720], 6.5,0,  .18],
+        ['mrrp 咕嚕',   .26, 330, 430, 380, [280, 520, 340],  [ 900,1250, 850], 0, 26,  .15],
+        ['chirp 顫音',  .30, 520, 780, 700, [500, 780, 700],  [1400,2000,1750], 0, 34,  .15],
+        ['mew 興奮',    .17, 820, 980, 760, [520, 900, 700],  [1800,2100,1500], 0,  0,  .16],
+        ['maow 撒嬌',   .55, 400, 700, 330, [340,1000, 430],  [1000,1600, 800], 4,  0,  .19],
+        ['mow 低沉',    .40, 300, 380, 250, [280, 700, 380],  [ 800,1150, 700], 3,  0,  .18],
+        ['miao 疑問',   .34, 430, 560, 690, [330, 780, 900],  [1050,1500,1900], 0,  0,  .17]
+      ];
+      const k = K[((seed|0) % K.length + K.length) % K.length];
+      const [, dur, a0, a1, a2, F1, F2, vib, am, vol] = k;
+      const j = 1 + rr(-.05, .05);                 // 每次都略有不同，不會像取樣重播
+
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(a0*j, t);
+      o.frequency.exponentialRampToValueAtTime(a1*j, t + dur*.30);
+      o.frequency.exponentialRampToValueAtTime(a2*j, t + dur);
+
+      if (vib){                                    // 顫音：長叫聲才有
+        const lo = ctx.createOscillator(), lg = ctx.createGain();
+        lo.frequency.value = vib; lg.gain.value = 22;
+        lo.connect(lg).connect(o.detune);
+        lo.start(t); lo.stop(t + dur + .1);
+      }
+      const band = (arr, q, gain) => {
+        const f = ctx.createBiquadFilter();
+        f.type = 'bandpass'; f.Q.value = q;
+        f.frequency.setValueAtTime(arr[0], t);
+        f.frequency.linearRampToValueAtTime(arr[1], t + dur*.42);
+        f.frequency.linearRampToValueAtTime(arr[2], t + dur);
+        const g = ctx.createGain(); g.gain.value = gain;
+        return {f, g};
+      };
+      const b1 = band(F1, 7, 1.0), b2 = band(F2, 9, .55);
+      const out = ctx.createGain();
+      o.connect(b1.f).connect(b1.g).connect(out);
+      o.connect(b2.f).connect(b2.g).connect(out);
+
+      if (am){                                     // 咕嚕／顫音的振幅調變
+        const ao = ctx.createOscillator(), ag = ctx.createGain();
+        ao.frequency.value = am; ag.gain.value = .55;
+        ao.connect(ag).connect(out.gain);
+        ao.start(t); ao.stop(t + dur + .1);
+      }
+      out.gain.setValueAtTime(.0001, t);
+      out.gain.exponentialRampToValueAtTime(vol, t + dur*.14);
+      out.gain.setValueAtTime(vol, t + dur*.62);
+      out.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      out.connect(master);
+      o.start(t); o.stop(t + dur + .12);
+
+      noise(t, .035, 'highpass', 3800, .05);       // 起音的氣聲
+    },
     /* 🎨 染色：刷過去的沙沙聲 + 該顏色專屬音色的三音上行 */
     dye(ci){
       if (!ctx || !on) return;
@@ -875,7 +1012,7 @@ const AUDIO = (function(){
       env(g3, t+1.02, .03, .60, .14);
       o3.connect(f3).connect(g3).connect(master); o3.start(t+1.02); o3.stop(t+1.75);
     },
-    /* 🫧 泡泡逆流：半音上行滑音 + 咕嚕咕嚕氣泡聲（離調，聽起來不安） */
+    /* 🌊 泡泡逆流：半音上行滑音 + 咕嚕咕嚕氣泡聲（離調，聽起來不安） */
     surge(){
       if (!ctx || !on) return;
       const t = ctx.currentTime;
@@ -995,6 +1132,7 @@ const ITEMS = {
   pierce:{ico:'⚡', name:'穿透',  kind:'shot',    lv:7, w:7,  tip:'無視打不掉的泡泡，只在能消除的地方停下'},
   purge :{ico:'🌀', name:'消色',  kind:'instant', lv:8, w:6,  tip:'清除場上最多的一色'},
   dye   :{ico:'🎨', name:'染色刷',kind:'shot',    lv:9, w:6,  tip:'穿過雜色，撞到同色就把周圍全部染成同色（不消除）'},
+  cat   :{ico:'🐱', name:'小貓',  kind:'shot',    lv:6, w:7,  tip:'撞到第一顆後，小貓會一路跳去踩破同色的泡泡'},
   lift  :{ico:'⬆️', name:'上推',  kind:'instant', lv:2, w:9,  tip:'把泡泡牆往上推一列'},
   wheel :{ico:'⊕',  name:'轉盤+1',kind:'grow',   lv:1, w:0,   tip:'彈倉多一格'},
   slot  :{ico:'⊞',  name:'格位+1',kind:'grow',   lv:1, w:0,   tip:'功能格多一格'}
@@ -1003,17 +1141,19 @@ const ITEMS = {
 /* ══════════ 壞禮物：三分之一機率 ══════════
    不進功能格、不進接關碼，開箱瞬間立刻發作。 */
 const CURSES = {
-  surge:    {ico:'🫧', name:'泡泡逆流', tip:'六顆泡泡從底下慢慢浮上來', hue:196},
-  scramble: {ico:'💫', name:'亂彈風暴', tip:'四周的泡泡被震開，亂彈三次才黏回去', hue:296},
-  clown:    {ico:'🤡', name:'小丑面具', tip:'轉盤被小丑蓋住，六發之內看不到顏色', hue:340}
+  surge:    {ico:'🌊', name:'泡泡逆流', tip:'六顆泡泡從底下慢慢浮上來', hue:196, w:5},
+  scramble: {ico:'💫', name:'亂彈風暴', tip:'四周的泡泡被震開，亂彈三次才黏回去', hue:296, w:2},
+  clown:    {ico:'🤡', name:'小丑面具', tip:'轉盤被小丑蓋住，六發之內看不到顏色', hue:340, w:2}
 };
-const CURSE_RATE = 1/3;
+// 小丑與亂彈調降到原本的 2/5（各 11.1% → 4.4%），逆流維持不變
+const CURSE_RATE = 0.20;
 
 /* 抽獎：三分之一壞禮物；擴充機率隨已擁有數量遞減 */
 function rollGift(lv){
   if (Math.random() < CURSE_RATE){
-    const ck = Object.keys(CURSES);
-    return ck[(Math.random()*ck.length)|0];
+    const pool = [];
+    for (const k in CURSES) for (let i=0;i<CURSES[k].w;i++) pool.push(k);
+    return pool[(Math.random()*pool.length)|0];
   }
   const grow = [];
   if (save.magCap  < MAGMAX)  grow.push('wheel');
@@ -1037,7 +1177,7 @@ const B32 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // 去掉 I O 0 1 避免抄錯
    退役道具保留佔位，載入時由 RETIRED 映射到現行道具。
    位元配置同樣凍結：階段10 / 轉盤3 / 功能格3 / 道具5×4 / 分數12 / 泡泡6 / 檢查碼6 = 60 bits。 */
 const ITEMKEYS = ['fire','bomb','moves','rain','shield','magnet','hammer','pierce','purge','scope',
-                  'freeze','lift','bowl','dye'];
+                  'freeze','lift','bowl','dye','cat'];
 // 退役道具：位置永久保留，載入舊接關碼時映射到現行道具
 const RETIRED  = {moves:'bowl', freeze:'bowl', shield:'lift', hammer:'bomb', scope:'dye'};
 // 舊存檔裡的退役道具在這裡才做遷移（必須晚於 RETIRED 宣告）
@@ -1112,7 +1252,7 @@ let grid, nextRow, angle, shots, mag, wheelA, dropIn, dropEvery, rowsDropped, sc
     chain, particles, falling, floaters, state, armed, level, shakeT,
     gifts, giftMeter, rescueLeft, turnCounts, dropOff = 0,
     bonus = null, bonusCool = 0, holding = false, loose, bowl = null, rise = [], shocks = [],
-    clownLeft = 0, stuckT = 0, looseWas = false, loosePop = 0,
+    clownLeft = 0, stuckT = 0, looseWas = false, loosePop = 0, cat = null,
     tensionLv = 0, fxPos = {x:220,y:260};
 
 /* ── 網格幾何（每列自帶 odd 旗標，插列時奇偶才不會錯亂）── */
@@ -1180,7 +1320,7 @@ function buildLevel(L, keepGear){
   nextRow = genRow(sp);
   dropEvery = sp.dropEvery; dropIn = dropEvery; rowsDropped = 0; dropOff = 0;
   armed = null; chain = 0;
-  shots = []; loose = []; bowl = null; rise = []; shocks = [];
+  shots = []; loose = []; bowl = null; rise = []; shocks = []; cat = null;
   particles = []; falling = []; floaters = [];
   angle = -Math.PI/2;
   mag = []; wheelA = 0;
@@ -1291,7 +1431,7 @@ function scrambleAt(x, y){
   }
 }
 
-/* 🫧 泡泡逆流：六顆泡泡從底下浮起，黏到死線兩列內就自己破掉 */
+/* 🌊 泡泡逆流：六顆泡泡從底下浮起，黏到死線兩列內就自己破掉 */
 function startSurge(n, x, y){
   const sp = levelSpec(level);
   for (let i=0;i<n;i++)
@@ -1614,7 +1754,7 @@ function failLevel(why){
     why+'。<br>撐到第 '+level+' 階段，降下 '+rowsDropped+' 列，總分 '+score+'。',
     '再玩一次', () => { save.score = 0; score = 0; persist(); buildLevel(level); },
     '<div class="hint">貼紙簿（'+(save.stickers||[]).length+' / '+STICKERS.length+'）</div>' +
-    '<div class="stk">'+book+'</div>' + codeBlock());
+    '<div class="stk">'+book+'</div>' + codeBlock(), true);
 }
 
 /* ══════════════════════════════════════════════════
@@ -1635,7 +1775,7 @@ function occRows(){
 }
 function canFire(){
   if (bonus) return bonus.phase === 'fire' && bonus.left > 0 && bonus.gap <= 0 && shots.length < 5;
-  return shots.length === 0 && !loose.length && !bowl;
+  return shots.length === 0 && !loose.length && !bowl && !cat;
 }
 
 function startBonus(){
@@ -1878,6 +2018,68 @@ function dyeAt(r, c, color){
   hud();
 }
 
+/* 🐱 小貓：從第一顆命中的泡泡出發，一路跳去踩破附近的同色泡泡 */
+const CAT_HOPS = 9, CAT_RANGE = D * 2.7, CAT_DUR = 12;
+function catPath(r0, c0){
+  const b0 = at(r0, c0);
+  if (!b0 || !b0.color) return [[r0,c0]];
+  const color = b0.color;
+  const used = new Set([r0+','+c0]);
+  const path = [[r0,c0]];
+  let cur = [r0,c0];
+  for (let h=0; h<CAT_HOPS; h++){
+    let best = null, bd = Infinity;
+    for (let r=0; r<grid.length; r++)
+      for (let c=0; c<len(r); c++){
+        const b = grid[r].cells[c];
+        if (!b || b.type === 'stone' || b.color !== color) continue;
+        const k = r+','+c; if (used.has(k)) continue;
+        const d = Math.hypot(cx(r,c)-cx(cur[0],cur[1]), cy(r)-cy(cur[0]));
+        if (d <= CAT_RANGE && d < bd){ bd = d; best = [r,c]; }
+      }
+    if (!best) break;
+    used.add(best[0]+','+best[1]);
+    path.push(best); cur = best;
+  }
+  return path;
+}
+function catPounce(r, c, sx, sy){
+  cat = {path: catPath(r,c), i:-1, t:CAT_DUR, pop:0,
+         from:{x:sx, y:sy}, x:sx, y:sy, dir:1, squash:0};
+  AUDIO.event('item', 1, 'cat');
+}
+function stepCat(){
+  if (!cat) return;
+  const nextIdx = cat.i + 1;
+  const dest = cat.path[nextIdx];
+  if (!dest){                                     // 跳完了
+    const d = dropFloating();
+    const pop = cat.pop; cat = null;
+    endTurn(pop, d);
+    return;
+  }
+  const a = (cat.i < 0) ? cat.from : {x:cx(cat.path[cat.i][0], cat.path[cat.i][1]), y:cy(cat.path[cat.i][0])};
+  const bx = cx(dest[0], dest[1]), by = cy(dest[0]);
+  cat.t++;
+  const u = Math.min(1, cat.t / CAT_DUR);
+  cat.x = a.x + (bx - a.x) * u;
+  cat.y = a.y + (by - a.y) * u - Math.sin(u*Math.PI) * (26 + Math.abs(bx-a.x)*0.16);
+  cat.dir = (bx >= a.x) ? 1 : -1;
+  if (cat.squash > 0) cat.squash--;
+  if (u >= 1){                                    // 落地：踩破
+    cat.i = nextIdx; cat.t = 0; cat.squash = 5;
+    const b = at(dest[0], dest[1]);
+    if (b){
+      cat.pop += takeBubble(dest[0], dest[1]);
+      shockwave(bx, by, 44);
+      shakeT = Math.max(shakeT, 4);
+      AUDIO.meow(cat.i);
+      scorePop(30, bx, Math.max(by-16, 66));
+      score += 30;
+    }
+  }
+}
+
 function hitTest(x,y){
   for (let r=0; r<grid.length; r++)
     for (let c=0; c<len(r); c++){
@@ -2078,6 +2280,7 @@ function stepShot(s){
     if (h && s.pierce > 0){ s.pierce--; s.cool = PIERCE_COOL; continue; }
     if (h){
       if (s.rapid){ rapidHit(h[0], h[1]); return false; }
+      if (s.kind === 'cat'){ catPounce(h[0], h[1], s.x, s.y); return false; }
       if (s.kind === 'bomb'){
         const n = bombAt(h[0], h[1]);
         const dropped = dropFloating();
@@ -2097,6 +2300,7 @@ function update(){
     if (!stepShot(shots[i])) shots.splice(i,1);
   stepLoose();
   stepRise();
+  stepCat();
   if (bowl && !loose.length && !shots.some(x => x.kind === 'bowl')){
     const pop = bowl.pop, d = dropFloating();
     bowl = null;
@@ -2246,6 +2450,60 @@ function drawBowl(s){
 }
 
 /* 小丑面具：蓋在彈室上，讓人看不出顏色 */
+/* 側面小貓：跳躍中身體拉長，落地瞬間壓扁 */
+function drawCat(){
+  if (!cat) return;
+  const t = performance.now();
+  const sq = cat.squash / 5;                       // 落地壓扁
+  const air = cat.t / CAT_DUR;
+  const stretch = 1 + Math.sin(air*Math.PI) * 0.12;
+  ctx.save();
+  ctx.translate(cat.x, cat.y);
+  ctx.scale(cat.dir * (1 + sq*0.28), (1 - sq*0.26) * stretch);
+
+  const body = '#f7c873', dark = '#d99f45', ink = '#2a2216';
+  // 尾巴
+  ctx.strokeStyle = body; ctx.lineWidth = 4.5; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-13, 2);
+  ctx.quadraticCurveTo(-25, -4 + Math.sin(t*0.012)*5, -21, -15 + Math.sin(t*0.012)*4);
+  ctx.stroke();
+  // 後腳
+  ctx.fillStyle = dark;
+  ctx.beginPath(); ctx.ellipse(-8, 9, 5, 3.4, 0, 0, 7); ctx.fill();
+  // 身體
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.ellipse(-3, 2, 13, 9, -0.08, 0, 7); ctx.fill();
+  // 前腳
+  ctx.beginPath(); ctx.ellipse(7, 9, 4.6, 3.2, 0, 0, 7); ctx.fill();
+  // 頭
+  ctx.beginPath(); ctx.arc(9, -6, 8.6, 0, 7); ctx.fill();
+  // 耳朵
+  ctx.beginPath();
+  ctx.moveTo(3.5, -12); ctx.lineTo(5, -20); ctx.lineTo(11, -13.5); ctx.closePath(); ctx.fill();
+  ctx.moveTo(12, -13.5); ctx.lineTo(16.5, -19.5); ctx.lineTo(17.5, -11); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#ffb3c6';
+  ctx.beginPath();
+  ctx.moveTo(5.4, -13); ctx.lineTo(6.2, -17.6); ctx.lineTo(9.6, -13.8); ctx.closePath(); ctx.fill();
+  // 臉
+  ctx.fillStyle = ink;
+  ctx.beginPath(); ctx.arc(12.6, -7.6, 1.5, 0, 7); ctx.fill();     // 眼
+  ctx.beginPath(); ctx.arc(6.4, -7.6, 1.5, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ff8fa3';
+  ctx.beginPath(); ctx.arc(9.6, -3.6, 1.5, 0, 7); ctx.fill();      // 鼻
+  ctx.strokeStyle = 'rgba(42,34,22,.55)'; ctx.lineWidth = .9;      // 鬍鬚
+  for (const dy of [-1.2, 0.6, 2.4]){
+    ctx.beginPath(); ctx.moveTo(12, -3.4+dy*.5); ctx.lineTo(20, -4.4+dy); ctx.stroke();
+  }
+  ctx.restore();
+
+  // 落地灰塵
+  if (cat.squash === 5)
+    for (let i=0;i<5;i++)
+      particles.push({x:cat.x+(Math.random()-.5)*12, y:cat.y+9,
+        vx:(Math.random()-.5)*3, vy:-Math.random()*1.4, life:.55, color:'#ffd9a0'});
+}
+
 function drawClown(x, y, r){
   const t = performance.now();
   const wob = Math.sin(t*0.005 + x*0.05) * 0.13;
@@ -2518,6 +2776,11 @@ function drawPreview(info){
     set = blastCells(info.cell);
     hue = COLOR_HUE[COLORS.indexOf(info.myColor)] || 44;
     tint = info.myColor; verb = '顆要染色';
+  }
+  else if (armed.key === 'cat' && info.cell){
+    const pth = catPath(info.cell[0], info.cell[1]);
+    set = new Set(pth.map(a => a[0]+','+a[1]));
+    hue = 40; verb = '顆要踩破';
   }
   else if (armed.key === 'pierce' && info.cell){        // 會被消掉的那一群
     const cc = snap(info.end[0], info.end[1]);
@@ -2916,7 +3179,7 @@ function draw(){
   if (aim) drawPreview(aim);
   ctx.restore();
 
-  for (const u of rise){                            // 🫧 逆流中的泡泡
+  for (const u of rise){                            // 🌊 逆流中的泡泡
     ctx.save();
     ctx.globalAlpha = .35 + .25*Math.sin(u.glow);
     ctx.strokeStyle = '#9fe8ff'; ctx.lineWidth = 2;
@@ -2943,6 +3206,7 @@ function draw(){
     ctx.beginPath(); ctx.arc(k.x, k.y, k.r*0.62, 0, 7); ctx.stroke();
     ctx.restore();
   }
+  drawCat();
   for (const f of falling) drawBubble(f.x,f.y,f.b);
 
   for (const p of particles){
@@ -3115,12 +3379,22 @@ muteEl.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' '){ e.p
 const overlay = document.getElementById('overlay'), btn = document.getElementById('btn');
 let onBtn = null;
 const ovExtra = document.getElementById('ovExtra');
-function showOverlay(title, starsTxt, text, label, fn, extra){
+const ovCat = document.getElementById('ovCat');
+/* 點小貓會跳一下並叫一聲（女兒指定功能）*/
+ovCat.addEventListener('click', () => {
+  if (ovCat.classList.contains('hop')) return;
+  ovCat.classList.add('hop');
+  AUDIO.start();
+  AUDIO.meow((Math.random()*9)|0);
+  setTimeout(() => ovCat.classList.remove('hop'), 640);
+});
+function showOverlay(title, starsTxt, text, label, fn, extra, withCat){
   document.getElementById('ovTitle').textContent = title;
   document.getElementById('ovStars').textContent = starsTxt || '';
   document.getElementById('ovText').innerHTML = text;
   ovExtra.innerHTML = extra || '';
   btn.textContent = label; onBtn = fn;
+  ovCat.classList.toggle('show', !!withCat);
   overlay.classList.add('show');
   wireExtra();
 }
@@ -3211,6 +3485,7 @@ hud();
 btn.textContent = '開始遊戲';
 onBtn = () => buildLevel(save.level||1);
 ovExtra.innerHTML = resumeBlock(); wireExtra();
+ovCat.classList.add('show');   // 開場一定要有小貓
 
 /* ══════════ App 化：離線快取、螢幕常亮、前景恢復 ══════════ */
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0)
