@@ -182,7 +182,7 @@
   <div class="tool mute" id="tMute" tabindex="0"><span class="ico" id="muteIco">🔊</span></div>
 </div>
 
-<footer>手機平板：左右<b>拖曳</b>調整角度，放開就發射（點一下不會亂跳）<br>清到剩三顆以下觸發 🔥 獎勵時間 · 音樂每八小節就會自己變化
+<footer>手機平板：左右<b>拖曳</b>調整角度，放開就發射（點一下不會亂跳）<br>清到剩三顆以下觸發 🔥 獎勵時間 · 格子滿時禮物會 🎈 飄回牆上等你
 
 <script>
 (function(){
@@ -1253,6 +1253,7 @@ let grid, nextRow, angle, shots, mag, wheelA, dropIn, dropEvery, rowsDropped, sc
     gifts, giftMeter, rescueLeft, turnCounts, dropOff = 0,
     bonus = null, bonusCool = 0, holding = false, loose, bowl = null, rise = [], shocks = [],
     clownLeft = 0, stuckT = 0, looseWas = false, loosePop = 0, cat = null,
+    heldGifts = [], giftReleaseT = 0,
     tensionLv = 0, fxPos = {x:220,y:260};
 
 /* ── 網格幾何（每列自帶 odd 旗標，插列時奇偶才不會錯亂）── */
@@ -1321,6 +1322,7 @@ function buildLevel(L, keepGear){
   dropEvery = sp.dropEvery; dropIn = dropEvery; rowsDropped = 0; dropOff = 0;
   armed = null; chain = 0;
   shots = []; loose = []; bowl = null; rise = []; shocks = []; cat = null;
+  heldGifts = []; giftReleaseT = 0;
   particles = []; falling = []; floaters = [];
   angle = -Math.PI/2;
   mag = []; wheelA = 0;
@@ -1431,6 +1433,21 @@ function scrambleAt(x, y){
   }
 }
 
+/* 🎈 把收著的禮物放飛：從畫面下方往上飄，碰到牆就黏回去變成禮盒泡 */
+function releaseGift(){
+  const h = heldGifts.shift();
+  if (!h) return;
+  rise.push({
+    x: R+14 + Math.random()*(W-2*R-28),
+    y: DEATH + 20,
+    vy: -(2.4 + Math.random()*0.6),
+    sw: Math.random()*6.28, glow: Math.random()*6.28, gift: true,
+    b: {color:h.color, type:'gift', pay:h.pay, t:0, held:true}
+  });
+  AUDIO.blop(false);
+  fx('toast', '🎈 禮物飄回來了', W/2, 300);
+}
+
 /* 🌊 泡泡逆流：六顆泡泡從底下浮起，黏到死線兩列內就自己破掉 */
 function startSurge(n, x, y){
   const sp = levelSpec(level);
@@ -1445,6 +1462,13 @@ function startSurge(n, x, y){
     });
   AUDIO.surge();
 }
+/* 牆的最下緣 y 座標；沒有泡泡時回傳頂端 */
+function wallBottom(){
+  for (let r=grid.length-1; r>=0; r--)
+    if (grid[r].cells.some(Boolean)) return cy(r);
+  return TOP + R;
+}
+
 function stepRise(){
   const had = rise.length;
   for (let i=rise.length-1;i>=0;i--){
@@ -1452,10 +1476,23 @@ function stepRise(){
     u.sw += 0.055; u.glow += 0.09;
     u.y += u.vy;
     u.x = Math.max(R, Math.min(W-R, u.x + Math.sin(u.sw)*0.75));
-    if (!hitTest(u.x, u.y) && u.y - R > TOP) continue;
+    const nearWall = u.gift && u.y - R <= wallBottom() + ROWH;
+    if (!hitTest(u.x, u.y) && !nearWall && u.y - R > TOP) continue;
 
     rise.splice(i,1);
     const cell = snap(u.x, u.y);
+    if (u.gift){                                       // 禮物氣球：黏回去就好，不消除
+      if (!cell){                                      // 黏不上就放回去，下次再飄一次（絕不弄丟）
+        heldGifts.unshift({pay:u.b.pay, color:u.b.color});
+        giftReleaseT = 0;
+        continue;
+      }
+      grid[cell[0]].cells[cell[1]] = u.b;
+      AUDIO.blop(false);
+      shockwave(cx(cell[0],cell[1]), cy(cell[0]), 44);
+      fx('toast', '🎁 禮物黏回去了', cx(cell[0],cell[1]), cy(cell[0])-30);
+      continue;
+    }
     if (!cell) continue;
     if (cy(cell[0]) + ROWH*2 > DEATH){                 // 慈悲條款：太深就破掉
       for (let k=0;k<14;k++){
@@ -1487,6 +1524,7 @@ function shockwave(x, y, hue){
 function cluster(r0,c0){
   const seed = at(r0,c0);
   if (!seed || !seed.color) return [];
+  if (seed.held && slotsFull()) return [];        // 格子滿：飄回來的禮物先打不掉
   const seen = new Set([r0+','+c0]), out = [[r0,c0]], st = [[r0,c0]];
   while (st.length){
     const [r,c] = st.pop();
@@ -1495,6 +1533,7 @@ function cluster(r0,c0){
       if (seen.has(k)) continue;
       const b = at(nr,nc);
       if (!b || b.type === 'stone' || b.color !== seed.color) continue;
+      if (b.held && slotsFull()) continue;          // 同上，避免又被浪費掉
       seen.add(k); out.push([nr,nc]); st.push([nr,nc]);
     }
   }
@@ -1563,10 +1602,29 @@ function spawnGift(nearR, nearC, count){
 }
 
 /* 開箱 */
+const slotsFull = () => save.slots.length >= save.slotCap;
+function hasHeldOnWall(){
+  for (const row of grid) for (const b of row.cells) if (b && b.held) return true;
+  return false;
+}
+
 function openGift(b, x, y){
   if (CURSES[b.pay]){ triggerCurse(b.pay, x, y); return; }
   const key = ITEMS[b.pay] ? b.pay : 'bowl';
   const it = ITEMS[key];
+
+  // 連射中，或功能格已滿 → 不開箱，先收著，稍後像氣球一樣飄回牆上
+  if (it.kind !== 'grow' && (bonus || slotsFull())){
+    heldGifts.push({pay:key, color:b.color});
+    for (let i=0;i<10;i++){
+      const a = Math.random()*Math.PI*2, sp = 1.5+Math.random()*2.6;
+      particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:.8,color:'#ffd166'});
+    }
+    if (!bonus) revealFx('🎈', it.name, '格子滿了，禮物飄回去等你', 44, '先留著', x, y);
+    AUDIO.blop(false);
+    return;
+  }
+
   if (it.kind === 'grow'){
     if (key === 'wheel' && save.magCap < MAGMAX){
       save.magCap++; mag.push(nextBubble());
@@ -1627,8 +1685,18 @@ function dropFloating(){
 }
 
 /* ══════════ 落點吸附 ══════════ */
+/* 保證牆的下方永遠有兩列空間可以吸附，而且不會無限膨脹 */
+function ensureBelow(){
+  let deep = 0;
+  for (let r=grid.length-1; r>=0; r--)
+    if (grid[r].cells.some(Boolean)){ deep = r+1; break; }
+  const want = Math.max(VISIBLE+3, deep+2);
+  growTo(want);
+  while (grid.length > want + 2 && !grid[grid.length-1].cells.some(Boolean)) grid.pop();
+}
+
 function snap(x,y){
-  growTo(grid.length+1);
+  ensureBelow();
   let best = null, bd = Infinity;
   for (let r=0; r<grid.length; r++)
     for (let c=0; c<len(r); c++){
@@ -1847,7 +1915,9 @@ function endBonus(){
   const g = bonus.gained, pk = bonus.popped;
   bonus = null;
   AUDIO.bonusOff();
-  fx('praise','獎勵結束', W/2, 186, {hue:44, big:1.05, sub:'打掉 '+pk+' 顆　+'+g+' 分'});
+  fx('praise','獎勵結束', W/2, 186, {hue:44, big:1.05,
+     sub: heldGifts.length ? ('打掉 '+pk+' 顆　🎈 '+heldGifts.length+' 個禮物要飄回來')
+                           : ('打掉 '+pk+' 顆　+'+g+' 分')});
   let guard = 0;
   while (occRows() < 4 && guard++ < 6) descend(1);   // 保證留下一片牆
   dropIn = dropEvery;
@@ -1964,7 +2034,7 @@ function fire(){
 
 /* 磁吸彈：找出能組成最大同色群的空格 */
 function bestCell(color){
-  growTo(grid.length+1);
+  ensureBelow();
   let best = null, bs = -1;
   for (let r=0;r<grid.length;r++)
     for (let c=0;c<len(r);c++){
@@ -2301,6 +2371,7 @@ function update(){
   stepLoose();
   stepRise();
   stepCat();
+  if (heldGifts.length && !bonus && ++giftReleaseT > 18){ giftReleaseT = 0; releaseGift(); }
   if (bowl && !loose.length && !shots.some(x => x.kind === 'bowl')){
     const pop = bowl.pop, d = dropFloating();
     bowl = null;
@@ -2677,6 +2748,16 @@ function drawBubble(x,y,b,rad){
     ctx.strokeStyle='#ffd166'; ctx.lineWidth=2.6;
     ctx.beginPath(); ctx.arc(x,y,r+2.6,0,7); ctx.stroke();
     ctx.restore();
+    if (b.held && slotsFull()){                     // 格子滿：畫一把小鎖表示暫時打不掉
+      ctx.save();
+      ctx.translate(x, y + r*0.42);
+      ctx.fillStyle = 'rgba(12,14,22,.75)';
+      ctx.beginPath(); ctx.roundRect(-r*0.26, -r*0.16, r*0.52, r*0.34, r*0.09); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,232,170,.95)'; ctx.lineWidth = Math.max(1, r*0.075);
+      ctx.beginPath(); ctx.arc(0, -r*0.16, r*0.15, Math.PI, 0); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(-r*0.26, -r*0.16, r*0.52, r*0.34, r*0.09); ctx.stroke();
+      ctx.restore();
+    }
   }
   ctx.restore();
 }
@@ -3182,13 +3263,19 @@ function draw(){
   for (const u of rise){                            // 🌊 逆流中的泡泡
     ctx.save();
     ctx.globalAlpha = .35 + .25*Math.sin(u.glow);
-    ctx.strokeStyle = '#9fe8ff'; ctx.lineWidth = 2;
+    ctx.strokeStyle = u.gift ? '#ffd166' : '#9fe8ff';
+    ctx.lineWidth = u.gift ? 2.8 : 2;
     ctx.beginPath(); ctx.arc(u.x, u.y, R+3.5, 0, 7); ctx.stroke();
+    if (u.gift){
+      ctx.globalAlpha = .22 + .18*Math.sin(u.glow*1.4);
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(u.x, u.y, R+8, 0, 7); ctx.stroke();
+    }
     ctx.restore();
     drawBubble(u.x, u.y, u.b);
     ctx.save();
     ctx.globalAlpha = .5;
-    ctx.fillStyle = 'rgba(159,232,255,.8)';
+    ctx.fillStyle = u.gift ? 'rgba(255,209,102,.85)' : 'rgba(159,232,255,.8)';
     for (let k=1;k<=3;k++){
       const ry = u.y + R + k*9, rr = 3.2 - k*0.7;
       if (rr > 0.4) { ctx.beginPath(); ctx.arc(u.x + Math.sin(u.sw-k*0.6)*4, ry, rr, 0, 7); ctx.fill(); }
@@ -3331,6 +3418,7 @@ function useSlot(i){
   } else {
     instant(key); save.slots.splice(i,1); armed = null; persist();
   }
+  if (!slotsFull() && hasHeldOnWall()) fx('toast', '🔓 現在可以打禮物了', W/2, 300);
   drawSlots(); hud();
 }
 
