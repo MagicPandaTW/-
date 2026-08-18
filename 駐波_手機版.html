@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>駐波模擬（手機版）</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0;
+    -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;-webkit-touch-callout:none; }
+  :root{
+    --bg:#111110; --stage-bg:#111110;
+    --panel:#1a1a17; --panel2:#1e1e1a; --panel3:#171713; --panel4:#211f16;
+    --border:#2a2a26; --border2:#3a3a34; --border3:#555;
+    --text:#dedad0; --text-dim:#888; --text-mute:#666; --text-soft:#999;
+    --hover:#2a2a24;
+    --accent-text:#F0D48A;
+    --note-label:#c9c5b8; --note-sub:#9a9688; --note-range:#a8a498;
+    --btn-bg:#1e1e1a; --btn-border:#3a3a34;
+    --active-bg:#dedad0; --active-text:#111110;
+    --accent-blue:#5BA3E8; --accent-red:#E07055; --accent-green:#2DB890;
+    --accent-amber:#EF9F27; --accent-amber-tint:rgba(239,159,39,0.15);
+    --accent-lime:#97C459; --accent-lime-tint:rgba(99,153,34,0.15);
+    --fs-title: clamp(14px, 2.3dvh, 22px);
+    --fs-body:  clamp(12px, 1.9dvh, 18px);
+    --fs-small: clamp(11px, 1.6dvh, 15px);
+    --fs-mini:  clamp(10px, 1.35dvh, 13px);
+  }
+  html.light{
+    --bg:#faf7ee; --stage-bg:#faf7ee;
+    --panel:#ffffff; --panel2:#fbf5e6; --panel3:#fffdf6; --panel4:#fdf6e0;
+    --border:#c9bc98; --border2:#a3936c; --border3:#8a7a52;
+    --text:#2b2620; --text-dim:#5c5340; --text-mute:#5c5340; --text-soft:#6b5f48;
+    --hover:#efe6d0;
+    --accent-text:#7a5a10;
+    --note-label:#3a3527; --note-sub:#5c5340; --note-range:#5c5340;
+    --btn-bg:#ffffff; --btn-border:#a3936c;
+    --active-bg:#2b2620; --active-text:#faf7ee;
+    --accent-blue:#2a5ca5; --accent-red:#a5342a; --accent-green:#1f6b52;
+    --accent-amber:#8a5a10; --accent-amber-tint:rgba(138,90,16,0.14);
+    --accent-lime:#4a6b1a; --accent-lime-tint:rgba(74,107,26,0.14);
+  }
+  html,body{ width:100dvw; height:100dvh; overflow:hidden; background:var(--bg);
+    font-family: system-ui, -apple-system, 'Helvetica Neue', sans-serif; color:var(--text); }
+
+  #stage{ width:100dvw; height:100dvh; display:flex; flex-direction:column; background:var(--stage-bg); }
+
+  /* ── top bar ───────────────────────────────────────────── */
+  #top-bar{ flex-shrink:0; display:flex; align-items:center; gap:2vw;
+    padding: calc(0.8dvh + env(safe-area-inset-top)) 3vw 0.8dvh;
+    border-bottom:1px solid var(--border); }
+  #top-bar h1{ font-size:var(--fs-title); font-weight:800; color:var(--accent-text); white-space:nowrap; }
+  #top-bar .spacer{ flex:1; min-width:0; }
+  .icon-btn{ border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--text);
+    font-size:var(--fs-small); padding:0.9dvh 2.6vw; white-space:nowrap; }
+  .icon-btn:active{ transform:scale(0.94); }
+  .icon-btn.theme{ border-color:var(--accent-text); color:var(--accent-text); font-weight:600; }
+
+  /* ── canvas ────────────────────────────────────────────── */
+  #canvas-wrap{ flex:1; min-height:0; position:relative; }
+  #c{ position:absolute; top:0; left:0; width:100%; height:100%; display:block; }
+
+  /* ── bottom bar (core controls only) ──────────────────── */
+  #bottom-bar{ flex-shrink:0; display:flex; align-items:center; justify-content:center; gap:3vw;
+    padding: 1dvh 3vw calc(1dvh + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border); }
+  .tog{ border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--text-dim);
+    font-size:var(--fs-body); padding:1.1dvh 3.5vw; white-space:nowrap; }
+  .tog.on{ background:var(--active-bg); color:var(--active-text); border-color:var(--active-bg); }
+  .tog:active{ transform:scale(0.95); }
+  #playBtn{ border-radius:999px; border:1.5px solid var(--accent-text); background:var(--btn-bg); color:var(--accent-text);
+    font-size:var(--fs-title); font-weight:700; padding:1.2dvh 6vw; }
+  #playBtn:active{ transform:scale(0.95); }
+  .mini-step{ border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--text);
+    font-size:var(--fs-small); padding:1dvh 2.6vw; }
+  .mini-step:active{ transform:scale(0.94); }
+  #stepBtns,#stepBtns2{ display:none; align-items:center; gap:3vw; }
+
+  /* ── drawer (bottom sheet for secondary controls) ────────── */
+  .drawer-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.45); opacity:0; pointer-events:none;
+    transition:opacity .2s ease; z-index:40; }
+  .drawer-backdrop.open{ opacity:1; pointer-events:auto; }
+  .drawer{ position:fixed; left:0; right:0; bottom:0; max-height:82dvh; background:var(--panel);
+    border-top:1px solid var(--border3); border-radius:18px 18px 0 0;
+    transform:translateY(105%); transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    display:flex; flex-direction:column; z-index:41; }
+  .drawer.open{ transform:translateY(0); }
+  .drawer-handle{ width:36px; height:4px; border-radius:2px; background:var(--border3); margin:1.2dvh auto 0.6dvh; flex-shrink:0; }
+  .drawer-body{ overflow-y:auto; padding: 0.5dvh 4vw calc(2dvh + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:1.6dvh; }
+  .drawer-sec-title{ font-size:var(--fs-small); font-weight:700; color:var(--note-sub); margin-bottom:0.6dvh; }
+  .drawer-row{ display:flex; align-items:center; gap:3vw; flex-wrap:wrap; }
+  .param-group{ display:flex; align-items:center; gap:1.6vw; }
+  .param-label{ font-size:var(--fs-small); color:var(--text-mute); white-space:nowrap; }
+  .cyc-btn{ border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--text);
+    font-size:var(--fs-body); padding:1dvh 4vw; min-width:14vw; text-align:center; }
+  .cyc-btn:active{ transform:scale(0.94); }
+  .lbl-btn{ border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--text-dim);
+    font-size:var(--fs-body); padding:1dvh 4vw; }
+  .lbl-btn.on1{ background:var(--accent-amber); color:#fff; border-color:var(--accent-amber); }
+  .lbl-btn.on2{ background:var(--accent-lime); color:#fff; border-color:var(--accent-lime); }
+  .lbl-btn.onComp{ background:var(--accent-green); color:#fff; border-color:var(--accent-green); }
+  .lbl-btn:active{ transform:scale(0.94); }
+  .ctrl-btn{ border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg); color:var(--text);
+    font-size:var(--fs-body); padding:1dvh 4vw; }
+  .ctrl-btn:active{ transform:scale(0.94); }
+  .reset-btn{ border-radius:8px; border:1px solid var(--border3); background:var(--active-bg); color:var(--active-text);
+    font-weight:700; font-size:var(--fs-body); padding:1.1dvh 5vw; }
+  .reset-btn:active{ transform:scale(0.95); }
+  .drawer-divider{ height:1px; background:var(--border2); margin:0.2dvh 0; }
+
+  /* ── note modal (overlay, not full-page swap) ───────────── */
+  .note-modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none;
+    align-items:flex-end; justify-content:center; z-index:50; }
+  .note-modal-backdrop.open{ display:flex; }
+  .note-modal-card{ width:100%; max-height:90dvh; background:var(--stage-bg);
+    border-radius:18px 18px 0 0; display:flex; flex-direction:column; overflow:hidden;
+    padding-bottom:env(safe-area-inset-bottom); }
+  .note-header2{ flex-shrink:0; display:flex; align-items:center; gap:2vw; padding:1.6dvh 4vw 1dvh;
+    border-bottom:1px solid var(--border); }
+  .note-header2 h1{ font-size:var(--fs-title); font-weight:800; color:var(--accent-text); white-space:nowrap; }
+  .note-close{ margin-left:auto; border-radius:999px; border:1px solid var(--btn-border); background:var(--btn-bg);
+    color:var(--text); width:8vw; height:8vw; max-width:34px; max-height:34px; font-size:var(--fs-body); line-height:1; flex-shrink:0; }
+  .note-tabs{ display:flex; gap:2vw; flex-shrink:0; padding:1dvh 4vw; }
+  .note-tab-btn{ flex:1; border-radius:8px; border:1px solid var(--btn-border); background:var(--btn-bg);
+    color:var(--text-dim); font-size:var(--fs-body); font-weight:600; padding:1.1dvh 0; }
+  .note-tab-btn.active{ background:var(--active-bg); color:var(--active-text); border-color:var(--active-bg); }
+  .note-body{ flex:1; min-height:0; overflow-y:auto; padding:0.4dvh 4vw 2.4dvh; background:var(--panel3); }
+  .note-page{ display:none; flex-direction:column; gap:1.4dvh; }
+  .note-page.active{ display:flex; }
+  .note-sub-caption{ font-size:var(--fs-small); color:var(--note-sub); padding:0.6dvh 0 0.2dvh; line-height:1.5; }
+  table.note-table2{ width:100%; border-collapse:collapse; font-size:var(--fs-small); }
+  table.note-table2 th,table.note-table2 td{ border:1px solid var(--border2); padding:1dvh 1.2vw; text-align:center; color:var(--text); }
+  table.note-table2 thead th{ background:var(--panel4); color:var(--text); font-weight:800; }
+  table.note-table2 td.ptcell{ font-weight:800; }
+  table.note-table2 .construct{ color:var(--accent-green); font-weight:900; }
+  table.note-table2 .destruct{ color:var(--accent-red); font-weight:900; }
+  table.note-table2 .anti{ color:var(--accent-green); font-weight:900; }
+  table.note-table2 .node{ color:var(--accent-red); font-weight:900; }
+  .note-general-box{ border-radius:10px; border:1.5px solid var(--border3); background:var(--panel4);
+    padding:1.4dvh 3vw; display:flex; flex-direction:column; gap:0.9dvh; font-size:var(--fs-body); font-weight:700; }
+  .note-general-box .gf-lhs{ color:var(--note-sub); font-weight:500; margin-right:0.3em; }
+  .note-general-box .anti{ color:var(--accent-green); }
+  .note-general-box .node{ color:var(--accent-red); }
+  .note-envelope-wrap{ width:100%; }
+  .note-envelope-wrap svg{ width:100%; height:auto; display:block; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="top-bar">
+    <h1>駐波干涉</h1>
+    <div class="spacer"></div>
+    <button class="icon-btn" onclick="openDrawer()">⚙️ 設定</button>
+    <button class="icon-btn" onclick="openNote()">📋 筆記</button>
+    <button class="icon-btn theme" id="btnTheme" onclick="toggleTheme()">☀️ 米白</button>
+  </div>
+
+  <div id="canvas-wrap"><canvas id="c"></canvas></div>
+
+  <div id="bottom-bar">
+    <button class="tog on" id="phaseBtn" onclick="togglePhase()">同相</button>
+    <div id="stepBtns"><button class="mini-step" onclick="stepBack()">◀</button></div>
+    <button id="playBtn" onclick="togglePlay()">⏸</button>
+    <div id="stepBtns2"><button class="mini-step" onclick="stepFwd()">▶</button></div>
+  </div>
+</div>
+
+<!-- ── 設定 drawer（次要控制項）── -->
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-body">
+    <div>
+      <div class="drawer-sec-title" style="color:var(--accent-blue)">● 向右波（面板①）</div>
+      <div class="drawer-row">
+        <div class="param-group"><span class="param-label">頻率</span><button class="cyc-btn" id="fL-btn" onclick="cycFL()">f</button></div>
+        <div class="param-group"><span class="param-label">振幅</span><button class="cyc-btn" id="aL-btn" onclick="cycAL()">R</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="drawer-sec-title" style="color:var(--accent-red)">● 向左波（面板②）</div>
+      <div class="drawer-row">
+        <div class="param-group"><span class="param-label">頻率</span><button class="cyc-btn" id="fR-btn" onclick="cycFR()">f</button></div>
+        <div class="param-group"><span class="param-label">振幅</span><button class="cyc-btn" id="aR-btn" onclick="cycAR()">R</button></div>
+      </div>
+    </div>
+    <div class="drawer-divider"></div>
+    <div>
+      <div class="drawer-sec-title" style="color:var(--accent-green)">● 駐波（面板③）</div>
+      <div class="drawer-row">
+        <button class="lbl-btn onComp" id="compBtn" onclick="toggleComponents()">顯示分量虛線</button>
+      </div>
+    </div>
+    <div class="drawer-divider"></div>
+    <div>
+      <div class="drawer-sec-title">位置標示（跨三面板對齊）</div>
+      <div class="drawer-row">
+        <button class="lbl-btn" id="lbl1Btn" onclick="toggleLbl1()">標示1（節點）</button>
+        <button class="lbl-btn" id="lbl2Btn" onclick="toggleLbl2()">標示2（腹點）</button>
+      </div>
+    </div>
+    <div class="drawer-divider"></div>
+    <div class="drawer-row">
+      <button class="ctrl-btn" onclick="resetPhase()">↺ 重設時間</button>
+      <button class="reset-btn" onclick="resetAll()">↺ 重置全部</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 筆記整理（overlay modal）── -->
+<div class="note-modal-backdrop" id="noteBackdrop" onclick="closeNote()">
+  <div class="note-modal-card" onclick="event.stopPropagation()">
+    <div class="note-header2">
+      <h1>綜合整理｜同相波源干涉</h1>
+      <button class="note-close" onclick="closeNote()">✕</button>
+    </div>
+    <div class="note-tabs">
+      <button class="note-tab-btn active" id="tabBtnTable" onclick="switchNoteTab('table')">📊 表格</button>
+      <button class="note-tab-btn" id="tabBtnChart" onclick="switchNoteTab('chart')">📈 圖形</button>
+    </div>
+    <div class="note-body">
+      <div class="note-page active" id="noteTablePage">
+        <div class="note-sub-caption">Δx = n·λ → 相長（腹點）　｜　Δx = (n−½)·λ → 相消（節點）</div>
+        <table class="note-table2">
+          <thead>
+            <tr><th>點</th><th>位置差 Δx</th><th>相長／相消</th><th>腹點／節點</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="ptcell">A</td><td>1.5λ = (2−½)λ</td><td class="destruct">相消</td><td class="node">節點</td></tr>
+            <tr><td class="ptcell">E</td><td>1λ</td><td class="construct">相長</td><td class="anti">腹點</td></tr>
+            <tr><td class="ptcell">B</td><td>0.5λ = (1−½)λ</td><td class="destruct">相消</td><td class="node">節點</td></tr>
+            <tr><td class="ptcell">F</td><td>0λ</td><td class="construct">相長</td><td class="anti">腹點</td></tr>
+            <tr><td class="ptcell">C</td><td>0.5λ = (1−½)λ</td><td class="destruct">相消</td><td class="node">節點</td></tr>
+            <tr><td class="ptcell">G</td><td>1λ</td><td class="construct">相長</td><td class="anti">腹點</td></tr>
+            <tr><td class="ptcell">D</td><td>1.5λ = (2−½)λ</td><td class="destruct">相消</td><td class="node">節點</td></tr>
+          </tbody>
+        </table>
+        <div class="note-general-box">
+          <span><span class="gf-lhs">相長（腹點）：</span>Δx = <span class="anti">n・λ</span></span>
+          <span><span class="gf-lhs">相消（節點）：</span>Δx = <span class="node">(n−½)・λ</span></span>
+        </div>
+      </div>
+      <div class="note-page" id="noteChartPage">
+        <div class="note-envelope-wrap" id="noteEnvelope"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const wrap=document.getElementById('canvas-wrap');
+
+// ── 主題（深色／米白）配色表 ─────────────────────────────
+let isLight=false;
+function pal(){
+  return isLight? {
+    BG:'#faf7ee', GRID:'rgba(55,45,20,0.30)', AX:'rgba(45,35,15,0.7)', TC:'#5c5340',
+    BLUE:'#2a5ca5', RED:'#a5342a', GREEN:'#1f6b52',
+    AMBER:'#8a5a10', AMBER_BG:'rgba(138,90,16,0.14)',
+    LIME:'#4a6b1a', LIME_BG:'rgba(74,107,26,0.14)'
+  } : {
+    BG:'#111110', GRID:'rgba(255,255,255,0.16)', AX:'rgba(255,255,255,0.45)', TC:'#6a6860',
+    BLUE:'#5BA3E8', RED:'#E07055', GREEN:'#2DB890',
+    AMBER:'#EF9F27', AMBER_BG:'rgba(239,159,39,0.15)',
+    LIME:'#97C459', LIME_BG:'rgba(99,153,34,0.15)'
+  };
+}
+function toggleTheme(){
+  isLight=!isLight;
+  document.documentElement.classList.toggle('light',isLight);
+  document.getElementById('btnTheme').textContent=isLight?'🌙 深色':'☀️ 米白';
+  draw();
+}
+
+// ── drawer（設定面板）───────────────────────────────────
+function openDrawer(){
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawerBackdrop').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerBackdrop').classList.remove('open');
+}
+
+// ── 筆記整理（overlay modal，動畫本體不隱藏，不需重算 canvas）──
+function openNote(){ document.getElementById('noteBackdrop').classList.add('open'); }
+function closeNote(){ document.getElementById('noteBackdrop').classList.remove('open'); }
+function switchNoteTab(which){
+  document.getElementById('noteTablePage').classList.toggle('active',which==='table');
+  document.getElementById('noteChartPage').classList.toggle('active',which==='chart');
+  document.getElementById('tabBtnTable').classList.toggle('active',which==='table');
+  document.getElementById('tabBtnChart').classList.toggle('active',which==='chart');
+}
+
+// ── 波源參數 ─────────────────────────────────────────────
+const F_STEPS=[0.5,1,2],A_STEPS=[0.5,1,1.5];
+const F_LABELS=['0.5f','f','2f'],A_LABELS=['0.5R','R','1.5R'];
+let fLi=1,aLi=1,fRi=1,aRi=1,phaseMode='same';
+let t=0,running=true,showLbl1=false,showLbl2=false,showComponents=true;
+const OMEGA=0.03,SNAP=(2*Math.PI)/16;
+const fL=()=>F_STEPS[fLi],aL=()=>A_STEPS[aLi],fR=()=>F_STEPS[fRi],aR=()=>A_STEPS[aRi];
+
+function cycFL(){fLi=(fLi+1)%3;document.getElementById('fL-btn').textContent=F_LABELS[fLi];if(!running)draw();}
+function cycAL(){aLi=(aLi+1)%3;document.getElementById('aL-btn').textContent=A_LABELS[aLi];if(!running)draw();}
+function cycFR(){fRi=(fRi+1)%3;document.getElementById('fR-btn').textContent=F_LABELS[fRi];if(!running)draw();}
+function cycAR(){aRi=(aRi+1)%3;document.getElementById('aR-btn').textContent=A_LABELS[aRi];if(!running)draw();}
+function toggleLbl1(){showLbl1=!showLbl1;document.getElementById('lbl1Btn').classList.toggle('on1',showLbl1);if(!running)draw();}
+function toggleLbl2(){showLbl2=!showLbl2;document.getElementById('lbl2Btn').classList.toggle('on2',showLbl2);if(!running)draw();}
+function toggleComponents(){showComponents=!showComponents;document.getElementById('compBtn').classList.toggle('onComp',showComponents);if(!running)draw();}
+function snapToGrid(v){return Math.round(v/SNAP)*SNAP;}
+
+function resizeCanvas(){
+  const r=window.devicePixelRatio||1,w=wrap.clientWidth,h=wrap.clientHeight;
+  cv.width=w*r;cv.height=h*r;ctx.setTransform(r,0,0,r,0,0);
+}
+
+// ── 繪圖：三面板由上到下堆疊（向右波／向左波／駐波），
+//    三個面板共用同一組水平位置座標，方便垂直對齊比較 ──
+function draw(){
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(W<=0||H<=0)return;
+  const P=pal();
+  const LWm=isLight?1.2:1;   // 手機近距離觀看，線寬基準遠比白板版細，米白只需小幅加碼
+  const BG=P.BG,GRID=P.GRID,AX=P.AX,TC=P.TC;
+  const BLUE=P.BLUE,RED=P.RED,GREEN=P.GREEN;
+  const AMBER=P.AMBER,AMBER_BG=P.AMBER_BG;
+  const LIME=P.LIME,LIME_BG=P.LIME_BG;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
+
+  const fs=Math.max(11,W/26);
+  const fsA=Math.round(fs*0.72);
+  const topMargin=Math.round(fs*1.7);       // 保留給標示 A~G 膠囊，避免切換時版面跳動
+  const axisLabelH=Math.round(fsA*5.2);     // 底部保留給位置刻度（藍/紅兩行）
+  const panelGap=Math.round(fs*0.85);
+  const contentH=H-topMargin-axisLabelH-panelGap*2;
+  const ph=Math.max(40,contentH/3);
+  const panelTop=i=>topMargin+i*(ph+panelGap);
+
+  // 共用水平位置座標（三面板對齊用）
+  const lam=W/2.5,cx0=W/2;
+  const srcL=cx0-0.75*lam,srcR=cx0+0.75*lam;
+  const vStep=0.25*lam;
+
+  const kL=2*Math.PI*fL()/lam,kR=2*Math.PI*fR()/lam;
+  const pOff=phaseMode==='opp'?Math.PI:0;
+  const wBlue=x=>aL()*Rpx12*Math.sin(kL*(x-srcL)-t);
+  const wRed =x=>aR()*Rpx12*Math.sin(kR*(srcR-x)-t+pOff);
+  const wBlue3=x=>aL()*Rpx3*Math.sin(kL*(x-srcL)-t);
+  const wRed3 =x=>aR()*Rpx3*Math.sin(kR*(srcR-x)-t+pOff);
+  const wSum3 =x=>wBlue3(x)+wRed3(x);
+
+  const Rpx12=ph*0.32;   // 面板①②：單一波形，充分利用面板高度
+  const Rpx3 =ph*0.14;   // 面板③：合成波振幅可達 3R，需更小比例避免溢出
+
+  // 線寬（近距離觀看用，明顯比白板版細）
+  const lwGrid=0.7*LWm, lwAxis=1*LWm, lwTick=0.7*LWm;
+  const lwSolid=Math.max(1.5,W*0.0036)*LWm;      // 面板①②單一波
+  const lwSum  =Math.max(2.0,W*0.0052)*LWm;      // 面板③合成波
+  const lwComp =Math.max(1.0,W*0.0024)*LWm;      // 面板③分量虛線
+
+  function drawGrid(top){
+    ctx.save();
+    ctx.beginPath();ctx.rect(srcL,top,srcR-srcL,ph);ctx.clip();
+    ctx.strokeStyle=GRID;ctx.lineWidth=lwGrid;ctx.setLineDash([]);
+    for(let n=-3;n<=3;n++){const x=cx0+n*vStep;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+ph);ctx.stroke();}
+    ctx.restore();
+  }
+  function drawFade(top,bg){
+    const gL=ctx.createLinearGradient(0,0,srcL,0);gL.addColorStop(0,bg);gL.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gL;ctx.fillRect(0,top,srcL,ph);
+    const gR=ctx.createLinearGradient(W,0,srcR,0);gR.addColorStop(0,bg);gR.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gR;ctx.fillRect(srcR,top,W-srcR,ph);
+  }
+  function drawCurveIn(fn,midY,col,lw,dash){
+    ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.setLineDash(dash||[]);
+    ctx.beginPath();
+    const N=500;
+    for(let i=0;i<=N;i++){const x=W*i/N,y=midY-fn(x);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  function panelLabel(top,col,text){
+    ctx.font=`700 ${Math.round(fs*0.92)}px system-ui,sans-serif`;
+    ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText(text,srcL,top+2);
+  }
+
+  // ── 面板① 向右波（藍）──
+  const top0=panelTop(0),mid0=top0+ph/2;
+  drawGrid(top0);
+  ctx.strokeStyle=AX;ctx.lineWidth=lwAxis;ctx.beginPath();ctx.moveTo(0,mid0);ctx.lineTo(W,mid0);ctx.stroke();
+  drawCurveIn(wBlue,mid0,BLUE,lwSolid);
+  drawFade(top0,BG);
+  panelLabel(top0,BLUE,'● 向右波');
+  {
+    const by=mid0-wBlue(srcL);
+    const BR=Math.max(2.5,Math.round(ph*0.06));
+    ctx.beginPath();ctx.arc(srcL,by,BR,0,Math.PI*2);ctx.fillStyle=BLUE;ctx.fill();
+    ctx.beginPath();ctx.arc(srcL,by,BR*0.35,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.4)';ctx.fill();
+  }
+
+  // ── 面板② 向左波（紅）──
+  const top1=panelTop(1),mid1=top1+ph/2;
+  drawGrid(top1);
+  ctx.strokeStyle=AX;ctx.lineWidth=lwAxis;ctx.beginPath();ctx.moveTo(0,mid1);ctx.lineTo(W,mid1);ctx.stroke();
+  drawCurveIn(wRed,mid1,RED,lwSolid);
+  drawFade(top1,BG);
+  panelLabel(top1,RED,'● 向左波');
+  {
+    const by=mid1-wRed(srcR);
+    const BR=Math.max(2.5,Math.round(ph*0.06));
+    ctx.beginPath();ctx.arc(srcR,by,BR,0,Math.PI*2);ctx.fillStyle=RED;ctx.fill();
+    ctx.beginPath();ctx.arc(srcR,by,BR*0.35,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,0.4)';ctx.fill();
+  }
+
+  // ── 面板③ 駐波（綠，可疊加分量虛線）──
+  const top2=panelTop(2),mid2=top2+ph/2;
+  drawGrid(top2);
+  ctx.strokeStyle=AX;ctx.lineWidth=lwAxis;ctx.beginPath();ctx.moveTo(0,mid2);ctx.lineTo(W,mid2);ctx.stroke();
+  if(showComponents){
+    drawCurveIn(wBlue3,mid2,BLUE,lwComp,isLight?[7,4]:[6,4]);
+    drawCurveIn(wRed3, mid2,RED, lwComp,isLight?[4,7]:[4,6]);
+  }
+  drawCurveIn(wSum3,mid2,GREEN,lwSum);
+  drawFade(top2,BG);
+  panelLabel(top2,GREEN,'● 駐波（合成）');
+
+  // ── 底部位置刻度（藍：距向右波源／紅：距向左波源），三面板共用 ──
+  const atDefaultFreq=(fLi===1&&fRi===1);
+  const blueLabels=['0','0.25λ','0.5λ','0.75λ','1.0λ','1.25λ','1.5λ'];
+  const redLabels =['1.5λ','1.25λ','1.0λ','0.75λ','0.5λ','0.25λ','0'];
+  if(atDefaultFreq){
+    const axTop=H-axisLabelH;
+    ctx.font=`${fsA}px system-ui,sans-serif`;ctx.textAlign='center';
+    for(let i=0;i<7;i++){
+      const n=i-3,x=cx0+n*vStep;
+      ctx.strokeStyle=BLUE;ctx.lineWidth=lwTick;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(x,axTop);ctx.lineTo(x,axTop+4);ctx.stroke();
+      ctx.fillStyle=BLUE;ctx.textBaseline='top';
+      ctx.fillText(blueLabels[i],x,axTop+6);
+
+      ctx.strokeStyle=RED;
+      ctx.beginPath();ctx.moveTo(x,axTop+fsA*1.9);ctx.lineTo(x,axTop+fsA*1.9+4);ctx.stroke();
+      ctx.fillStyle=RED;
+      ctx.fillText(redLabels[i],x,axTop+fsA*1.9+6);
+    }
+    ctx.textBaseline='alphabetic';
+  }
+
+  // ── 位置標示（A~G）：一條縱貫三面板的虛線 + 頂端膠囊 ──
+  function drawPointLabel(nx,name,col,bgCol){
+    const x=cx0+nx*vStep;
+    const dotR=Math.max(2.5,Math.round(fs*0.26));
+    const labelFs=Math.round(fs*0.98);
+    ctx.strokeStyle=col;ctx.lineWidth=1*LWm;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x,topMargin*0.9);ctx.lineTo(x,top2+ph);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(x,topMargin*0.9,dotR,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    ctx.font=`bold ${labelFs}px system-ui,sans-serif`;
+    const tw=ctx.measureText(name).width;
+    const pw=tw+labelFs*1.0,ph2=labelFs*1.35;
+    const px=x-pw/2,py=Math.max(1,topMargin*0.9-ph2-2);
+    ctx.fillStyle=bgCol;
+    ctx.beginPath();ctx.roundRect(px,py,pw,ph2,ph2/2);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.setLineDash([]);
+    ctx.beginPath();ctx.roundRect(px,py,pw,ph2,ph2/2);ctx.stroke();
+    ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(name,x,py+ph2/2);
+    ctx.textBaseline='alphabetic';
+  }
+  if(showLbl1&&atDefaultFreq){
+    [{nx:-3,n:'A'},{nx:-1,n:'B'},{nx:1,n:'C'},{nx:3,n:'D'}]
+      .forEach(({nx,n})=>drawPointLabel(nx,n,AMBER,AMBER_BG));
+  }
+  if(showLbl2&&atDefaultFreq){
+    [{nx:-2,n:'E'},{nx:0,n:'F'},{nx:2,n:'G'}]
+      .forEach(({nx,n})=>drawPointLabel(nx,n,LIME,LIME_BG));
+  }
+}
+
+let snapTarget=null,snapStart=null,snapStart_t=null;
+function animateSnap(ts){
+  if(snapStart===null)snapStart=ts;
+  const p=Math.min((ts-snapStart)/120,1),ease=1-Math.pow(1-p,3);
+  t=snapStart_t+(snapTarget-snapStart_t)*ease;draw();
+  if(p<1)requestAnimationFrame(animateSnap);
+  else{t=snapTarget;snapTarget=snapStart=snapStart_t=null;draw();}
+}
+function loop(){if(running){t+=OMEGA;draw();requestAnimationFrame(loop);}}
+function redraw(){if(!running)draw();}
+function togglePlay(){
+  if(running){
+    running=false;document.getElementById('playBtn').textContent='▶';
+    document.getElementById('stepBtns').style.display='flex';
+    document.getElementById('stepBtns2').style.display='flex';
+    snapTarget=snapToGrid(t);snapStart_t=t;snapStart=null;requestAnimationFrame(animateSnap);
+  }else{
+    running=true;document.getElementById('playBtn').textContent='⏸';
+    document.getElementById('stepBtns').style.display='none';
+    document.getElementById('stepBtns2').style.display='none';
+    requestAnimationFrame(loop);
+  }
+}
+function stepFwd(){if(!running){t=snapToGrid(t)+SNAP;draw();}}
+function stepBack(){if(!running){t=snapToGrid(t)-SNAP;draw();}}
+function resetPhase(){t=0;if(!running)draw();}
+function togglePhase(){
+  phaseMode=phaseMode==='same'?'opp':'same';
+  const btn=document.getElementById('phaseBtn');
+  btn.textContent=phaseMode==='same'?'同相':'反相';
+  btn.classList.toggle('on',phaseMode==='same');
+  if(!running)draw();
+}
+function resetAll(){
+  fLi=1;aLi=1;fRi=1;aRi=1;
+  document.getElementById('fL-btn').textContent='f';document.getElementById('aL-btn').textContent='R';
+  document.getElementById('fR-btn').textContent='f';document.getElementById('aR-btn').textContent='R';
+  phaseMode='same';
+  document.getElementById('phaseBtn').textContent='同相';document.getElementById('phaseBtn').classList.add('on');
+  showComponents=true;document.getElementById('compBtn').classList.add('onComp');
+  showLbl1=false;showLbl2=false;
+  document.getElementById('lbl1Btn').classList.remove('on1');
+  document.getElementById('lbl2Btn').classList.remove('on2');
+  t=0;if(!running)draw();
+}
+function onResize(){resizeCanvas();draw();}
+window.addEventListener('resize',onResize);
+window.visualViewport && window.visualViewport.addEventListener('resize',onResize);
+
+// ── 筆記頁：波源／合成駐波 包絡圖（靜態 SVG，一次產生）──────
+const NOTE_PTS=[
+  {x:0,   name:'A', grp:'amber'},
+  {x:0.25,name:'E', grp:'lime'},
+  {x:0.5, name:'B', grp:'amber'},
+  {x:0.75,name:'F', grp:'lime'},
+  {x:1.0, name:'C', grp:'amber'},
+  {x:1.25,name:'G', grp:'lime'},
+  {x:1.5, name:'D', grp:'amber'}
+];
+function fmtLam(v){ return v===0?'0':(Number.isInteger(v)?v.toFixed(1)+'λ':v+'λ'); }
+function buildNoteEnvelopeSVG(){
+  const VBW=920, MX=64, GW=800;
+  const px=lam=>MX+GW*(lam/1.5);
+  const circleZoneH=54, axisZoneH=34, rowH=98, rowGap=8, Rpx=21;
+  const rows=[
+    {label:'向右波（藍）', color:'var(--accent-blue)', dash:'9,5', fn:lam=>Math.sin(2*Math.PI*lam)},
+    {label:'向左波（紅）', color:'var(--accent-red)',  dash:'5,9', fn:lam=>Math.sin(2*Math.PI*(1.5-lam))},
+    {label:'駐波（合成）',color:'var(--accent-green)', dash:null, fn:lam=>2*Math.sin(2*Math.PI*lam)}
+  ];
+  const totalH=circleZoneH+rows.length*(rowH+rowGap)-rowGap+axisZoneH;
+  const guideTop=circleZoneH-4, guideBottom=circleZoneH+rows.length*(rowH+rowGap)-rowGap+4;
+  let svg=`<svg viewBox="0 0 ${VBW} ${totalH}" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">`;
+
+  NOTE_PTS.forEach(p=>{
+    const gcol=p.grp==='amber'?'var(--accent-amber)':'var(--accent-lime)';
+    svg+=`<line x1="${px(p.x)}" y1="${guideTop}" x2="${px(p.x)}" y2="${guideBottom}" stroke="${gcol}" stroke-width="1.2" stroke-dasharray="4,3" opacity="0.5"/>`;
+  });
+
+  let rowTop=circleZoneH;
+  rows.forEach(row=>{
+    const cy=rowTop+rowH/2;
+    const N=140, pts=[];
+    for(let i=0;i<=N;i++){
+      const lam=1.5*i/N, y=cy-row.fn(lam)*Rpx, xx=px(lam).toFixed(1);
+      pts.push(`${xx},${y.toFixed(1)}`);
+    }
+    const dashAttr=row.dash?` stroke-dasharray="${row.dash}"`:'';
+    svg+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${row.color}" stroke-width="${row.dash?2.4:3}"${dashAttr}/>`;
+    svg+=`<line x1="${MX}" y1="${cy}" x2="${MX+GW}" y2="${cy}" stroke="${row.color}" stroke-width="1" opacity="0.45"/>`;
+    svg+=`<text x="${MX-10}" y="${cy+5}" text-anchor="end" font-size="15" font-weight="700" fill="${row.color}">${row.label}</text>`;
+    NOTE_PTS.forEach(p=>{
+      const gcol=p.grp==='amber'?'var(--accent-amber)':'var(--accent-lime)';
+      svg+=`<circle cx="${px(p.x)}" cy="${cy}" r="4.2" fill="${gcol}"/>`;
+    });
+    rowTop+=rowH+rowGap;
+  });
+
+  const circY=circleZoneH/2+4;
+  NOTE_PTS.forEach(p=>{
+    const gcol=p.grp==='amber'?'var(--accent-amber)':'var(--accent-lime)';
+    const xx=px(p.x), distR=1.5-p.x;
+    svg+=`<text x="${xx}" y="12" text-anchor="middle" font-size="13" fill="var(--accent-red)" opacity="0.9">${fmtLam(distR)}</text>`;
+    svg+=`<circle cx="${xx}" cy="${circY}" r="15" fill="var(--panel2)" stroke="${gcol}" stroke-width="2.2"/>`;
+    svg+=`<text x="${xx}" y="${circY+5}" text-anchor="middle" font-size="15" font-weight="800" fill="${gcol}">${p.name}</text>`;
+  });
+
+  const botY=totalH-8;
+  NOTE_PTS.forEach(p=>{
+    svg+=`<text x="${px(p.x)}" y="${botY}" text-anchor="middle" font-size="13" fill="var(--accent-blue)">${fmtLam(p.x)}</text>`;
+  });
+
+  svg+='</svg>';
+  return svg;
+}
+document.getElementById('noteEnvelope').innerHTML=buildNoteEnvelopeSVG();
+
+onResize();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
