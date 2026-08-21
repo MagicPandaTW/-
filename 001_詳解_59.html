@@ -1,0 +1,3366 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>李鋒物理 高一暑期模擬考 V4 詳解</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{
+    delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });"></script>
+
+<style>
+  :root{
+    --ink:#1a1a1a; --aux:#8a8a8a;
+    --v1:#c62828; --v2:#1565c0; --v3:#2e7d32;
+    --fill:#f2f4f7; --bg:#ffffff; --line:#e5e7eb;
+    --fs-h1:clamp(20px,5vw,26px); --fs-h2:clamp(16px,4.2vw,20px);
+    --fs-body:clamp(15px,4vw,17px); --fs-small:clamp(13px,3.4vw,14px);
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;
+    line-height:1.7; -webkit-text-size-adjust:100%;
+  }
+  body{ max-width:720px; margin:0 auto; padding:16px 16px 48px; }
+  h1{ font-size:var(--fs-h1); margin:0 0 4px; }
+  h2{ font-size:var(--fs-h2); margin:28px 0 10px; padding-top:14px; border-top:1px solid var(--line); }
+  .subtitle{ font-size:var(--fs-small); color:var(--aux); margin-bottom:20px; }
+  p, li{ font-size:var(--fs-body); }
+
+  .qbox{
+    background:var(--fill); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; margin:16px 0; font-size:var(--fs-body);
+  }
+  .qstem{ margin:0 0 8px; }
+  .opts{ margin:0; padding:0; list-style:none; }
+  .opts li{ margin:6px 0; padding-left:2.4em; text-indent:-2.4em; }
+
+  .fig{ display:block; width:100%; max-width:520px; height:auto; margin:1.2em auto; overflow:visible; }
+  .figrow{ display:flex; flex-wrap:wrap; gap:1em; justify-content:center; margin:1.2em 0; }
+  .figrow .fig{ flex:1 1 220px; margin:0.4em auto; }
+  .figcap{ text-align:center; font-size:var(--fs-small); color:var(--aux); margin-top:-0.6em; margin-bottom:1.2em; }
+  .lbl{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; font-style:italic; }
+  .lbl-rm{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; }
+
+  .ans{ background:#e8f5e9; border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; }
+  .flag{ color:#e65100; font-weight:bold; }
+
+  .concept{ background:#eef4fb; border-left:4px solid var(--v2); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .concept .tag, .flow .tag, .calcblock .tag, .basecalc .tag{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; color:#fff;
+    padding:2px 8px; border-radius:4px; margin-bottom:6px;
+  }
+  .concept .tag{ background:var(--v2); }
+  .concept-list{ list-style:none; margin:8px 0 0; padding:0; }
+  .concept-list li{ position:relative; margin:8px 0; padding-left:1.3em; }
+  .concept-list li::before{ content:"●"; position:absolute; left:0; top:0.15em; font-size:0.55em; color:var(--v2); }
+
+  .flow{ background:var(--fill); border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .flow .tag{ background:var(--aux); }
+  .flow ol{ margin:6px 0 0; padding-left:1.3em; }
+  .flow li{ margin:4px 0; }
+
+  .calcblock{ border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; background:#f4faf5; }
+  .calcblock .tag{ background:var(--v3); }
+  .calcblock .katex-display{ text-align:left; margin:8px 0; }
+
+  .basecalc{ border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; background:var(--fill); }
+  .basecalc .tag{ background:var(--aux); }
+  .basecalc .katex-display{ text-align:left; margin:8px 0; }
+
+  .step{ margin:12px 0; }
+  .step .label{ font-weight:600; color:var(--v2); }
+
+  .pager{ position:sticky; top:0; background:var(--bg); z-index:10; border-bottom:1px solid var(--line); padding:8px 0 0; margin-bottom:14px; }
+  .tabs{ display:none; }
+  .pagesel{ display:block; }
+  .pagesel select{
+    width:100%; font-size:var(--fs-body); padding:8px 10px;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); margin-bottom:8px;
+  }
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  .qnav{ display:flex; justify-content:space-between; margin:24px 0 6px; }
+  .qnav button{ border:1px solid var(--line); background:var(--fill); color:var(--ink); font-size:var(--fs-small); padding:8px 14px; border-radius:8px; cursor:pointer; }
+  .qnav button:disabled{ opacity:0.4; cursor:default; }
+
+  .katex{ cursor:pointer; } .katex-display{ cursor:pointer; }
+  #zoomOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:999; -webkit-tap-highlight-color:transparent; }
+  #zoomOverlay.show{ display:flex; }
+  #zoomInner{ background:var(--bg); border-radius:12px; padding:24px 20px; max-width:92vw; max-height:80vh; overflow:auto; box-shadow:0 8px 30px rgba(0,0,0,0.25); font-size:clamp(22px,7vw,34px); }
+</style>
+</head>
+<body>
+
+<h1>李鋒物理 高一物理暑期模擬考 詳解</h1>
+<div class="subtitle">考試範圍：運動學 + 牛頓力學（V4，李杰老師編輯）</div>
+
+<nav class="pager">
+  <div class="tabs" id="tabs"></div>
+  <div class="pagesel" id="pagesel">
+    <select id="pageSelect">
+      <option value="page1">第1題</option>
+      <option value="page2">第2題</option>
+      <option value="page3">第3題</option>
+      <option value="page4">第4題</option>
+      <option value="page5">第5題</option>
+      <option value="page6">第6題</option>
+      <option value="page7">第7題</option>
+      <option value="page8">第8題</option>
+      <option value="page9">第9題</option>
+      <option value="page10">第10題</option>
+      <option value="page11">第11題</option>
+      <option value="page12">第12題</option>
+      <option value="page13">第13題</option>
+      <option value="page14">第14題</option>
+      <option value="page15">第15題</option>
+      <option value="page16">第16題</option>
+      <option value="page17">第17題</option>
+      <option value="page18">第18題</option>
+      <option value="page19">第19題</option>
+      <option value="page20">第20題</option>
+      <option value="page21">第21題(多選)</option>
+      <option value="page22">第22題(多選)</option>
+      <option value="page23">第23題(多選)</option>
+      <option value="page24">第24題(多選)</option>
+      <option value="page25">第25題(多選)</option>
+      <option value="page26">第26題(多選)</option>
+      <option value="page27">第27題(多選)</option>
+      <option value="page28">第28題(題組1)</option>
+      <option value="page29">第29題(題組1)</option>
+      <option value="page30">第30題(題組2)</option>
+      <option value="page31">第31題(題組2)</option>
+      <option value="page32">第32題(題組3)</option>
+      <option value="page33">第33題(題組3)</option>
+      <option value="page34">第34題(題組3)</option>
+      <option value="page35">第35題(題組3)</option>
+      <option value="page36">第36題(題組3)</option>
+      <option value="page37">第37題(題組4)</option>
+      <option value="page38">第38題(題組4)</option>
+      <option value="page39">第39題(題組4)</option>
+      <option value="page40">第40題(題組5)</option>
+      <option value="page41">第41題(題組5)</option>
+    </select>
+  </div>
+</nav>
+
+<div class="page active" id="page1">
+<section id="q1">
+<h2>第 1 題</h2>
+
+<div class="qbox">
+<p class="qstem">一木塊放在水平桌面上，其在水平方向上共受到三個力作用，即 $F_1=10$ 牛頓、$F_2=4$ 牛頓和摩擦力，且木塊處於靜止狀態。若此時將 $F_1$ 除去，則木塊在水平方向上所受到的合力為</p>
+<ul class="opts">
+  <li>(A) 6 牛頓，向右</li>
+  <li>(B) 4 牛頓，向右</li>
+  <li>(C) 6 牛頓，向左</li>
+  <li>(D) 4 牛頓，向左</li>
+  <li>(E) 0</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>題目沒有講明 $F_1$、$F_2$ 是同方向還是反方向，兩種情況都要畫圖討論，不能只假設一種。</li>
+  <li>木塊靜止，代表水平方向合力為 0，摩擦力會自動調整成剛好抵消其餘外力的大小，且有一個上限（最大靜摩擦力）。</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="情況一：F1F2同向">
+  <defs>
+    <marker id="ar1a" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="90" y="55" width="60" height="40" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <line x1="150" y1="68" x2="210" y2="68" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar1a)"/>
+  <text x="152" y="60" font-size="12" class="lbl" fill="var(--v1)">F&#8321;=10N</text>
+  <line x1="150" y1="88" x2="195" y2="88" stroke="var(--v2)" stroke-width="2" marker-end="url(#ar1a)"/>
+  <text x="152" y="105" font-size="12" class="lbl" fill="var(--v2)">F&#8322;=4N</text>
+  <line x1="90" y1="78" x2="40" y2="78" stroke="var(--v3)" stroke-width="2" marker-end="url(#ar1a)"/>
+  <text x="20" y="70" font-size="12" class="lbl" fill="var(--v3)">f=14N</text>
+  <line x1="30" y1="115" x2="230" y2="115" stroke="var(--ink)" stroke-width="1.2"/>
+  <path d="M30,115 L40,125 M60,115 L70,125 M90,115 L100,125" stroke="var(--ink)" stroke-width="1"/>
+  <text x="60" y="135" font-size="11" class="lbl-rm">情況一：F&#8321;、F&#8322;同向</text>
+</svg>
+<svg class="fig" viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="情況二：F1F2反向">
+  <defs>
+    <marker id="ar1b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="90" y="55" width="60" height="40" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <line x1="150" y1="68" x2="210" y2="68" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar1b)"/>
+  <text x="152" y="60" font-size="12" class="lbl" fill="var(--v1)">F&#8321;=10N</text>
+  <line x1="90" y1="88" x2="45" y2="88" stroke="var(--v2)" stroke-width="2" marker-end="url(#ar1b)"/>
+  <text x="10" y="105" font-size="12" class="lbl" fill="var(--v2)">F&#8322;=4N</text>
+  <line x1="90" y1="72" x2="60" y2="72" stroke="var(--v3)" stroke-width="2" marker-end="url(#ar1b)"/>
+  <text x="20" y="60" font-size="12" class="lbl" fill="var(--v3)">f=6N</text>
+  <line x1="30" y1="115" x2="230" y2="115" stroke="var(--ink)" stroke-width="1.2"/>
+  <path d="M30,115 L40,125 M60,115 L70,125 M90,115 L100,125" stroke="var(--ink)" stroke-width="1"/>
+  <text x="60" y="135" font-size="11" class="lbl-rm">情況二：F&#8321;、F&#8322;反向</text>
+</svg>
+</div>
+<div class="figcap">圖1：兩種可能配置下，木塊靜止時摩擦力各自需要的大小（力箭頭皆從木塊邊緣出發，指向力的方向）</div>
+
+<div class="basecalc">
+<span class="tag">基本量：情況一（F&#8321;、F&#8322;同向，皆向右）</span>
+$$\begin{aligned}
+f&=F_1+F_2=10+4=14\ \text{牛頓，向左}
+\end{aligned}$$
+這代表最大靜摩擦力至少有14牛頓。除去$F_1$後，只剩$F_2=4$牛頓要平衡：
+$$\begin{aligned}
+4\ \text{牛頓} \lt 14\ \text{牛頓（上限）}\ \Rightarrow\ \text{摩擦力調整為4牛頓，合力}=4-4=0
+\end{aligned}$$
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：情況二（F&#8321;、F&#8322;反向）</span>
+$$\begin{aligned}
+F_1-F_2-f&=0\ \Rightarrow\ f=10-4=6\ \text{牛頓，向左}
+\end{aligned}$$
+這代表最大靜摩擦力至少有6牛頓。除去$F_1$後，只剩$F_2=4$牛頓要平衡：
+$$\begin{aligned}
+4\ \text{牛頓} \lt 6\ \text{牛頓（上限）}\ \Rightarrow\ \text{摩擦力調整為4牛頓，合力}=4-4=0
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">結論</span>
+不論$F_1$、$F_2$原本是同向還是反向，木塊原本靜止都已經證明「摩擦力最大能撐住的量」足以應付除去$F_1$後只剩的$F_2=4$牛頓，摩擦力都會剛好調整成4牛頓來抵消$F_2$，兩種情況算出的合力都是0。
+</div>
+
+<div class="ans">答案：<strong>(E) 0</strong></div>
+<div class="qnav">
+  <button disabled>← 上一題</button>
+  <button onclick="showPage('page2')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page1 -->
+<div class="page" id="page2">
+<section id="q2">
+<h2>第 2 題</h2>
+
+<div class="qbox">
+<p class="qstem">一氣球從地面上以 5.0 公尺/秒等速度上升，12 秒後，氣球中有一石子以相對於氣球為靜止開始從氣球中掉落。對地面上的觀察者而言，石子從開始掉落到抵達地面的過程中，其速度 $v$ 隨時間 $t$ 的變化為下列何圖？（定向上為正）</p>
+<ul class="opts">
+  <li>(A)(B)(C)(D)(E) 選項圖形略，詳見原題五個 v-t 示意圖</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>「相對於氣球為靜止開始掉落」的意思是：石子脫離的那一瞬間，石子的速度跟氣球當時的速度完全一樣，也就是「向上 5 公尺/秒」，不是從 0 開始掉落。</li>
+  <li>石子離開氣球之後，只受重力作用（自由落體），加速度全程固定為 $g$、方向向下（負），所以整段運動只有「一條」斜率固定的直線，不會分段、也不會出現彎曲。</li>
+  <li>由於初速是向上（正），石子會先繼續上升一小段（速度從正值持續減少），經過最高點（$v=0$）後才開始向下加速掉落（速度變負，量值持續變大），直到落地。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="石子v-t圖">
+  <defs>
+    <marker id="ar2" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="190" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <line x1="30" y1="100" x2="330" y2="100" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar2)"/>
+  <text x="16" y="30" font-size="13" class="lbl">v</text>
+  <text x="315" y="118" font-size="13" class="lbl">t</text>
+  <line x1="40" y1="60" x2="230" y2="180" stroke="var(--v1)" stroke-width="2"/>
+  <circle cx="40" cy="60" r="4" fill="var(--v1)"/>
+  <text x="46" y="56" font-size="12" class="lbl" fill="var(--v1)">v&#8320;=+5 (脫離瞬間)</text>
+  <line x1="118" y1="100" x2="118" y2="108" stroke="var(--aux)" stroke-width="1.1" stroke-dasharray="2 2"/>
+  <text x="100" y="120" font-size="11" class="lbl-rm" text-anchor="middle">最高點 v=0</text>
+</svg>
+<div class="figcap">圖2：脫離瞬間速度為正、之後以固定斜率(-g)遞減的直線，先升後降、中途不變號跳動</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">判斷：</span>
+符合「整段是同一條直線、由正變負」這個形狀的選項是 (A)：折線由左上方的正值開始，以固定斜率一路遞減、穿過時間軸後持續變負，沒有分段、沒有反彈跳動。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page1')">← 上一題</button>
+  <button onclick="showPage('page3')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page2 -->
+<div class="page" id="page3">
+<section id="q3">
+<h2>第 3 題</h2>
+
+<div class="qbox">
+<p class="qstem">王同學投擲溜溜球，溜溜球以每秒 1 公尺的速率擲出，在 2 秒後以相同速率、相反方向回到他的手中（王同學手的位置未變）。溜溜球自離開王同學手中到回到他手中的平均速度及平均加速度大小，各為 $x$ 公尺/秒與 $y$ 公尺/秒$^2$，試問下列哪一選項的數字可表示 $(x,y)$？</p>
+<ul class="opts">
+  <li>(A) (0, 0)</li>
+  <li>(B) (0, 1)</li>
+  <li>(C) (0.5, 1)</li>
+  <li>(D) (1, 0)</li>
+  <li>(E) (1, 0.5)</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>平均速度看的是「位移」（起點到終點的淨變化），溜溜球出發又回到手中，起點終點是同一個位置，位移為 0。</li>
+  <li>平均加速度看的是「速度的變化量」除以時間，不是位移，跟位置無關；就算位移是 0，速度改變量仍然可能不是 0。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">平均速度：</span>
+$$\begin{aligned}
+v_{\text{平}}=\frac{\Delta x}{\Delta t}=\frac{0}{2}=0\ \text{公尺/秒}
+\end{aligned}$$
+（位移為 0，因為出發點與回到手中的位置相同）
+</div>
+<div class="step">
+<span class="label">平均加速度：</span>
+先設「擲出方向」為正，則擲出瞬間 $v_{\text{初}}=+1$ 公尺/秒；2 秒後「相同速率、相反方向」回到手中，代表 $v_{\text{末}}=-1$ 公尺/秒。
+$$\begin{aligned}
+a_{\text{平}}&=\frac{v_{\text{末}}-v_{\text{初}}}{\Delta t}=\frac{(-1)-(+1)}{2}=\frac{-2}{2}=-1\ \text{公尺/秒}^2
+\end{aligned}$$
+題目只問「大小」，所以平均加速度大小為 $1$ 公尺/秒$^2$。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(B) (0, 1)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page2')">← 上一題</button>
+  <button onclick="showPage('page4')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page3 -->
+<div class="page" id="page4">
+<section id="q4">
+<h2>第 4 題</h2>
+
+<div class="qbox">
+<p class="qstem">如圖為一質點做直線運動的 a-t 圖，當 $t=0$ 秒時質點的位置 $x_0=-2$ 公尺，若初速度為 2 公尺/秒且方向與加速度相同，則 $t=0$ 到 $t=4$ 秒間質點的位置為多少公尺？【建中】</p>
+<ul class="opts">
+  <li>(A) 28</li>
+  <li>(B) 26</li>
+  <li>(C) 24</li>
+  <li>(D) 14</li>
+  <li>(E) 12 公尺</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="a-t圖">
+  <defs>
+    <marker id="ar4" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <g stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3">
+    <line x1="70" y1="30" x2="70" y2="140"/>
+    <line x1="150" y1="30" x2="150" y2="140"/>
+    <line x1="230" y1="30" x2="230" y2="140"/>
+    <line x1="60" y1="90" x2="240" y2="90"/>
+    <line x1="60" y1="50" x2="240" y2="50"/>
+  </g>
+  <line x1="60" y1="150" x2="60" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <line x1="45" y1="140" x2="260" y2="140" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar4)"/>
+  <text x="20" y="30" font-size="13" class="lbl">a(m/s&#178;)</text>
+  <text x="245" y="158" font-size="13" class="lbl">t(s)</text>
+  <text x="50" y="94" font-size="12" class="lbl-rm" text-anchor="end">2</text>
+  <text x="50" y="54" font-size="12" class="lbl-rm" text-anchor="end">4</text>
+  <text x="66" y="152" font-size="11" class="lbl-rm" text-anchor="middle">0</text>
+  <text x="150" y="152" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <text x="230" y="152" font-size="11" class="lbl-rm" text-anchor="middle">4</text>
+  <line x1="60" y1="90" x2="150" y2="90" stroke="var(--v1)" stroke-width="2.2"/>
+  <line x1="150" y1="90" x2="150" y2="50" stroke="var(--v1)" stroke-width="1.3" stroke-dasharray="3 3"/>
+  <line x1="150" y1="50" x2="230" y2="50" stroke="var(--v1)" stroke-width="2.2"/>
+</svg>
+<div class="figcap">圖4：a-t圖，$0\sim2s$ 為 $a=2\ \text{m/s}^2$，$2\sim4s$ 為 $a=4\ \text{m/s}^2$（階梯函數）</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>a-t圖是分段的階梯函數，代表前後兩段分別做「不同加速度」的等加速度運動；只要把a-t圖轉成v-t圖，再用v-t圖的「面積＝位移」來解，不需要死背位移公式。</li>
+  <li>a-t圖上每一段的「面積」就是那一段速度的變化量（$\Delta v=a\times\Delta t$），把v-t圖畫出來後，位移就是v-t圖下方的面積（梯形／三角形），一樣可以用幾何方法算。</li>
+</ul>
+</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+  <li>先由a-t圖，把每一段的「速度變化量」（a-t圖的面積）算出來，畫出對應的v-t圖。</li>
+  <li>v-t圖畫出來後，用梯形／三角形面積求位移，把三段面積加總、再加上原本的起始位置$x_0$。</li>
+</ol>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：由a-t圖轉v-t圖</span>
+$$\begin{aligned}
+v(0)&=2\ \text{m/s（已知初速度）}\\
+\Delta v_{0\sim2s}&=a_1\times\Delta t=2\times2=4\ \text{m/s}\ \Rightarrow\ v(2)=2+4=6\ \text{m/s}\\
+\Delta v_{2\sim4s}&=a_2\times\Delta t=4\times2=8\ \text{m/s}\ \Rightarrow\ v(4)=6+8=14\ \text{m/s}
+\end{aligned}$$
+</div>
+
+<svg class="fig" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="對應v-t圖">
+  <defs>
+    <marker id="ar4b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="50" y1="150" x2="50" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar4b)"/>
+  <line x1="35" y1="140" x2="270" y2="140" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar4b)"/>
+  <text x="16" y="30" font-size="12" class="lbl">v(m/s)</text>
+  <text x="255" y="158" font-size="12" class="lbl">t(s)</text>
+  <text x="44" y="128" font-size="11" class="lbl-rm" text-anchor="end">2</text>
+  <text x="44" y="97" font-size="11" class="lbl-rm" text-anchor="end">6</text>
+  <text x="44" y="34" font-size="11" class="lbl-rm" text-anchor="end">14</text>
+  <text x="150" y="152" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <text x="250" y="152" font-size="11" class="lbl-rm" text-anchor="middle">4</text>
+  <polygon points="50,140 50,124.3 150,92.9 150,140" fill="var(--v2)" fill-opacity="0.25" stroke="var(--v2)" stroke-width="1.3"/>
+  <polygon points="150,140 150,92.9 250,30 250,140" fill="var(--v3)" fill-opacity="0.3" stroke="var(--v3)" stroke-width="1.3"/>
+  <line x1="50" y1="124.3" x2="150" y2="92.9" stroke="var(--v2)" stroke-width="2.4"/>
+  <line x1="150" y1="92.9" x2="250" y2="30" stroke="var(--v3)" stroke-width="2.4"/>
+  <line x1="150" y1="140" x2="150" y2="92.9" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="50" y1="124.3" x2="50" y2="140" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="75" y="115" font-size="10" class="lbl" fill="var(--v2)">斜率=2(較平緩)</text>
+  <text x="185" y="65" font-size="10" class="lbl" fill="var(--v3)">斜率=4(較陡)</text>
+</svg>
+<div class="figcap">圖4b：對應的v-t圖（v軸為統一比例尺，0在底部軸線上）——0~2s段從v=2爬升到v=6（較平緩）；2~4s段從v=6爬升到v=14（明顯較陡，斜率恰為前段2倍），位移＝兩塊梯形面積相加</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">0~2s（梯形面積，上底2、下底6、高2）：</span>
+$$\begin{aligned}
+\Delta x_1&=\tfrac12(2+6)(2)=8\ \text{公尺}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">2~4s（梯形面積，上底6、下底14、高2）：</span>
+$$\begin{aligned}
+\Delta x_2&=\tfrac12(6+14)(2)=20\ \text{公尺}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">總位置：</span>
+$$\begin{aligned}
+x(4)&=x_0+\Delta x_1+\Delta x_2=-2+8+20=26\ \text{公尺}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(B) 26 公尺</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page3')">← 上一題</button>
+  <button onclick="showPage('page5')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page4 -->
+<div class="page" id="page5">
+<section id="q5">
+<h2>第 5 題</h2>
+
+<div class="qbox">
+<p class="qstem">在水平桌面上，質量為 2 公斤的靜止物體，受到一方向不變的水平推力 $F=10$ 牛頓的作用，於 4 秒內移動了 24 公尺的距離，則此物體所受摩擦力為多少牛頓？</p>
+<ul class="opts">
+  <li>(A) 2</li>
+  <li>(B) 3</li>
+  <li>(C) 4</li>
+  <li>(D) 5</li>
+  <li>(E) 6 牛頓</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="物體受力圖">
+  <defs>
+    <marker id="ar5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="95" x2="300" y2="95" stroke="var(--ink)" stroke-width="1.3"/>
+  <path d="M20,95 L30,105 M50,95 L60,105 M80,95 L90,105 M240,95 L250,105 M270,95 L280,105" stroke="var(--ink)" stroke-width="1"/>
+  <rect x="130" y="55" width="60" height="40" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <!-- F applied at left face, pointing right into block -->
+  <line x1="80" y1="75" x2="128" y2="75" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar5)"/>
+  <text x="82" y="68" font-size="13" class="lbl" fill="var(--v1)">F=10N</text>
+  <!-- friction attached at block bottom (contact with table), pointing left, tail at block edge -->
+  <line x1="130" y1="95" x2="75" y2="95" stroke="var(--v3)" stroke-width="2.2" marker-end="url(#ar5)"/>
+  <text x="65" y="112" font-size="13" class="lbl" fill="var(--v3)">摩擦力 f</text>
+</svg>
+<div class="figcap">圖5：物體受推力F（施加於左側面）與摩擦力f（作用於接觸面，箭頭起點皆貼著物體）</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>物體從靜止出發、受固定的合力作用，是等加速度運動，先用位移公式反推出加速度，再用牛頓第二定律求出合力，最後回推摩擦力。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（求加速度）：</span>
+$$\begin{aligned}
+x&=\tfrac12 a t^2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+24&=\tfrac12\, a\,(4)^2=8a
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+a&=3\ \text{公尺/秒}^2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">公式（牛頓第二定律，水平方向）：</span>
+$$\begin{aligned}
+ma&=F-f
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+2(3)&=10-f
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+f&=10-6=4\ \text{牛頓}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) 4 牛頓</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page4')">← 上一題</button>
+  <button onclick="showPage('page6')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page5 -->
+<div class="page" id="page6">
+<section id="q6">
+<h2>第 6 題</h2>
+
+<div class="qbox">
+<p class="qstem">如圖所示，施水平方向的推力 $F$，將一質量為 $m$ 的木塊壓在鉛直牆壁上，恰能使木塊保持靜止，若僅鉛直牆壁對物體有摩擦力作用，今若將推力 $F$ 增大時，木塊與牆壁之間的正向力 $N$ 與靜摩擦力 $f$ 大小之變化，下列敘述何者正確？</p>
+<ul class="opts">
+  <li>(A) $N$ 與 $f$ 均變大</li>
+  <li>(B) $N$ 變大，$f$ 不變</li>
+  <li>(C) $N$ 不變，$f$ 變大</li>
+  <li>(D) $N$ 與 $f$ 均不變</li>
+  <li>(E) $N$ 與 $f$ 均變小</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 260 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="木塊壓牆受力圖">
+  <defs>
+    <marker id="ar6" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <!-- wall on the left, block immediately adjacent (touching) -->
+  <rect x="40" y="20" width="10" height="180" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <path d="M40,30 L30,40 M40,60 L30,70 M40,90 L30,100 M40,120 L30,130 M40,150 L30,160" stroke="var(--ink)" stroke-width="1"/>
+  <rect x="50" y="75" width="60" height="60" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="75" y="110" font-size="14" class="lbl">m</text>
+  <!-- F: applied at block's right face, pointing left (pushing block into wall), arrowhead at block surface -->
+  <line x1="200" y1="105" x2="112" y2="105" stroke="var(--v1)" stroke-width="2.2" marker-end="url(#ar6)"/>
+  <text x="150" y="98" font-size="13" class="lbl" fill="var(--v1)">F</text>
+  <!-- N: wall pushes block, tail at wall-block contact surface (x=50), pointing right into block -->
+  <line x1="50" y1="88" x2="90" y2="88" stroke="var(--v2)" stroke-width="2.2" marker-end="url(#ar6)"/>
+  <text x="60" y="80" font-size="13" class="lbl" fill="var(--v2)">N（牆推物體，向右）</text>
+  <!-- friction: attached at wall-block contact surface, pointing up (supports weight) -->
+  <line x1="50" y1="120" x2="50" y2="80" stroke="var(--aux)" stroke-width="2.2" marker-end="url(#ar6)"/>
+  <text x="10" y="70" font-size="13" class="lbl" fill="var(--aux)">f（靜摩擦，向上）</text>
+  <!-- weight: tail at center of block, pointing down -->
+  <line x1="80" y1="105" x2="80" y2="155" stroke="var(--v3)" stroke-width="2.2" marker-end="url(#ar6)"/>
+  <text x="86" y="148" font-size="13" class="lbl" fill="var(--v3)">mg</text>
+</svg>
+<div class="figcap">圖6：木塊緊貼牆壁，F將木塊往牆壁方向推（向左），牆壁的正向力N方向與F相反（向右，推開木塊）；力箭頭皆從實際受力位置出發</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>木塊與牆壁緊貼在一起（接觸面在木塊左側），$F$ 把木塊往牆壁方向壓（向左），牆壁的正向力 $N$ 是牆壁「推回」木塊的反作用力，方向與 $F$ 相反（向右）。</li>
+  <li>水平方向：物體靜止，$F$ 與牆壁的正向力 $N$ 互相平衡，$N=F$，所以 $F$ 增大時 $N$ 也跟著等量增大。</li>
+  <li>鉛直方向：物體靜止，摩擦力 $f$（作用在牆壁與木塊的接觸面上）要撐住重量 $mg$，只要 $F$ 仍夠大（能壓緊牆壁、維持接觸），$f$ 需要的大小恆等於 $mg$，跟 $F$、$N$ 的大小無關。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+<div class="step">
+<span class="label">水平方向平衡：</span>
+$$\begin{aligned}
+N=F
+\end{aligned}$$
+$F$ 增大 $\Rightarrow$ $N$ 增大。
+</div>
+<div class="step">
+<span class="label">鉛直方向平衡：</span>
+$$\begin{aligned}
+f=mg
+\end{aligned}$$
+與 $F$ 無關，維持不變。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(B) N變大，f不變</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page5')">← 上一題</button>
+  <button onclick="showPage('page7')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page6 -->
+<div class="page" id="page7">
+<section id="q7">
+<h2>第 7 題</h2>
+
+<div class="qbox">
+<p class="qstem">某投手以時速 126 公里的水平速度將球投到本壘，打擊者將球擊出後，求以時速 198 公里的速度反向飛出。假設棒球的質量為 200 公克，球與球棒接觸的時間為 0.03 秒，則球棒在這段時間內平均施於球的力量量值為何？</p>
+<ul class="opts">
+  <li>(A) 750N</li>
+  <li>(B) 700N</li>
+  <li>(C) 650N</li>
+  <li>(D) 600N</li>
+  <li>(E) 550N</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>球棒對球的平均作用力，可以用「動量的變化量除以接觸時間」求出，這是牛頓第二定律 $F=ma$ 的另一種寫法（$F=\dfrac{\Delta p}{\Delta t}=\dfrac{m\Delta v}{\Delta t}$）。</li>
+  <li>擊球後方向反轉，速度變化量不能只看速率相減，要先設好正方向，把「反向」用負號表示，再相減。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+設球飛向本壘的方向為正。
+$$\begin{aligned}
+v_{\text{初}}&=126\ \text{km/h}=\frac{126000}{3600}=35\ \text{公尺/秒}\\
+v_{\text{末}}&=-198\ \text{km/h}=-\frac{198000}{3600}=-55\ \text{公尺/秒}\quad(\text{反向飛出，故取負})\\
+m&=200\ \text{公克}=0.2\ \text{公斤}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+F&=\frac{m(v_{\text{末}}-v_{\text{初}})}{\Delta t}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+F&=\frac{0.2\times\bigl[(-55)-(35)\bigr]}{0.03}=\frac{0.2\times(-90)}{0.03}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+F&=\frac{-18}{0.03}=-600\ \text{牛頓}
+\end{aligned}$$
+負號代表力的方向跟原本球飛來的方向相反（球棒把球往回推），題目只問力的量值，故為 $600$ 牛頓。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(D) 600N</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page6')">← 上一題</button>
+  <button onclick="showPage('page8')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page7 -->
+<div class="page" id="page8">
+<section id="q8">
+<h2>第 8 題</h2>
+
+<div class="qbox">
+<p class="qstem">附圖所示為甲、乙、丙三直線運動質點的速度與時間關係圖，則下列描述正確的是：</p>
+<ul class="opts">
+  <li>(A) T秒末加速度：甲＞乙＞丙</li>
+  <li>(B) T秒內平均加速度：甲＞乙＞丙</li>
+  <li>(C) T秒內平均速度：甲＝乙＝丙＝2V&#8320;</li>
+  <li>(D) 若t=0初位置三者相同，則T秒末的位置仍可能相同</li>
+  <li>(E) 在T秒末，丙的加速度與速度方向相反</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="甲乙丙v-t圖">
+  <defs>
+    <marker id="ar8" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="180" x2="60" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar8)"/>
+  <line x1="45" y1="150" x2="330" y2="150" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar8)"/>
+  <text x="18" y="35" font-size="12" class="lbl">v(米/秒)</text>
+  <text x="315" y="168" font-size="12" class="lbl">t(秒)</text>
+  <line x1="45" y1="150" x2="300" y2="150" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3"/>
+  <text x="50" y="154" font-size="11" class="lbl-rm" text-anchor="end">V&#8320;</text>
+  <line x1="45" y1="50" x2="300" y2="50" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3"/>
+  <text x="50" y="54" font-size="11" class="lbl-rm" text-anchor="end">3V&#8320;</text>
+  <line x1="300" y1="150" x2="300" y2="20" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3"/>
+  <text x="300" y="165" font-size="12" class="lbl-rm" text-anchor="middle">T</text>
+  <!-- 甲：凹口向上，末端斜率最大 -->
+  <path d="M60,150 Q180,150 300,50" fill="none" stroke="var(--v1)" stroke-width="2.2"/>
+  <text x="305" y="48" font-size="13" class="lbl" fill="var(--v1)">甲</text>
+  <!-- 乙：直線 -->
+  <line x1="60" y1="150" x2="300" y2="50" stroke="var(--v2)" stroke-width="2.2"/>
+  <text x="305" y="90" font-size="13" class="lbl" fill="var(--v2)">乙</text>
+  <!-- 丙：凹口向下，末端斜率最小(趨於0) -->
+  <path d="M60,150 Q180,50 300,50" fill="none" stroke="var(--v3)" stroke-width="2.2"/>
+  <text x="255" y="70" font-size="13" class="lbl" fill="var(--v3)">丙</text>
+</svg>
+<div class="figcap">圖8：三者皆從 $v=V_0$ 出發、$t=T$ 時皆達 $v=3V_0$；甲凹口向上（斜率漸增）、乙為直線（斜率固定）、丙凹口向下（斜率漸減）</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>三條曲線的「起點」與「終點」完全相同（都是從 $V_0$ 到 $3V_0$、費時都是 $T$），差別只在中間的彎曲方式，也就是瞬時加速度（斜率）如何隨時間變化。</li>
+  <li>甲是凹口向上的曲線：斜率隨時間增加，代表加速度越來越大，所以在 $t=T$ 那一瞬間，甲的斜率（瞬時加速度）是三者中最大的。</li>
+  <li>丙是凹口向下的曲線：斜率隨時間減小，在 $t=T$ 那一瞬間斜率最小，接近乙的直線斜率以下。</li>
+  <li>由於三者「平均加速度」都等於 $\dfrac{3V_0-V_0}{T}=\dfrac{2V_0}{T}$（起點終點皆相同），平均加速度三者相等，不是甲＞乙＞丙。</li>
+  <li>平均速度必須看「位移」（也就是曲線下方的面積），三條曲線彎曲方式不同，面積並不相等，所以平均速度不會三者都等於 $2V_0$。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+由圖形凹凸可直接判斷：$t=T$ 瞬間的斜率（瞬時加速度）甲最陡、乙居中、丙最平緩，即甲＞乙＞丙，正確。
+</div>
+
+<div class="calcblock">
+<span class="tag">(B)</span>
+$$\begin{aligned}
+a_{\text{平}}=\frac{\Delta v}{\Delta t}=\frac{3V_0-V_0}{T}=\frac{2V_0}{T}
+\end{aligned}$$
+三者的起點、終點速度與所花時間都相同，平均加速度必定相等，並非甲＞乙＞丙，錯誤。
+</div>
+
+<div class="calcblock">
+<span class="tag">(C)</span>
+平均速度＝位移／時間，即曲線下方面積／$T$。甲的曲線整段都貼在乙的直線「下方」（凹口向上、後段才快速衝高），面積小於乙；丙的曲線整段貼在乙「上方」，面積大於乙。三者面積不相等，平均速度不會都等於 $2V_0$，錯誤。
+</div>
+
+<div class="calcblock">
+<span class="tag">(D)</span>
+由(C)可知三者位移（面積）本來就不相等，所以就算 $t=0$ 位置相同，$t=T$ 時的位置一定不同，此選項「仍可能相同」不成立，錯誤。
+</div>
+
+<div class="calcblock">
+<span class="tag">(E)</span>
+丙全程速度都是正值（從 $V_0$ 增加到 $3V_0$，方向不變），且丙全程斜率皆為正（速度持續增加中，只是增加得越來越慢），$t=T$ 時加速度仍為正、與速度方向相同，並非相反，錯誤。
+</div>
+
+<div class="ans">答案：<strong>(A)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page7')">← 上一題</button>
+  <button onclick="showPage('page9')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page8 -->
+<div class="page" id="page9">
+<section id="q9">
+<h2>第 9 題</h2>
+
+<div class="qbox">
+<p class="qstem">火車沿直線鐵道靜止於 A 站，以 $+a$ 之加速度出發，到 B 站後，以等速 $v$ 行駛至 C，然後作 $-a$ 加速度停於 D，若站間等距，則行駛全程歷時多久？</p>
+<ul class="opts">
+  <li>(A) $\dfrac{5v}{2a}$</li>
+  <li>(B) $\dfrac{5v}{a}$</li>
+  <li>(C) $\dfrac{3v}{2a}$</li>
+  <li>(D) $\dfrac{3v}{a}$</li>
+  <li>(E) $\dfrac{4v}{a}$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="火車v-t梯形圖">
+  <defs>
+    <marker id="ar9" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="170" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar9)"/>
+  <line x1="30" y1="150" x2="330" y2="150" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar9)"/>
+  <text x="10" y="35" font-size="12" class="lbl">v</text>
+  <text x="315" y="168" font-size="12" class="lbl">t</text>
+  <polyline points="40,150 120,70 220,70 300,150" fill="none" stroke="var(--v2)" stroke-width="2.2"/>
+  <line x1="120" y1="150" x2="120" y2="70" stroke="var(--aux)" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <line x1="220" y1="150" x2="220" y2="70" stroke="var(--aux)" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <text x="30" y="66" font-size="12" class="lbl-rm" text-anchor="end">v</text>
+  <text x="70" y="165" font-size="12" class="lbl" text-anchor="middle">A→B(t&#8321;)</text>
+  <text x="168" y="165" font-size="12" class="lbl" text-anchor="middle">B→C(t&#8322;)</text>
+  <text x="258" y="165" font-size="12" class="lbl" text-anchor="middle">C→D(t&#8323;)</text>
+</svg>
+<div class="figcap">圖9：梯形v-t圖，AB、CD為三角形面積、BC為矩形面積，三段面積（位移）相等</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>AB段（加速）與CD段（減速）都是從0到v（或v到0），加速度量值同為 $a$，兩者形狀對稱，面積（位移）也相等。</li>
+  <li>「站間等距」代表AB、BC、CD三段位移（v-t圖上三塊面積）都相等。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+t_1&=\frac{v}{a}\ (\text{加速段，AB})\\
+t_3&=\frac{v}{a}\ (\text{減速段，CD，與AB對稱})\\
+\text{AB段位移}&=\tfrac12 t_1 v=\frac{v^2}{2a}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（BC段位移＝AB段位移）：</span>
+$$\begin{aligned}
+v\,t_2&=\frac{v^2}{2a}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+t_2&=\frac{v}{2a}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">總時間：</span>
+$$\begin{aligned}
+t_1+t_2+t_3&=\frac{v}{a}+\frac{v}{2a}+\frac{v}{a}=\frac{2v+v+2v}{2a}=\frac{5v}{2a}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A) $\dfrac{5v}{2a}$</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page8')">← 上一題</button>
+  <button onclick="showPage('page10')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page9 -->
+<div class="page" id="page10">
+<section id="q10">
+<h2>第 10 題</h2>
+
+<div class="qbox">
+<p class="qstem">自靜止開始做等加速運動物體，其後半時間與前半時間的位移量值的比值為</p>
+<ul class="opts">
+  <li>(A) 3</li>
+  <li>(B) $\sqrt2$</li>
+  <li>(C) $\sqrt2-1$</li>
+  <li>(D) $\sqrt2+1$</li>
+  <li>(E) $\sqrt3$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="相似三角形面積比圖">
+  <defs>
+    <marker id="ar10" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="170" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar10)"/>
+  <line x1="30" y1="170" x2="280" y2="170" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar10)"/>
+  <text x="12" y="35" font-size="12" class="lbl">v</text>
+  <text x="265" y="188" font-size="12" class="lbl">t</text>
+  <polygon points="40,170 150,170 150,105" fill="var(--v2)" fill-opacity="0.35" stroke="var(--v2)" stroke-width="1.3"/>
+  <polygon points="150,170 260,170 260,40 150,105" fill="var(--v3)" fill-opacity="0.3" stroke="var(--v3)" stroke-width="1.3"/>
+  <line x1="40" y1="170" x2="260" y2="40" stroke="var(--v2)" stroke-width="2.2"/>
+  <line x1="150" y1="170" x2="150" y2="105" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="150" y="185" font-size="12" class="lbl-rm" text-anchor="middle">T/2</text>
+  <text x="260" y="185" font-size="12" class="lbl-rm" text-anchor="middle">T</text>
+  <text x="90" y="150" font-size="12" class="lbl" fill="var(--v2)">前半時間位移</text>
+  <text x="185" y="150" font-size="12" class="lbl" fill="var(--v3)">後半時間位移</text>
+</svg>
+<div class="figcap">圖10：從靜止出發的等加速運動，v-t圖為過原點的直線，位移＝三角形面積</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>物體從靜止出發做等加速運動，v-t圖是一條過原點的直線，$0\sim t$ 這段時間內的位移，等於這條線與時間軸圍出的三角形面積。</li>
+  <li>$0\sim T/2$ 與 $0\sim T$ 這兩個三角形是相似三角形（共用原點與直線方向），邊長比＝時間比＝$1:2$，所以面積比＝邊長平方比＝$1:4$。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+設 $0\sim T$ 全程位移（大三角形面積）為 $S$。
+$$\begin{aligned}
+0\sim T/2\ \text{位移}&=\left(\frac{1}{2}\right)^2 S=\frac{S}{4}\quad(\text{前半時間})\\
+T/2\sim T\ \text{位移}&=S-\frac{S}{4}=\frac{3S}{4}\quad(\text{後半時間})
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+$$\begin{aligned}
+\frac{\text{後半時間位移}}{\text{前半時間位移}}=\frac{3S/4}{S/4}=3
+\end{aligned}$$
+</div>
+
+<div class="ans">答案：<strong>(A) 3</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page9')">← 上一題</button>
+  <button onclick="showPage('page11')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page10 -->
+<div class="page" id="page11">
+<section id="q11">
+<h2>第 11 題</h2>
+
+<div class="qbox">
+<p class="qstem">自靜止開始做等加速運動物體，其後半程與前半程的時間比值為</p>
+<ul class="opts">
+  <li>(A) 3</li>
+  <li>(B) $\sqrt2$</li>
+  <li>(C) $\sqrt2-1$</li>
+  <li>(D) $\sqrt2+1$</li>
+  <li>(E) $\sqrt3$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="相似三角形面積比圖(依距離分)">
+  <defs>
+    <marker id="ar11" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="170" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar11)"/>
+  <line x1="30" y1="170" x2="280" y2="170" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar11)"/>
+  <text x="12" y="35" font-size="12" class="lbl">v</text>
+  <text x="265" y="188" font-size="12" class="lbl">t</text>
+  <!-- t1 where area = half of total: t1/T = 1/sqrt2 ≈0.707, line value at t1 is y=78.05 -->
+  <polygon points="40,170 195.6,170 195.6,78.05" fill="var(--v2)" fill-opacity="0.35" stroke="var(--v2)" stroke-width="1.3"/>
+  <polygon points="195.6,170 260,170 260,40 195.6,78.05" fill="var(--v3)" fill-opacity="0.3" stroke="var(--v3)" stroke-width="1.3"/>
+  <line x1="40" y1="170" x2="260" y2="40" stroke="var(--v2)" stroke-width="2.2"/>
+  <line x1="195.6" y1="170" x2="195.6" y2="78.05" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="195.6" y="185" font-size="11" class="lbl-rm" text-anchor="middle">t&#8321;=T/&#8730;2</text>
+  <text x="260" y="185" font-size="12" class="lbl-rm" text-anchor="middle">T</text>
+  <text x="90" y="150" font-size="11" class="lbl" fill="var(--v2)">前半程(S/2)</text>
+  <text x="220" y="150" font-size="11" class="lbl" fill="var(--v3)">後半程(S/2)</text>
+</svg>
+<div class="figcap">圖11：位移（面積）平分成兩個 S/2，對應的時刻 $t_1$ 由面積比＝時間比平方反推</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>這題是把「總路程」平分成前半程、後半程（不是平分時間），要先反推出「走完前半程」花的時間 $t_1$，才能算後半程花的時間。</li>
+  <li>同樣用相似三角形：$0\sim t_1$ 這個小三角形的面積，剛好是 $0\sim T$ 大三角形面積的一半，用面積比開根號求出 $t_1/T$。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+設全程時間為 $T$、全程位移為 $S$，前半程位移 $=S/2$ 所對應的時刻為 $t_1$。
+$$\begin{aligned}
+\left(\frac{t_1}{T}\right)^2&=\frac{S/2}{S}=\frac12\\
+\frac{t_1}{T}&=\frac{1}{\sqrt2}\quad\Rightarrow\quad t_1=\frac{T}{\sqrt2}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">後半程所花時間：</span>
+$$\begin{aligned}
+t_2=T-t_1=T-\frac{T}{\sqrt2}=T\left(1-\frac{1}{\sqrt2}\right)=T\cdot\frac{\sqrt2-1}{\sqrt2}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">比值：</span>
+$$\begin{aligned}
+\frac{t_2}{t_1}=\frac{T(\sqrt2-1)/\sqrt2}{T/\sqrt2}=\sqrt2-1
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) $\sqrt2-1$</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page10')">← 上一題</button>
+  <button onclick="showPage('page12')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page11 -->
+<div class="page" id="page12">
+<section id="q12">
+<h2>第 12 題</h2>
+
+<div class="qbox">
+<p class="qstem">某人自製了一個水火箭，在發射過程中，水火箭由靜止從地面以 $20\text{m/s}^2$ 的加速度鉛直向上運動了 10m 後即失去動力。在水火箭飛行過程中，忽略空氣阻力，則火箭發射後多久到達最高點？</p>
+<ul class="opts">
+  <li>(A) 1</li>
+  <li>(B) 2</li>
+  <li>(C) 3</li>
+  <li>(D) 6</li>
+  <li>(E) 5 s</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 340 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="水火箭v-t圖">
+  <defs>
+    <marker id="ar12" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="170" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar12)"/>
+  <line x1="30" y1="150" x2="320" y2="150" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar12)"/>
+  <text x="10" y="35" font-size="12" class="lbl">v(m/s)</text>
+  <text x="305" y="168" font-size="12" class="lbl">t(s)</text>
+  <polygon points="40,150 120,150 120,50" fill="var(--v1)" fill-opacity="0.25" stroke="var(--v1)" stroke-width="1.3"/>
+  <polygon points="120,150 280,150 120,50" fill="var(--v2)" fill-opacity="0.2" stroke="var(--v2)" stroke-width="1.3"/>
+  <line x1="40" y1="150" x2="120" y2="50" stroke="var(--v1)" stroke-width="2.2"/>
+  <line x1="120" y1="50" x2="280" y2="150" stroke="var(--v2)" stroke-width="2.2"/>
+  <line x1="120" y1="150" x2="120" y2="50" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="55" y="95" font-size="12" class="lbl" fill="var(--v1)">動力段(a=20)</text>
+  <text x="180" y="95" font-size="12" class="lbl" fill="var(--v2)">失去動力後(a=-g)</text>
+  <text x="120" y="165" font-size="11" class="lbl-rm" text-anchor="middle">t&#8321;</text>
+  <text x="280" y="165" font-size="11" class="lbl-rm" text-anchor="middle">最高點</text>
+  <text x="30" y="54" font-size="11" class="lbl-rm" text-anchor="end">v&#8321;</text>
+</svg>
+<div class="figcap">圖12：v-t圖分兩段三角形，動力段（紅色）面積＝10m；失去動力後（藍色）三角形面積為最高點前的上升距離</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>整個上升過程分兩段：先是「有動力」的等加速度段（$a=20$），之後是「失去動力」只受重力的減速段（$a=-g$），兩段用v-t圖分開處理。</li>
+  <li>動力段的v-t圖是一個三角形，「面積＝位移」，題目已經告訴我們這段的位移是10m，可以直接拿面積公式反推末速度與時間，不需要用到 $v^2=2ax$ 這類由更進階觀念（功能定理）推導出的公式。</li>
+  <li>「到達最高點」是指失去動力之後繼續往上飛，直到速度歸零的那一刻。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量：動力段（v-t三角形）</span>
+動力段的v-t圖是一個三角形：底邊是時間 $t_1$，高是末速度 $v_1$，而且斜率就是加速度 $a=20$，所以 $v_1=20t_1$。三角形面積＝位移：
+$$\begin{aligned}
+10&=\tfrac12\,t_1\,v_1=\tfrac12\,t_1\,(20t_1)=10t_1^2
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">解 $t_1$：</span>
+$$\begin{aligned}
+t_1^2&=1\ \Rightarrow\ t_1=1\ \text{秒}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">動力段末速度（斜率關係）：</span>
+$$\begin{aligned}
+v_1&=20\times t_1=20\ \text{公尺/秒}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">失去動力後（v-t圖斜率變為$-g$，從$v_1$降到0）：</span>
+$$\begin{aligned}
+t_2&=\frac{v_1}{g}=\frac{20}{10}=2\ \text{秒}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">總時間：</span>
+$$\begin{aligned}
+t_1+t_2&=1+2=3\ \text{秒}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) 3 s</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page11')">← 上一題</button>
+  <button onclick="showPage('page13')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page12 -->
+<div class="page" id="page13">
+<section id="q13">
+<h2>第 13 題</h2>
+
+<div class="qbox">
+<p class="qstem">甲車以 8m/s，乙車以 4m/s 的速度在同一直線車道中同向前進。若甲車的駕駛員在離乙車後方距離為 $d$ 處發現乙車，立即踩剎車使甲車獲得 $-2\text{m/s}^2$ 定值加速度，為使兩車不致相撞，則 $d$ 的數值至少應大於多少 m？</p>
+<ul class="opts">
+  <li>(A) 12</li>
+  <li>(B) 9</li>
+  <li>(C) 8</li>
+  <li>(D) 4</li>
+  <li>(E) 2</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 340 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="兩車v-t圖">
+  <defs>
+    <marker id="ar13" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="170" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar13)"/>
+  <line x1="30" y1="150" x2="320" y2="150" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar13)"/>
+  <text x="10" y="35" font-size="12" class="lbl">v(m/s)</text>
+  <text x="305" y="168" font-size="12" class="lbl">t(s)</text>
+  <!-- 甲: 8 at t0 to 0 at t4 -->
+  <line x1="40" y1="55" x2="200" y2="150" stroke="var(--v1)" stroke-width="2.2"/>
+  <text x="45" y="50" font-size="12" class="lbl" fill="var(--v1)">甲(8→0)</text>
+  <!-- 乙: constant 4 -->
+  <line x1="40" y1="102.5" x2="280" y2="102.5" stroke="var(--v2)" stroke-width="2.2"/>
+  <text x="250" y="97" font-size="12" class="lbl" fill="var(--v2)">乙(定值4)</text>
+  <!-- shaded region between curves 0 to t=2 (x=120) -->
+  <polygon points="40,55 120,102.5 40,102.5" fill="var(--v3)" fill-opacity="0.3"/>
+  <line x1="120" y1="150" x2="120" y2="102.5" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="120" y="165" font-size="11" class="lbl-rm" text-anchor="middle">t=2s(速度相等)</text>
+</svg>
+<div class="figcap">圖13：甲乙兩車v-t圖，陰影面積＝甲車速度大於乙車那段時間內兩車拉近的距離</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>甲車速度一直在減小、乙車速度固定，只要甲車速度還大於乙車，兩車之間的距離就會持續縮短；一旦甲的速度降到跟乙一樣（或更小），距離就不再縮短，之後只會拉開。</li>
+  <li>所以「兩車最接近」的時刻，就是兩車瞬時速度剛好相等的那一刻，不用等到甲車完全停下來。</li>
+  <li>兩車拉近的距離，等於這段時間內甲車比乙車「多走的距離」，也就是v-t圖上兩條線之間夾出的三角形面積。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（速度相等的時刻）：</span>
+$$\begin{aligned}
+8-2t=4
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+t=2\ \text{秒}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">公式（拉近的距離＝三角形面積，底＝2秒，高＝速度差8-4=4）：</span>
+$$\begin{aligned}
+\Delta d&=\tfrac12\times2\times(8-4)
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+\Delta d&=4\ \text{公尺}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">判斷：</span>
+只要一開始的距離 $d$ 大於這段最多會被拉近的 4 公尺，兩車就不會相撞，所以 $d$ 至少要大於 4 公尺。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(D) 4 m</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page12')">← 上一題</button>
+  <button onclick="showPage('page14')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page13 -->
+<div class="page" id="page14">
+<section id="q14">
+<h2>第 14 題</h2>
+
+<div class="qbox">
+<p class="qstem">做「物體在斜面上的運動」實驗時，用力學台車拉動紙帶經過電鈴計時器，已測得電鈴計時器頻率為20Hz，若紙帶其中一部分如圖所示，求得加速度為 $a\ \text{cm/s}^2$，O點的速度為 $b\ \text{cm/s}$，則 $(a,b)$ 為？</p>
+<ul class="opts">
+  <li>(A) (480,14)</li>
+  <li>(B) (480,28)</li>
+  <li>(C) (120,28)</li>
+  <li>(D) (120,14)</li>
+  <li>(E) (120,7)</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 110" preserveAspectRatio="xMidYMid meet" role="img" aria-label="紙帶打點圖">
+  <defs>
+    <marker id="arT" markerUnits="userSpaceOnUse" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="15" y="35" width="330" height="20" fill="none" stroke="var(--ink)" stroke-width="1.4"/>
+  <!-- 7 dots with increasing gaps, matching reference image proportions -->
+  <circle cx="30" cy="45" r="2.6" fill="var(--ink)"/>
+  <circle cx="50" cy="45" r="2.6" fill="var(--ink)"/>
+  <circle cx="73" cy="45" r="2.6" fill="var(--ink)"/>
+  <circle cx="110" cy="45" r="2.6" fill="var(--ink)"/>
+  <circle cx="155" cy="45" r="2.6" fill="var(--ink)"/>
+  <circle cx="213" cy="45" r="2.6" fill="var(--ink)"/>
+  <circle cx="276" cy="45" r="2.6" fill="var(--ink)"/>
+  <text x="30" y="28" font-size="12" class="lbl" text-anchor="middle">O</text>
+  <text x="110" y="28" font-size="12" class="lbl" text-anchor="middle">P</text>
+  <text x="213" y="28" font-size="12" class="lbl" text-anchor="middle">Q</text>
+  <line x1="30" y1="65" x2="73" y2="65" stroke="var(--v2)" stroke-width="1.1" marker-start="url(#arT)" marker-end="url(#arT)"/>
+  <line x1="73" y1="65" x2="155" y2="65" stroke="var(--v3)" stroke-width="1.1" marker-start="url(#arT)" marker-end="url(#arT)"/>
+  <line x1="155" y1="65" x2="276" y2="65" stroke="var(--v1)" stroke-width="1.1" marker-start="url(#arT)" marker-end="url(#arT)"/>
+  <text x="52" y="80" font-size="11" class="lbl" text-anchor="middle" fill="var(--v2)">1.3公分</text>
+  <text x="114" y="80" font-size="11" class="lbl" text-anchor="middle" fill="var(--v3)">2.5公分</text>
+  <text x="216" y="80" font-size="11" class="lbl" text-anchor="middle" fill="var(--v1)">3.7公分</text>
+</svg>
+<div class="figcap">圖14：紙帶上共7個計時點，O為第1點；P、Q分別是第2、3測量區間的「中間那一點」（不是區間端點）；三個測量區間（O至第3點、第3點至第5點、第5點至第7點）各跨2個計時器週期，對應相同的取樣時距T</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>先數清楚每個測量區間實際跨過幾個計時器間隔：由圖可以數出，1.3公分這段（O到第3個點）跨了2個間隔，2.5公分這段（第3點到第5點）也跨了2個間隔，3.7公分這段（第5點到第7點）同樣跨了2個間隔，三段的取樣時距 $T$ 都相同。</li>
+  <li>取樣時距不是計時器本身的週期 $\dfrac{1}{20}$ 秒，而是「跨過的週期數 $\times$ 計時器週期」。</li>
+  <li>等加速度運動中，相鄰等時距（同樣都是T）的位移差是固定值，即 $S_{n+1}-S_n=aT^2$，可以直接拿來求加速度。</li>
+  <li>O點是第一個測量區間的「起點」，不是中點，要先用中點定理求出這段的中點時刻速度，再往前外推半個T，才能得到O點瞬時速度。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+T&=2\times\frac{1}{20\,\text{Hz}}=0.1\ \text{秒}\quad(\text{每個測量區間跨過2個計時器週期})\\
+S_1&=1.3\ \text{cm},\quad S_2=2.5\ \text{cm},\quad S_3=3.7\ \text{cm}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算 a</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+a&=\frac{S_2-S_1}{T^2}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+a&=\frac{2.5-1.3}{(0.1)^2}=\frac{1.2}{0.01}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+a&=120\ \text{cm/s}^2
+\end{aligned}$$
+（用 $S_3-S_2=3.7-2.5=1.2$cm 驗算，同樣得到 $a=120$cm/s$^2$，兩段結果一致，確認等加速度成立。）
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算 b</span>
+<div class="step">
+<span class="label">中點定理（先求O到第3點這段「中點時刻」的瞬時速度）：</span>
+$$\begin{aligned}
+v_{\text{中點}}&=\frac{S_1}{T}=\frac{1.3}{0.1}=13\ \text{cm/s}
+\end{aligned}$$
+這是O後方 $T/2=0.05$ 秒那一刻（也就是O、第3點之間的中間那個點）的瞬時速度，不是O點本身的速度。
+</div>
+<div class="step">
+<span class="label">外推回O點（往前推半個T，速度要再減掉 $a\times T/2$）：</span>
+$$\begin{aligned}
+b&=v_{\text{中點}}-a\times\frac{T}{2}=13-120\times0.05
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+b&=13-6=7\ \text{cm/s}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(E) (120,7)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page13')">← 上一題</button>
+  <button onclick="showPage('page15')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page14 -->
+<div class="page" id="page15">
+<section id="q15">
+<h2>第 15 題</h2>
+
+<div class="qbox">
+<p class="qstem">有一皮球自由落下，著地後又反彈，假設皮球與地面碰撞接觸時間極短且能量無消耗，若定向下為正，向上為負，則皮球運動的 v-t 圖為下列何者？【大直】</p>
+<ul class="opts">
+  <li>(A)(B)(C)(D)(E) 選項圖形略，詳見原題五個 v-t 示意圖</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>皮球全程只受重力，加速度全程固定為 $+g$（向下為正），跟皮球正在上升還是下降無關，所以圖上「每一段」的斜率都要完全相同（平行），這是這一題圖形最容易被畫錯的地方。</li>
+  <li>碰撞瞬間「接觸時間極短、能量無消耗」代表：碰地瞬間速度大小不變、方向瞬間反轉（垂直跳動），且因為沒有能量損失，反彈後會上升到原本的高度，所以「反彈上升到下一次落地」所花的時間，是「第一次下落」時間的整整2倍（上升$t_1$、再下降$t_1$）。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 380 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="彈跳球v-t圖">
+  <defs>
+    <marker id="ar15" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="30" x2="40" y2="185" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar15)"/>
+  <line x1="30" y1="100" x2="360" y2="100" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar15)"/>
+  <text x="12" y="40" font-size="12" class="lbl">v(向下為正)</text>
+  <text x="345" y="118" font-size="12" class="lbl">t</text>
+  <!-- segment1: 0 to +Vmax, slope 0.7 -->
+  <line x1="40" y1="100" x2="140" y2="170" stroke="var(--v1)" stroke-width="2.2"/>
+  <line x1="140" y1="170" x2="140" y2="30" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <!-- bounce jump to -Vmax -->
+  <line x1="140" y1="30" x2="340" y2="170" stroke="var(--v2)" stroke-width="2.2"/>
+  <line x1="340" y1="170" x2="340" y2="30" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="340" y1="30" x2="360" y2="44" stroke="var(--v3)" stroke-width="2.2"/>
+  <text x="55" y="150" font-size="11" class="lbl" fill="var(--v1)">下落(t&#8321;)</text>
+  <text x="180" y="150" font-size="11" class="lbl" fill="var(--v2)">反彈上升→再下落(2t&#8321;)</text>
+  <text x="140" y="185" font-size="10" class="lbl-rm" text-anchor="middle">第1次著地</text>
+  <text x="340" y="185" font-size="10" class="lbl-rm" text-anchor="middle">第2次著地</text>
+</svg>
+<div class="figcap">圖15：所有線段斜率完全相同（皆為+g，彼此平行），只在著地瞬間垂直跳動；反彈後經過的時間是下落時間的2倍（無能量損失，等高反彈）</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">判斷：</span>
+選項中唯一「所有線段斜率一致（互相平行）、只在著地瞬間垂直跳動、且跳動後量值相同、方向相反」的圖形是 (E)：下落段從0開始以固定斜率增加到最大正值，著地瞬間垂直跳到等量的負值，之後以完全相同的斜率繼續（先靠近0、通過0、再遠離0），直到下一次著地。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(E)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page14')">← 上一題</button>
+  <button onclick="showPage('page16')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page15 -->
+<div class="page" id="page16">
+<section id="q16">
+<h2>第 16 題</h2>
+
+<div class="qbox">
+<p class="qstem">甲乙兩車做直線運動，其速度對時間的關係，如圖所示，若 0 秒時兩車在相同位置，求三秒時兩車廂距多遠？【中山】</p>
+<ul class="opts">
+  <li>(A) 5</li>
+  <li>(B) 8</li>
+  <li>(C) 10</li>
+  <li>(D) 12</li>
+  <li>(E) 13m</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 340 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="甲乙兩車v-t圖">
+  <defs>
+    <marker id="ar16" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="70" y1="20" x2="70" y2="190" stroke="var(--ink)" stroke-width="1.6" marker-start="url(#ar16)"/>
+  <line x1="40" y1="130" x2="320" y2="130" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar16)"/>
+  <text x="20" y="30" font-size="12" class="lbl">v(m/s)</text>
+  <text x="305" y="148" font-size="12" class="lbl">t(s)</text>
+  <text x="60" y="55" font-size="11" class="lbl-rm" text-anchor="end">6</text>
+  <text x="60" y="80" font-size="11" class="lbl-rm" text-anchor="end">4</text>
+  <text x="60" y="105" font-size="11" class="lbl-rm" text-anchor="end">2</text>
+  <text x="60" y="180" font-size="11" class="lbl-rm" text-anchor="end">-4</text>
+  <text x="130" y="145" font-size="11" class="lbl-rm" text-anchor="middle">1</text>
+  <text x="200" y="145" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <text x="270" y="145" font-size="11" class="lbl-rm" text-anchor="middle">3</text>
+  <!-- 甲車: v=0 for [0,1] (on axis), then rises from (1,0) to (3,5) slope 2.5 -->
+  <line x1="70" y1="130" x2="130" y2="130" stroke="var(--v1)" stroke-width="2.2"/>
+  <line x1="130" y1="130" x2="270" y2="55" stroke="var(--v1)" stroke-width="2.2"/>
+  <text x="275" y="52" font-size="12" class="lbl" fill="var(--v1)">甲車</text>
+  <!-- 乙車: line from (0,-4) to (3,2), slope 2 -->
+  <line x1="70" y1="180" x2="270" y2="105" stroke="var(--v2)" stroke-width="2.2"/>
+  <text x="275" y="103" font-size="12" class="lbl" fill="var(--v2)">乙車</text>
+  <line x1="270" y1="130" x2="270" y2="55" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="40" y1="55" x2="270" y2="55" stroke="var(--aux)" stroke-width="1" stroke-dasharray="1.5 3"/>
+  <line x1="40" y1="105" x2="270" y2="105" stroke="var(--aux)" stroke-width="1" stroke-dasharray="1.5 3"/>
+</svg>
+<div class="figcap">圖16：甲車 $0\sim1s$ 靜止、$1\sim3s$ 以 $2.5\text{m/s}^2$ 加速；乙車全程以 $2\text{m/s}^2$ 等加速度、初速度 $-4\text{m/s}$</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>v-t圖的「面積」是位移不是路程，乙車前段速度是負的（面積在時間軸下方），要當成負的位移來算，不能直接取絕對值相加。</li>
+  <li>0秒時位置相同，t=3秒時兩車相距的距離＝兩車位移的差（用位移，不是路徑長）。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量（讀圖）</span>
+$$\begin{aligned}
+\text{甲車：}\ &0\sim1\text{s靜止(v=0)，}\ 1\sim3\text{s以固定斜率上升到 }v=5\text{m/s}\\
+\text{乙車：}\ &\text{全程一條直線，}v(0)=-4\text{m/s，}\ v(3)=2\text{m/s}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：甲車位移</span>
+<div class="step">
+<span class="label">面積（三角形，底2秒、高5）：</span>
+$$\begin{aligned}
+x_{\text{甲}}&=0+\tfrac12(2)(5)=5\ \text{公尺}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：乙車位移</span>
+<div class="step">
+<span class="label">拆成兩塊面積（0~2s在軸下方為負，2~3s在軸上方為正）：</span>
+$$\begin{aligned}
+x_{\text{乙}}&=\underbrace{\tfrac12(2)(-4)}_{0\sim2\text{s}}+\underbrace{\tfrac12(1)(2)}_{2\sim3\text{s}}=-4+1=-3\ \text{公尺}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：相距</span>
+<div class="step">
+<span class="label">位移相減：</span>
+$$\begin{aligned}
+\Delta x=x_{\text{甲}}-x_{\text{乙}}=5-(-3)=8\ \text{公尺}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(B) 8 m</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page15')">← 上一題</button>
+  <button onclick="showPage('page17')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page16 -->
+<div class="page" id="page17">
+<section id="q17">
+<h2>第 17 題</h2>
+
+<div class="qbox">
+<p class="qstem">如圖所示，A、B 兩物體互相接觸，置於光滑的水平桌面上，今有水平作用力 F 作用於 A；若 A 物體的質量為 3 公斤，B 物體的質量為 2 公斤，F 為 40 牛頓，則 B 作用於 A 的大小為多少牛頓？【大同】</p>
+<ul class="opts">
+  <li>(A) 6</li>
+  <li>(B) 8</li>
+  <li>(C) 10</li>
+  <li>(D) 12</li>
+  <li>(E) 16</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>A、B接觸在一起、被同一個F推動，兩者必定有相同的加速度，可以先把A、B看成一個「整體系統」，求出共同加速度。</li>
+  <li>要求「B作用於A的力」，必須把B這個「組件」拆出來單獨分析（畫一張只有B的受力圖），B所受的水平力只有A推它的力 $N_{AB}$（光滑桌面沒有摩擦力）；由牛頓第三定律，B作用於A的力與 $N_{AB}$ 大小相等、方向相反。</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 260 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="系統整體受力圖">
+  <defs>
+    <marker id="ar17a" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="90" y="40" width="55" height="45" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="112" y="67" font-size="14" class="lbl">A</text>
+  <rect x="145" y="55" width="35" height="30" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="157" y="75" font-size="13" class="lbl">B</text>
+  <line x1="60" y1="62" x2="88" y2="62" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar17a)"/>
+  <text x="20" y="55" font-size="13" class="lbl" fill="var(--v1)">F=40N</text>
+  <line x1="20" y1="90" x2="220" y2="90" stroke="var(--ink)" stroke-width="1.2"/>
+  <text x="60" y="110" font-size="11" class="lbl-rm">系統整體（A+B）</text>
+</svg>
+<svg class="fig" viewBox="0 0 220 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="B組件受力圖">
+  <defs>
+    <marker id="ar17b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="80" y="45" width="45" height="40" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="97" y="70" font-size="14" class="lbl">B</text>
+  <line x1="40" y1="65" x2="78" y2="65" stroke="var(--v2)" stroke-width="2" marker-end="url(#ar17b)"/>
+  <text x="10" y="58" font-size="12" class="lbl" fill="var(--v2)">N&#8321;(A推B)</text>
+  <line x1="20" y1="95" x2="180" y2="95" stroke="var(--ink)" stroke-width="1.2"/>
+  <text x="70" y="115" font-size="11" class="lbl-rm">B組件（個體）</text>
+</svg>
+</div>
+<div class="figcap">圖17：左圖為系統整體受力（只有外力F，光滑地面無摩擦）；右圖為B組件（個體）受力（只受A推它的接觸力）</div>
+
+<div class="basecalc">
+<span class="tag">基本量（整體）</span>
+$$\begin{aligned}
+a&=\frac{F}{m_A+m_B}=\frac{40}{3+2}=8\ \text{公尺/秒}^2
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">分析B這個組件（B只受A推它的力 $N_{AB}$，光滑桌面無摩擦）：</span>
+$$\begin{aligned}
+N_{AB}&=m_B\,a
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+N_{AB}&=2\times8=16\ \text{牛頓}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">牛頓第三定律：</span>
+B作用於A的力，與A作用於B的力 $N_{AB}$ 大小相等、方向相反，所以大小同為 16 牛頓。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(E) 16</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page16')">← 上一題</button>
+  <button onclick="showPage('page18')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page17 -->
+<div class="page" id="page18">
+<section id="q18">
+<h2>第 18 題</h2>
+
+<div class="qbox">
+<p class="qstem">承上題，若地面靜摩擦係數 0.3，動摩擦係數 0.1，F 為 40 牛頓，則 B 作用於 A 的大小為多少牛頓？【大同】</p>
+<ul class="opts">
+  <li>(A) 6</li>
+  <li>(B) 8</li>
+  <li>(C) 10</li>
+  <li>(D) 12</li>
+  <li>(E) 16</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>這次桌面有摩擦力，一樣要先畫「系統整體」受力圖判斷是否會滑動，再畫「B組件」受力圖（B這邊也有自己的摩擦力，不能只看A傳過來的推力）。</li>
+  <li>系統一旦真的滑動，摩擦力就固定用「動摩擦係數」計算，不再是靜摩擦力。</li>
+</ul>
+</div>
+
+<div class="figrow">
+<svg class="fig" viewBox="0 0 260 140" preserveAspectRatio="xMidYMid meet" role="img" aria-label="系統整體受力圖(含摩擦)">
+  <defs>
+    <marker id="ar18a" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="90" y="40" width="55" height="45" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="112" y="67" font-size="14" class="lbl">A</text>
+  <rect x="145" y="55" width="35" height="30" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="157" y="75" font-size="13" class="lbl">B</text>
+  <line x1="60" y1="62" x2="88" y2="62" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar18a)"/>
+  <text x="20" y="55" font-size="13" class="lbl" fill="var(--v1)">F=40N</text>
+  <line x1="90" y1="90" x2="60" y2="90" stroke="var(--v3)" stroke-width="2" marker-end="url(#ar18a)"/>
+  <text x="10" y="103" font-size="11" class="lbl" fill="var(--v3)">f&#8321;=5N(整體)</text>
+  <line x1="20" y1="90" x2="220" y2="90" stroke="var(--ink)" stroke-width="1.2"/>
+  <path d="M20,90 L30,100 M50,90 L60,100" stroke="var(--ink)" stroke-width="1"/>
+  <text x="130" y="120" font-size="11" class="lbl-rm">系統整體（A+B）</text>
+</svg>
+<svg class="fig" viewBox="0 0 220 140" preserveAspectRatio="xMidYMid meet" role="img" aria-label="B組件受力圖(含摩擦)">
+  <defs>
+    <marker id="ar18b" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="80" y="45" width="45" height="40" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="97" y="70" font-size="14" class="lbl">B</text>
+  <line x1="40" y1="60" x2="78" y2="60" stroke="var(--v2)" stroke-width="2" marker-end="url(#ar18b)"/>
+  <text x="10" y="53" font-size="12" class="lbl" fill="var(--v2)">N&#8321;(A推B)</text>
+  <line x1="80" y1="95" x2="55" y2="95" stroke="var(--v3)" stroke-width="2" marker-end="url(#ar18b)"/>
+  <text x="15" y="112" font-size="11" class="lbl" fill="var(--v3)">f&#8322;=2N(B自己的摩擦)</text>
+  <line x1="20" y1="95" x2="180" y2="95" stroke="var(--ink)" stroke-width="1.2"/>
+  <text x="70" y="128" font-size="11" class="lbl-rm">B組件（個體）</text>
+</svg>
+</div>
+<div class="figcap">圖18：左圖為系統整體（外力F與整體動摩擦力f&#8321;）；右圖為B組件（個體），受A推B的力$N_1$與B自己承擔的地面摩擦力$f_2$</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+(m_A+m_B)g&=(3+2)(10)=50\ \text{牛頓}\quad(\text{總重量，即總正向力}N)\\
+f_{\text{最大靜摩擦}}&=\mu_s N=0.3\times50=15\ \text{牛頓}
+\end{aligned}$$
+因為 $F=40\ \text{牛頓} \gt 15\ \text{牛頓}$，系統會滑動，摩擦力改用動摩擦力計算：
+$$\begin{aligned}
+f_1&=\mu_k N=0.1\times50=5\ \text{牛頓}\quad(\text{系統整體所受的動摩擦力})
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：共同加速度（系統整體）</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+a&=\frac{F-f_1}{m_A+m_B}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+a&=\frac{40-5}{5}=\frac{35}{5}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+a&=7\ \text{公尺/秒}^2
+\end{aligned}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算：分析B這個組件</span>
+<div class="step">
+<span class="label">B自己承擔的動摩擦力 $f_2$：</span>
+$$\begin{aligned}
+f_2&=\mu_k m_B g=0.1\times2\times10=2\ \text{牛頓}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">牛頓第二定律（B，受A推力$N_1$向前、自己的摩擦力$f_2$向後）：</span>
+$$\begin{aligned}
+m_B a&=N_1-f_2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+2\times7&=N_1-2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+N_1&=14+2=16\ \text{牛頓}
+\end{aligned}$$
+由牛頓第三定律，B作用於A的力大小同樣是16牛頓。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(E) 16</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page17')">← 上一題</button>
+  <button onclick="showPage('page19')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page18 -->
+<div class="page" id="page19">
+<section id="q19">
+<h2>第 19 題</h2>
+
+<div class="qbox">
+<p class="qstem">力常數相同的彈簧，做如圖中的操作時，伸長量分別為 $x_1$、$x_2$、$x_3$，則伸長量的關係，下列何者正確？【大同】</p>
+<ul class="opts">
+  <li>(A) $x_1=x_2=x_3$</li>
+  <li>(B) $x_3 \gt x_2=x_1$</li>
+  <li>(C) $x_3=x_2 \gt x_1$</li>
+  <li>(D) $x_3 \gt x_2 \gt x_1$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="三種彈簧配置">
+  <defs>
+    <marker id="ar19" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <path d="M0,0 L9,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <!-- setup1: wall -- spring -- string over pulley -- weight -->
+  <rect x="10" y="30" width="8" height="30" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.4"/>
+  <path d="M18,45 q6,-8 12,0 q6,8 12,0 q6,-8 12,0 q6,8 12,0" fill="none" stroke="var(--v2)" stroke-width="1.6"/>
+  <line x1="66" y1="45" x2="95" y2="45" stroke="var(--ink)" stroke-width="1.3"/>
+  <text x="98" y="49" font-size="11" class="lbl">10gw</text>
+  <text x="35" y="25" font-size="11" class="lbl" text-anchor="middle">x&#8321;</text>
+
+  <!-- setup2: vertical spring hanging weight -->
+  <line x1="160" y1="15" x2="185" y2="15" stroke="var(--ink)" stroke-width="2"/>
+  <path d="M172,15 q-8,6 0,12 q8,6 0,12 q-8,6 0,12 q8,6 0,12" fill="none" stroke="var(--v2)" stroke-width="1.6"/>
+  <rect x="163" y="65" width="18" height="12" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.2"/>
+  <text x="200" y="72" font-size="11" class="lbl">10gw</text>
+  <text x="200" y="45" font-size="11" class="lbl" text-anchor="middle">x&#8322;</text>
+
+  <!-- setup3: two pulleys, spring pulled both sides with 10gw each -->
+  <circle cx="255" cy="20" r="6" fill="none" stroke="var(--ink)" stroke-width="1.3"/>
+  <circle cx="345" cy="20" r="6" fill="none" stroke="var(--ink)" stroke-width="1.3"/>
+  <path d="M262,45 q7,-8 14,0 q7,8 14,0 q7,-8 14,0 q7,8 14,0" fill="none" stroke="var(--v2)" stroke-width="1.6"/>
+  <line x1="255" y1="26" x2="255" y2="45" stroke="var(--ink)" stroke-width="1.2"/>
+  <line x1="255" y1="14" x2="255" y2="45" stroke="none"/>
+  <line x1="249" y1="14" x2="220" y2="14" stroke="var(--ink)" stroke-width="1.2"/>
+  <rect x="205" y="14" width="15" height="12" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.1"/>
+  <text x="200" y="45" font-size="10" class="lbl">10gw</text>
+  <line x1="345" y1="26" x2="345" y2="45" stroke="var(--ink)" stroke-width="1.2"/>
+  <line x1="351" y1="14" x2="358" y2="14" stroke="var(--ink)" stroke-width="1.2"/>
+  <rect x="358" y="14" width="15" height="12" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.1"/>
+  <text x="358" y="45" font-size="10" class="lbl">10gw</text>
+  <text x="300" y="70" font-size="11" class="lbl" text-anchor="middle">x&#8323;</text>
+</svg>
+<div class="figcap">圖19：三種配置——(1)彈簧一端固定牆壁，另一端經滑輪吊10gw；(2)彈簧垂直吊10gw；(3)彈簧兩端各經滑輪吊10gw</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>最核心的原則：輕繩（質量可忽略的繩）上每一點的張力都相等；若直接對彈簧施力 $F$（不論這個 $F$ 是靠牆壁固定端反作用撐住，還是靠另一端的重物拉住），彈簧感受到的彈力就等於這個 $F$，即「彈力＝施力」。</li>
+  <li>繩子與滑輪只負責「轉向」，不會改變張力大小；判斷彈簧受力時，只需要看「彈簧的其中一端被什麼力拉住／撐住」，那個力的大小就是彈力。</li>
+  <li>很多人會誤以為「兩邊都掛10gw」的張力會變成20gw，這是常見的迷思：兩邊各掛10gw時，彈簧兩端各自被10gw拉住，彈簧的彈力仍然只有10gw（等同於一端固定、另一端掛10gw的情形），並不會把兩邊的重量相加。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">配置(1)：</span>
+彈簧一端固定牆壁，另一端的繩子繞過滑輪接10gw重物。繩子（輕繩）上每一點張力相等，這條繩把10gw的力直接施加在彈簧上，彈力＝10gw。
+</div>
+<div class="step">
+<span class="label">配置(2)：</span>
+彈簧直接垂直吊住10gw的重物，等於是重物直接對彈簧施力10gw，彈力＝10gw。
+</div>
+<div class="step">
+<span class="label">配置(3)：</span>
+彈簧兩端各自經滑輪連接10gw重物。單獨看彈簧的「一端」：那一端被同一側的繩子以10gw拉住（繩子張力處處相等，繩子把該側重物的10gw直接施加在彈簧這一端），彈力仍然是10gw；另一側對稱地拉住另一端，兩端各自受10gw、互相平衡，彈簧本身感受到的彈力並不會變成20gw。
+</div>
+<div class="step">
+<span class="label">結論：</span>
+三種配置中，施加在彈簧上的力都是10gw，彈簧力常數又相同，所以伸長量相等：$x_1=x_2=x_3$。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A) $x_1=x_2=x_3$</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page18')">← 上一題</button>
+  <button onclick="showPage('page20')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page19 -->
+<div class="page" id="page20">
+<section id="q20">
+<h2>第 20 題</h2>
+
+<div class="qbox">
+<p class="qstem">一車以定速度行駛，然後以 $2\text{m/s}^2$ 的等加速行駛 5 秒，若在此 5 秒，車行進了 60 米，則為加速之前車速為多少 m/s？【中山】</p>
+<ul class="opts">
+  <li>(A) 2</li>
+  <li>(B) 5</li>
+  <li>(C) 7</li>
+  <li>(D) 10</li>
+  <li>(E) 12</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 300 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="v-t梯形圖">
+  <defs>
+    <marker id="ar20" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="50" y1="150" x2="50" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar20)"/>
+  <line x1="35" y1="140" x2="270" y2="140" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar20)"/>
+  <text x="14" y="30" font-size="12" class="lbl">v(m/s)</text>
+  <text x="255" y="158" font-size="12" class="lbl">t(s)</text>
+  <polygon points="50,90 230,40 230,140 50,140" fill="var(--v2)" fill-opacity="0.25" stroke="var(--v2)" stroke-width="1.3"/>
+  <line x1="50" y1="90" x2="230" y2="40" stroke="var(--v2)" stroke-width="2.2"/>
+  <text x="30" y="94" font-size="11" class="lbl-rm" text-anchor="end">v&#8320;</text>
+  <text x="30" y="44" font-size="11" class="lbl-rm" text-anchor="end">v&#8320;+10</text>
+  <text x="230" y="152" font-size="11" class="lbl-rm" text-anchor="middle">5</text>
+</svg>
+<div class="figcap">圖20：加速這5秒的v-t圖是梯形，上底$v_0$、下底$v_0+10$（斜率2，5秒共增加$2\times5=10$）、高5秒，梯形面積＝60公尺</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>「加速之前車速」就是這5秒等加速度運動的初速度 $v_0$，這5秒的v-t圖是一個梯形，直接用梯形面積＝位移來反推 $v_0$，不需要死背位移公式。</li>
+  <li>5秒內速度變化量 $=at=2\times5=10$，所以梯形的下底是 $v_0+10$。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（梯形面積＝位移）：</span>
+$$\begin{aligned}
+60&=\tfrac12\bigl(v_0+(v_0+10)\bigr)\times5
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">化簡：</span>
+$$\begin{aligned}
+60&=\tfrac12(2v_0+10)\times5=5v_0+25
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+5v_0&=35\ \Rightarrow\ v_0=7\ \text{公尺/秒}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) 7</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page19')">← 上一題</button>
+  <button onclick="showPage('page21')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page20 -->
+<div class="page" id="page21">
+<section id="q21">
+<h2>第 21 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">附圖為直線運動之位置對時間關係圖，（$0\sim t_3$、$t_3\sim t_5$的曲線皆為二次曲線，$t_5\sim t_6$為直線），則：（應選2項）</p>
+<ul class="opts">
+  <li>(A) t=0時速度為正</li>
+  <li>(B) 瞬時速度於t=0、$t_3$、$t_5$時為0</li>
+  <li>(C) 瞬時速度於t=$t_2$、$t_4$時為0</li>
+  <li>(D) t=0~$t_3$加速度為正</li>
+  <li>(E) t=$t_3$~$t_5$加速度為負</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="位置對時間圖">
+  <defs>
+    <marker id="ar21" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="150" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar21)"/>
+  <line x1="30" y1="110" x2="330" y2="110" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar21)"/>
+  <text x="16" y="30" font-size="13" class="lbl">x</text>
+  <text x="315" y="128" font-size="13" class="lbl">t</text>
+  <!-- 0~t3: downward-opening parabola, rising then falling back to 0 -->
+  <path d="M40,110 Q120,50 200,110" fill="none" stroke="var(--v1)" stroke-width="2.2"/>
+  <!-- t3~t5: upward-opening parabola, dipping then returning to 0 -->
+  <path d="M200,110 Q260,165 320,110" fill="none" stroke="var(--v2)" stroke-width="2.2"/>
+  <!-- t5~t6: straight rising line -->
+  <line x1="320" y1="110" x2="345" y2="55" stroke="var(--v3)" stroke-width="2.2"/>
+  <line x1="120" y1="110" x2="120" y2="50" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="95" y1="110" x2="95" y2="76" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="80" y="123" font-size="11" class="lbl-rm">t&#8321;</text>
+  <text x="120" y="123" font-size="11" class="lbl-rm">t&#8322;</text>
+  <text x="200" y="123" font-size="11" class="lbl-rm">t&#8323;</text>
+  <text x="260" y="123" font-size="11" class="lbl-rm">t&#8324;</text>
+  <text x="320" y="123" font-size="11" class="lbl-rm">t&#8325;</text>
+  <text x="345" y="123" font-size="11" class="lbl-rm">t&#8326;</text>
+</svg>
+<div class="figcap">圖21：$0\sim t_3$為凹口向下的拋物線（先升後降）；$t_3\sim t_5$為凹口向上的拋物線（先降後升）；$t_5\sim t_6$為直線</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>x-t圖上，某一瞬間的「斜率」就是瞬時速度；斜率為0（水平切線）代表那一刻瞬時速度為0，通常發生在曲線的最高點或最低點（極值點）。</li>
+  <li>x-t圖是二次曲線的那一整段，代表這段是「等加速度運動」，整段的加速度（凹凸方向對應的曲率）固定不變：凹口向下＝加速度固定為負；凹口向上＝加速度固定為正。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+$0\sim t_3$這段曲線從$t=0$開始就往上爬（位置增加），代表一開始的瞬時速度（切線斜率）是正的，(A)正確。
+</div>
+<div class="calcblock">
+<span class="tag">(B)</span>
+$t=0$時曲線正在上升（斜率不為0，是正的），並不是速度為0的極值點；$t_3$、$t_5$才是曲線由升轉降或由降轉升的轉折點（實際上是兩段拋物線的銜接點，非最高/最低點本身，速度不為0）。真正瞬時速度為0的點是曲線的頂點/谷底，也就是$t_2$、$t_4$，(B)錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(C)</span>
+$t_2$是第一段拋物線的最高點（水平切線，速度0），$t_4$是第二段拋物線的最低點（水平切線，速度0），(C)正確。
+</div>
+<div class="calcblock">
+<span class="tag">(D)</span>
+$0\sim t_3$是同一條凹口向下的拋物線，凹口向下代表加速度固定為負（不是正），(D)錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(E)</span>
+$t_3\sim t_5$是同一條凹口向上的拋物線，凹口向上代表加速度固定為正（不是負），(E)錯誤。
+</div>
+
+<div class="ans">答案：<strong>(A)(C)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page20')">← 上一題</button>
+  <button onclick="showPage('page22')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page21 -->
+<div class="page" id="page22">
+<section id="q22">
+<h2>第 22 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">自地面鉛直上拋一石子，拋出時刻為 $t=0$，當 $t=2$ 秒時通過空中 $P$ 點，$t=8$ 秒時又回至 $P$ 點，則（$g=10$ 公尺/秒$^2$）（應選3項）</p>
+<ul class="opts">
+  <li>(A) 此石子飛行時間為10秒</li>
+  <li>(B) 此石子飛行之最大高度為125公尺</li>
+  <li>(C) P點高度為45公尺</li>
+  <li>(D) 通過P點的瞬時速度量值為20公尺/秒</li>
+  <li>(E) 拋射時石子的初速度量值為50公尺/秒</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="上拋石子v-t圖">
+  <defs>
+    <marker id="ar22" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="180" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar22)"/>
+  <line x1="30" y1="100" x2="330" y2="100" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar22)"/>
+  <text x="16" y="30" font-size="12" class="lbl">v</text>
+  <text x="315" y="118" font-size="12" class="lbl">t</text>
+  <line x1="40" y1="40" x2="280" y2="160" stroke="var(--v1)" stroke-width="2.2"/>
+  <line x1="112" y1="100" x2="112" y2="68" stroke="var(--v2)" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <circle cx="112" cy="68" r="3.5" fill="var(--v2)"/>
+  <text x="90" y="65" font-size="11" class="lbl" fill="var(--v2)">P(t=2s)</text>
+  <line x1="208" y1="100" x2="208" y2="132" stroke="var(--v2)" stroke-width="1.1" stroke-dasharray="3 3"/>
+  <circle cx="208" cy="132" r="3.5" fill="var(--v2)"/>
+  <text x="210" y="145" font-size="11" class="lbl" fill="var(--v2)">P(t=8s)</text>
+  <line x1="160" y1="100" x2="160" y2="40" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="160" y="118" font-size="11" class="lbl-rm" text-anchor="middle">t=5s(最高點)</text>
+  <text x="30" y="44" font-size="11" class="lbl-rm" text-anchor="end">v&#8320;</text>
+</svg>
+<div class="figcap">圖22：石子兩次通過P點的時刻對稱於最高點時刻（$t=5s$），v-t圖為過峰值的直線</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>上拋石子只受重力，v-t圖是一條固定斜率(-g)的直線；經過同一個高度P點的「去程」與「回程」，兩個時刻在v-t圖上對稱於最高點（速度為0）那一刻。</li>
+  <li>先用對稱性找出最高點時刻，就能算出初速度；再用初速度反推最大高度、P點高度、P點速度。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+<div class="step">
+<span class="label">最高點時刻（對稱點）：</span>
+$$\begin{aligned}
+t_{\text{頂}}=\frac{2+8}{2}=5\ \text{秒}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">初速度：</span>
+$$\begin{aligned}
+v_0=g\,t_{\text{頂}}=10\times5=50\ \text{公尺/秒}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+上拋石子回到地面（與拋出點等高）所花的總時間，是最高點時間的2倍：
+$$\begin{aligned}
+t_{\text{飛行}}=2\,t_{\text{頂}}=2\times5=10\ \text{秒}
+\end{aligned}$$
+正確。
+</div>
+<div class="calcblock">
+<span class="tag">(B)</span>
+$$\begin{aligned}
+H_{\text{max}}=\frac{v_0^2}{2g}=\frac{50^2}{2\times10}=\frac{2500}{20}=125\ \text{公尺}
+\end{aligned}$$
+正確。
+</div>
+<div class="calcblock">
+<span class="tag">(C)</span>
+$$\begin{aligned}
+y(2)&=v_0t-\tfrac12gt^2=50(2)-\tfrac12(10)(2)^2\\
+&=100-20=80\ \text{公尺}
+\end{aligned}$$
+算出P點高度是80公尺，不是45公尺，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(D)</span>
+$$\begin{aligned}
+v(2)&=v_0-gt=50-10(2)=30\ \text{公尺/秒}
+\end{aligned}$$
+量值是30公尺/秒，不是20公尺/秒，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(E)</span>
+由基本量已求出 $v_0=50$ 公尺/秒，正確。
+</div>
+
+<div class="ans">答案：<strong>(A)(B)(E)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page21')">← 上一題</button>
+  <button onclick="showPage('page23')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page22 -->
+<div class="page" id="page23">
+<section id="q23">
+<h2>第 23 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">瞬間速度方向與下列哪些物理量相同？（應選3項）</p>
+<ul class="opts">
+  <li>(A) 運動方向</li>
+  <li>(B) 瞬間位移方向</li>
+  <li>(C) 加速度方向</li>
+  <li>(D) 速度變化方向</li>
+  <li>(E) 物體軌跡切線方向</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>瞬時速度的定義，就是「極短時間內」的瞬間位移除以極短時間，方向自然跟這個瞬間位移方向相同，也跟物體實際運動（前進）的方向相同。</li>
+  <li>數學上，瞬時速度就是位置對時間的切線斜率方向，所以也等於物體軌跡在該點的切線方向。</li>
+  <li>加速度、速度變化量，是速度「怎麼改變」，跟速度本身「當下指向哪裡」是兩件獨立的事，方向不必相同（例如圓周運動、拋體運動中，加速度方向常常跟速度方向不同甚至垂直）。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(B)(E)</span>
+瞬時速度方向＝運動方向＝瞬間位移方向＝軌跡切線方向，這四者本質上是同一件事的不同講法，皆正確。
+</div>
+<div class="calcblock">
+<span class="tag">(C)(D)</span>
+加速度方向、速度變化方向，描述的是速度「如何變化」，跟速度本身當下的方向是兩回事，一般情況下並不相同（只有一維、且加速度與速度同向或反向的特殊情形才會沿同一直線），故不選。
+</div>
+
+<div class="concept">
+<span class="tag">重點整理</span>
+<ul class="concept-list">
+  <li><strong>速度、運動、位移：方向必定相同</strong>——瞬時速度方向＝物體運動方向＝瞬間位移方向＝軌跡切線方向，這四個講的是同一件事。</li>
+  <li><strong>加速度、合力、速度變化：方向必定相同</strong>——由 $\vec F=m\vec a$、$\vec a=\dfrac{\Delta \vec v}{\Delta t}$，這三者永遠同方向，但這個方向不必然跟「當下的速度方向」相同。</li>
+  <li><strong>速度與加速度同方向 → 物體正在變快；速度與加速度反方向 → 物體正在變慢。</strong>這是判斷「加速中還是減速中」最快速的方法，不用看數學式，只看兩個方向是否一致。</li>
+</ul>
+</div>
+
+<div class="ans">答案：<strong>(A)(B)(E)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page22')">← 上一題</button>
+  <button onclick="showPage('page24')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page23 -->
+<div class="page" id="page24">
+<section id="q24">
+<h2>第 24 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">下列關於運動的概念，哪些正確？（應選2項）</p>
+<ul class="opts">
+  <li>(A) 一運動物體之速度改變，則速率必改變</li>
+  <li>(B) 平均速度的量值小於等於平均速率</li>
+  <li>(C) 等速度運動一定是直線運動</li>
+  <li>(D) 等加速運動速率一定漸增</li>
+  <li>(E) 一物體若作直線運動，則其平均加速度一定等於瞬時加速度</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>速度是向量，「改變」可以只改變方向、大小不變（例如等速率圓周運動），這時速率沒有改變，但速度（向量）已經改變了。</li>
+  <li>平均速度的量值＝位移量值／時間，平均速率＝路徑長／時間；位移量值一定小於等於路徑長，所以平均速度的量值一定小於等於平均速率。</li>
+  <li>等速度是「大小方向都不變」的向量，方向不變代表運動方向固定，所以一定是直線運動。</li>
+  <li>等加速度運動的加速度方向若跟速度方向相反（減速），速率是遞減的，不是漸增，所以不能說「一定漸增」。</li>
+  <li>直線運動只保證方向不變，加速度的「大小」仍然可以隨時間改變，平均加速度不一定等於每一瞬間的瞬時加速度（只有等加速度運動才會處處相等）。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+速度改變不代表速率一定改變（例如等速率圓周運動，方向一直變、速率不變），錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(B)</span>
+位移量值 $\le$ 路徑長，兩邊除以相同時間，平均速度量值 $\le$ 平均速率，正確。
+</div>
+<div class="calcblock">
+<span class="tag">(C)</span>
+等速度代表速度這個向量的大小和方向都固定，方向固定即代表運動軌跡是直線，正確。
+</div>
+<div class="calcblock">
+<span class="tag">(D)</span>
+等加速度運動如果是「減速」（加速度與速度反向），速率會遞減而非遞增，錯誤。用第23題整理的規則判斷最快：加速度與速度反向 $\Rightarrow$ 變慢，不是漸增。
+</div>
+<div class="calcblock">
+<span class="tag">(E)</span>
+直線運動只限制方向不變，沒有限制加速度大小要固定，若加速度大小隨時間變化，平均加速度不會處處等於瞬時加速度，錯誤。
+</div>
+
+<div class="ans">答案：<strong>(B)(C)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page23')">← 上一題</button>
+  <button onclick="showPage('page25')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page24 -->
+<div class="page" id="page25">
+<section id="q25">
+<h2>第 25 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">如圖所示，光滑水平面上有物體 A、B。以之 A 相對於 B 為靜止，且 B 以速度 v 向右做等速直線運動，A、B 兩物體重量分別為 W、2W，則以下敘述何者正確？（應選2項）</p>
+<ul class="opts">
+  <li>(A) A受向右的摩擦力</li>
+  <li>(B) A受向左的摩擦力</li>
+  <li>(C) B受向左的摩擦力</li>
+  <li>(D) B對A的作用力量值等於W</li>
+  <li>(E) 所受合力為零</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 260 130" preserveAspectRatio="xMidYMid meet" role="img" aria-label="AB疊放示意圖">
+  <defs>
+    <marker id="ar25" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <rect x="70" y="30" width="60" height="25" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="95" y="47" font-size="13" class="lbl">A</text>
+  <rect x="45" y="55" width="110" height="30" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="95" y="75" font-size="13" class="lbl">B</text>
+  <line x1="160" y1="70" x2="210" y2="70" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar25)"/>
+  <text x="165" y="63" font-size="13" class="lbl" fill="var(--v1)">v（等速）</text>
+  <line x1="10" y1="90" x2="245" y2="90" stroke="var(--ink)" stroke-width="1.2"/>
+  <path d="M10,90 L20,100 M40,90 L50,100 M70,90 L80,100" stroke="var(--ink)" stroke-width="1"/>
+  <text x="10" y="105" font-size="10" class="lbl">光滑地面</text>
+</svg>
+<div class="figcap">圖25：A疊放於B上，B與地面間光滑（無摩擦力），兩者一起以等速v前進</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>分析順序：先看「A、B合起來的系統整體」判斷B與地面之間的摩擦力；再單獨看A，判斷B對A的摩擦力；最後用牛頓第三定律反推A對B的摩擦力。不要一開始就分開看，順序錯了容易漏掉「地面本身就無摩擦」這個關鍵條件。</li>
+  <li>A、B都是「等速度」運動（B等速前進，A相對B靜止代表A也跟著B一起做等速前進），加速度都是0，不管系統整體還是任何一個組件，所受合力都必須是0。</li>
+</ul>
+</div>
+
+<div class="flow">
+<span class="tag">流程</span>
+<ol>
+  <li><strong>系統整體（A+B）：</strong>把A、B看成一個整體，水平方向唯一可能的外力是地面對B的摩擦力；地面已知是光滑的，這個摩擦力本來就是0，系統整體等速前進（合力0）與此一致。</li>
+  <li><strong>單獨看A：</strong>A水平方向唯一可能的外力來源是B對它的摩擦力。A也是等速度運動，合力必須是0，所以B對A的摩擦力＝0。</li>
+  <li><strong>牛頓第三定律：</strong>A對B的摩擦力，是B對A的摩擦力的反作用力，大小相等、方向相反；既然B對A的摩擦力是0，A對B的摩擦力也是0。</li>
+</ol>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)(B)</span>
+由「單獨看A」得知：B對A的摩擦力＝0，不是向右也不是向左，(A)(B)皆錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(C)</span>
+由「牛頓第三定律」得知：A對B的摩擦力＝0（B對A摩擦力的反作用力），並非向左，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(D)</span>
+B對A的接觸力，水平分量（摩擦力）為0，只剩鉛直方向的正向力：A鉛直方向也保持平衡（無加速度），正向力必須撐住A的重量W，即
+$$\begin{aligned}
+N=W
+\end{aligned}$$
+因此B對A的作用力（此時只有正向力）量值等於W，正確。
+</div>
+<div class="calcblock">
+<span class="tag">(E)</span>
+A、B兩者都是等速度運動（加速度為0），依牛頓第二定律，兩者所受合力皆為零，正確。
+</div>
+
+<div class="ans">答案：<strong>(D)(E)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page24')">← 上一題</button>
+  <button onclick="showPage('page26')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page25 -->
+<div class="page" id="page26">
+<section id="q26">
+<h2>第 26 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">一物體在某水平面上開始時為靜止，後來物體受一由小而大的作用力作用，其所受摩擦力與作用力的關係如右圖所示。依據右圖，下列有關摩擦力的敘述何者正確？（應選3項）</p>
+<ul class="opts">
+  <li>(A) 物體受力作用後立即開始運動</li>
+  <li>(B) 作用力如圖從O到P點時，物體維持靜止</li>
+  <li>(C) 作用力如圖P點時，物體所受摩擦力最大</li>
+  <li>(D) 作用力如圖P點時，物體的加速度最大</li>
+  <li>(E) 作用力如圖從Q到R點時，物體運動的加速度越來越大</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 320 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="摩擦力對作用力圖">
+  <defs>
+    <marker id="ar26" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="50" y1="180" x2="50" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar26)"/>
+  <line x1="40" y1="150" x2="300" y2="150" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar26)"/>
+  <text x="14" y="30" font-size="12" class="lbl">摩擦力(N)</text>
+  <text x="280" y="168" font-size="12" class="lbl">作用力(N)</text>
+  <text x="35" y="119" font-size="11" class="lbl-rm" text-anchor="end">2</text>
+  <text x="35" y="135" font-size="11" class="lbl-rm" text-anchor="end">1</text>
+  <text x="110" y="163" font-size="11" class="lbl-rm" text-anchor="middle">1</text>
+  <text x="170" y="163" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <text x="230" y="163" font-size="11" class="lbl-rm" text-anchor="middle">3</text>
+  <!-- O to P: linear rise from (0,0) to (2,2) i.e (170,150)-(170,110)... map: x:50->0N,170->2N,230->3N(110px per N); y:150->0N,110->2N(20px per N) -->
+  <line x1="50" y1="150" x2="170" y2="110" stroke="var(--v2)" stroke-width="2.2"/>
+  <circle cx="170" cy="110" r="4" fill="var(--v2)"/>
+  <text x="175" y="105" font-size="12" class="lbl" fill="var(--v2)">P</text>
+  <!-- P drop to Q at (2,1) -->
+  <line x1="170" y1="110" x2="170" y2="130" stroke="var(--v1)" stroke-width="2.2"/>
+  <circle cx="170" cy="130" r="4" fill="var(--v1)"/>
+  <text x="176" y="140" font-size="12" class="lbl" fill="var(--v1)">Q</text>
+  <!-- Q to R: flat at friction=1 from (2,1) to (3,1) -->
+  <line x1="170" y1="130" x2="230" y2="130" stroke="var(--v3)" stroke-width="2.2"/>
+  <text x="235" y="133" font-size="12" class="lbl" fill="var(--v3)">R</text>
+  <line x1="170" y1="150" x2="170" y2="110" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+</svg>
+<div class="figcap">圖26：O→P段摩擦力隨作用力線性增加（靜摩擦）；P→Q瞬間下降；Q→R段摩擦力維持定值（動摩擦）</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>O到P這段，摩擦力隨作用力等量增加（斜率為1），代表摩擦力剛好把作用力全部抵消，物體仍然靜止——這是靜摩擦力「有求必應」的特性，會自動調整到剛好平衡。</li>
+  <li>P點是這段線性關係的最高點，也是摩擦力所能達到的最大值，即最大靜摩擦力；過了P點，物體開始滑動，摩擦力立刻降為動摩擦力（通常小於最大靜摩擦力），對應圖上P到Q的垂直落差。</li>
+  <li>Q到R這段，物體已經在滑動，動摩擦力大致維持定值（與作用力大小無關），但作用力本身持續增加，兩者的差（也就是淨力）越來越大，加速度也越來越大。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+物體一開始受小作用力時，靜摩擦力會同步增加、剛好抵消作用力，物體仍然靜止，並非受力後立即運動，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(B)</span>
+O到P這段正是靜摩擦力完全平衡作用力的階段，物體維持靜止，正確。
+</div>
+<div class="calcblock">
+<span class="tag">(C)</span>
+P點是O到P這段線性關係的最高點，也是物體開始滑動前摩擦力的極限值（最大靜摩擦力），是全程圖上摩擦力的最大值，正確。
+</div>
+<div class="calcblock">
+<span class="tag">(D)</span>
+P點當下物體仍在「即將開始動」的臨界點，此刻合力仍為0（作用力恰好等於最大靜摩擦力），加速度為0，不是最大，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(E)</span>
+Q到R這段動摩擦力維持定值，而作用力持續增加，
+$$\begin{aligned}
+a=\frac{F_{\text{作用力}}-f_{\text{動摩擦（定值）}}}{m}
+\end{aligned}$$
+分子隨作用力增加而增加，加速度越來越大，正確。
+</div>
+
+<div class="ans">答案：<strong>(B)(C)(E)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page25')">← 上一題</button>
+  <button onclick="showPage('page27')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page26 -->
+<div class="page" id="page27">
+<section id="q27">
+<h2>第 27 題（多選）</h2>
+
+<div class="qbox">
+<p class="qstem">一金屬球以質量可忽略的細線靜止懸掛於天花板，如圖所示。此系統相關的受力情況如右圖：$W_1$為金屬球所受重力，$W_2$為金屬球對地的引力，$T_1$為懸線施於金屬球的力，$T_2$為懸線施於天花板的力，$T_3$為金屬球施於懸線的力。下列敘述何者正確？（應選2項）</p>
+<ul class="opts">
+  <li>(A) $T_3$與$T_2$互為作用力與反作用力</li>
+  <li>(B) $T_2$與$W_2$互為作用力與反作用力</li>
+  <li>(C) $T_1$與$T_3$互為作用力與反作用力</li>
+  <li>(D) $T_1$與$W_1$互為作用力與反作用力</li>
+  <li>(E) $T_1$、$T_2$、$T_3$、$W_1$與$W_2$量值均相等</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 260 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="金屬球懸掛受力圖">
+  <defs>
+    <marker id="ar27" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="15" x2="90" y2="15" stroke="var(--ink)" stroke-width="2"/>
+  <path d="M60,15 L70,25 M75,15 L85,25 M85,15 L95,25" stroke="var(--ink)" stroke-width="1"/>
+  <line x1="75" y1="15" x2="75" y2="70" stroke="var(--ink)" stroke-width="1.6"/>
+  <circle cx="75" cy="105" r="28" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <line x1="75" y1="15" x2="75" y2="55" stroke="var(--v2)" stroke-width="1.8" marker-end="url(#ar27)"/>
+  <text x="82" y="45" font-size="12" class="lbl" fill="var(--v2)">T&#8322;(線拉天花板)</text>
+  <line x1="75" y1="70" x2="75" y2="45" stroke="var(--v1)" stroke-width="1.8" marker-end="url(#ar27)"/>
+  <text x="82" y="65" font-size="12" class="lbl" fill="var(--v1)">T&#8321;(線拉球)</text>
+  <line x1="75" y1="80" x2="75" y2="103" stroke="var(--v3)" stroke-width="1.8" marker-end="url(#ar27)"/>
+  <text x="82" y="90" font-size="12" class="lbl" fill="var(--v3)">T&#8323;(球拉線)</text>
+  <line x1="75" y1="105" x2="75" y2="160" stroke="var(--aux)" stroke-width="1.8" marker-end="url(#ar27)"/>
+  <text x="82" y="150" font-size="12" class="lbl" fill="var(--aux)">W&#8321;(地球拉球)</text>
+  <line x1="75" y1="190" x2="75" y2="160" stroke="#9c27b0" stroke-width="1.8" marker-end="url(#ar27)"/>
+  <text x="82" y="185" font-size="12" class="lbl" fill="#9c27b0">W&#8322;(球拉地球)</text>
+</svg>
+<div class="figcap">圖27：五個力分屬三對交互作用（重力對、繩與球的一對）與繩本身的張力傳遞</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>牛頓第三定律的作用力與反作用力，一定是「同一組兩個物體之間」互相施加、方向相反的力，例如「甲對乙」配對「乙對甲」；作用在同一個物體上的兩個不同來源的力（就算大小相等方向相反），並不是作用力反作用力。</li>
+  <li>$T_1$（線對球）與$T_3$（球對線）發生在「線與球」這一組物體之間，是標準的一對作用力反作用力。</li>
+  <li>$T_1$（線對球）與$W_1$（地球對球）雖然都作用在球上、大小相等方向相反，但一個來自線、一個來自地球，是兩個不同的施力者對同一個物體施力，不是作用力反作用力，這是最常見的判斷陷阱。</li>
+  <li>細線質量可忽略，線內張力處處相同，加上整個系統靜止（力平衡），可以推出 $T_1=T_3=T_2$，而球本身的平衡又給出 $T_1=W_1$，重力作用力反作用力對再給出 $W_1=W_2$，所以五個量值全部相等。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">(A)</span>
+$T_3$發生在「球與線」之間，$T_2$發生在「線與天花板」之間，涉及的物體組合不同，不是同一對作用力反作用力（雖然量值剛好相等，但配對關係不對），錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(B)</span>
+$T_2$是線與天花板之間的接觸力，$W_2$是球對地球的萬有引力，兩者完全是不同的交互作用，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(C)</span>
+$T_1$（線對球）與$T_3$（球對線）就是「線與球」這一組物體互相施力的一對，大小相等、方向相反，正確。
+</div>
+<div class="calcblock">
+<span class="tag">(D)</span>
+$T_1$與$W_1$都作用在球上，但施力者不同（一個是線、一個是地球），不是同一組物體間的交互作用，不是作用力反作用力，錯誤。
+</div>
+<div class="calcblock">
+<span class="tag">(E)</span>
+$$\begin{aligned}
+\text{線的張力處處相等：}\ &T_1=T_2=T_3\\
+\text{球的力平衡：}\ &T_1=W_1\\
+\text{重力作用力反作用力對：}\ &W_1=W_2
+\end{aligned}$$
+綜合以上，$T_1=T_2=T_3=W_1=W_2$，正確。
+</div>
+
+<div class="ans">答案：<strong>(C)(E)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page26')">← 上一題</button>
+  <button onclick="showPage('page28')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page27 -->
+<div class="page" id="page28">
+<section id="q28">
+<h2>第 28 題（題組1）</h2>
+
+<div class="qbox">
+<p class="qstem">汽車的安全系統判斷車身受到撞擊而急遽減速時，裝在方向盤裡的安全氣囊即會充氣彈出，透過內部氣體的緩衝，配合安全帶的作用，來降低駕駛人受到的衝擊力。圖9為一款汽車安全氣囊的充氣壓力與充氣時間的關係圖（100 kPa大約為1大氣壓）。在駕駛人撞擊到安全氣囊前，必須要有足夠的時間讓安全氣囊至少充氣達飽和壓力的一半以上，才能藉由緩衝達到保護駕駛人的效果。依據上述文字與圖9。【113學測】(1)根據圖，開始充氣的安全氣囊，至少約需時多少，可達保護駕駛人的氣壓？</p>
+<ul class="opts">
+  <li>(A) 10 ms</li>
+  <li>(B) 20 ms</li>
+  <li>(C) 30 ms</li>
+  <li>(D) 40 ms</li>
+  <li>(E) 50 ms</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="安全氣囊充氣壓力圖">
+  <defs>
+    <marker id="ar28" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="55" y1="180" x2="55" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar28)"/>
+  <line x1="40" y1="180" x2="330" y2="180" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar28)"/>
+  <text x="12" y="30" font-size="12" class="lbl">充氣壓力(kPa)</text>
+  <text x="315" y="198" font-size="12" class="lbl">充氣時間(ms)</text>
+  <text x="48" y="35" font-size="11" class="lbl-rm" text-anchor="end">300</text>
+  <text x="48" y="70" font-size="11" class="lbl-rm" text-anchor="end">225</text>
+  <text x="48" y="105" font-size="11" class="lbl-rm" text-anchor="end">150</text>
+  <text x="48" y="140" font-size="11" class="lbl-rm" text-anchor="end">75</text>
+  <line x1="45" y1="105" x2="330" y2="105" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3"/>
+  <line x1="150" y1="180" x2="150" y2="105" stroke="var(--v1)" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="145" y="196" font-size="11" class="lbl-rm" text-anchor="middle">30</text>
+  <text x="220" y="196" font-size="11" class="lbl-rm" text-anchor="middle">50</text>
+  <path d="M55,178 C75,176 95,168 110,150 C125,132 135,116 150,105 C168,92 190,75 220,55 C250,40 280,33 300,30"
+        fill="none" stroke="var(--v2)" stroke-width="2.2"/>
+  <circle cx="150" cy="105" r="4" fill="var(--v1)"/>
+</svg>
+<div class="figcap">圖28：充氣壓力對時間的S形曲線，飽和壓力約300kPa，一半（150kPa）出現在約30ms處</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>先從圖上讀出「飽和壓力」（曲線最後趨於平緩、不再上升的高度），再取一半，回頭在曲線上找出達到這一半壓力所對應的時間。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">讀圖：</span>
+曲線後段（約60ms之後）趨於平緩，飽和壓力約為300 kPa，其一半為150 kPa。
+</div>
+<div class="step">
+<span class="label">對照時間軸：</span>
+曲線壓力達到150 kPa的時間點，落在時間軸約30ms的位置。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) 30 ms</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page27')">← 上一題</button>
+  <button onclick="showPage('page29')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page28 -->
+<div class="page" id="page29">
+<section id="q29">
+<h2>第 29 題（題組1）</h2>
+
+<div class="qbox">
+<p class="qstem">質量為 50 kg 的駕駛人在國道開車，以 108 km/h（即 30 m/s）的速度向東前進。假設該車在發生正面撞擊的瞬間，安全帶與車體支撐立即開始施予駕駛人一個固定的水平力，而方向盤的轉軸也立即收縮，致使方向盤向前水平移動，安全氣囊也開始充氣。若駕駛人接觸到氣囊時，其速度為 54 km/h 向東，而安全氣囊充氣恰達飽和壓力的一半，則駕駛人受到的水平定力約為多少？</p>
+<ul class="opts">
+  <li>(A) 150000 N</li>
+  <li>(B) 25000 N</li>
+  <li>(C) 8880 N</li>
+  <li>(D) 1000 N</li>
+  <li>(E) 250 N</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>「安全氣囊充氣恰達飽和壓力的一半」，正是上一題算出的時間點（約30ms），所以這裡的作用時間可以直接沿用上一題的結果，不用重新讀圖或另外求。</li>
+  <li>固定的水平力配合已知的初末速度與時間，直接用牛頓第二定律（或動量變化）求力即可。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+v_{\text{初}}&=108\ \text{km/h}=30\ \text{公尺/秒}\\
+v_{\text{末}}&=54\ \text{km/h}=15\ \text{公尺/秒}\\
+\Delta t&=30\ \text{ms}=0.03\ \text{秒}\quad(\text{沿用第28題「達飽和壓力一半」的時間})
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+F&=\frac{m(v_{\text{末}}-v_{\text{初}})}{\Delta t}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+F&=\frac{50\times(15-30)}{0.03}=\frac{50\times(-15)}{0.03}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+F&=\frac{-750}{0.03}=-25000\ \text{牛頓}
+\end{aligned}$$
+負號代表力的方向與車速方向相反（向西，即減速的方向），題目只問量值，故為 $25000$ 牛頓。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(B) 25000 N</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page28')">← 上一題</button>
+  <button onclick="showPage('page30')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page29 -->
+<div class="page" id="page30">
+<section id="q30">
+<h2>第 30 題（題組2）</h2>
+
+<div class="qbox">
+<p class="qstem">將一質量為 80 公克的物體掛在彈簧下端，且該物體相對地面靜止，可使彈簧身長 4 公分。若將一平版接觸到此物體，將物體緩緩地上移至使彈簧僅身長 1 公分，此時該物相對地面靜止，如圖所示。則平板施於物體的正向力為多少公克重？</p>
+<ul class="opts">
+  <li>(A) 20</li>
+  <li>(B) 30</li>
+  <li>(C) 40</li>
+  <li>(D) 50</li>
+  <li>(E) 60</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="彈簧物體受力圖">
+  <defs>
+    <marker id="ar30" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="80" y1="15" x2="110" y2="15" stroke="var(--ink)" stroke-width="2"/>
+  <path d="M85,15 Q95,25 85,35 Q75,45 85,55 Q95,65 85,75" fill="none" stroke="var(--v2)" stroke-width="1.6"/>
+  <rect x="70" y="75" width="30" height="20" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="40" y1="95" x2="130" y2="95" stroke="var(--ink)" stroke-width="1.4"/>
+  <text x="135" y="90" font-size="11" class="lbl">平板（伸長1cm時）</text>
+  <line x1="85" y1="95" x2="85" y2="65" stroke="var(--v1)" stroke-width="1.8" marker-end="url(#ar30)"/>
+  <text x="90" y="75" font-size="11" class="lbl" fill="var(--v1)">彈簧力(向上，20gw)</text>
+  <line x1="85" y1="95" x2="85" y2="130" stroke="var(--v3)" stroke-width="1.8" marker-end="url(#ar30)"/>
+  <text x="90" y="120" font-size="11" class="lbl" fill="var(--v3)">重量(80gw)</text>
+  <line x1="75" y1="95" x2="75" y2="65" stroke="var(--aux)" stroke-width="1.8" marker-end="url(#ar30)"/>
+  <text x="8" y="70" font-size="11" class="lbl" fill="var(--aux)">平板正向力N(向上)</text>
+</svg>
+<div class="figcap">圖30：物體被平板托住，彈簧伸長量變小、彈力變小，不足的重量由平板正向力補足</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>彈簧力與伸長量成正比（虎克定律），先用「原本靜止掛著」的狀態（伸長4公分，彈簧力剛好等於重量80gw）求出比例關係，就能推算伸長1公分時的彈簧力。</li>
+  <li>物體被平板托住後仍然靜止，鉛直方向合力為0：重量＝彈簧力＋平板正向力。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+原本伸長4公分時，彈簧力＝重量：
+$$\begin{aligned}
+F_{4\text{cm}}=80\ \text{gw}
+\end{aligned}$$
+彈簧力與伸長量成正比，伸長1公分時：
+$$\begin{aligned}
+F_{1\text{cm}}=80\times\frac{1}{4}=20\ \text{gw}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式（鉛直方向力平衡）：</span>
+$$\begin{aligned}
+N+F_{1\text{cm}}&=80
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+N&=80-20
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+N&=60\ \text{gw}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(E) 60</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page29')">← 上一題</button>
+  <button onclick="showPage('page31')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page30 -->
+<div class="page" id="page31">
+<section id="q31">
+<h2>第 31 題（題組2）</h2>
+
+<div class="qbox">
+<p class="qstem">承上題，若突然移去物體下側的平板瞬間，則物體的加速度為何？（重力加速度 $g=10\text{m/s}^2$）</p>
+<ul class="opts">
+  <li>(A) 10</li>
+  <li>(B) 8</li>
+  <li>(C) 7.5</li>
+  <li>(D) 4.0</li>
+  <li>(E) 2.5 m/s$^2$</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>平板移去的「瞬間」，彈簧還來不及改變長度（伸長量仍是1公分），所以彈簧力仍然是上一題算出的20gw，只是平板的支撐力（60gw）瞬間消失，改由「重量-彈簧力」這個淨力驅動物體。</li>
+  <li>用比例的方式最快：如果彈簧完全不出力（淨力＝全部重量80gw），加速度就會是自由落體的 $g=10$；現在淨力只有60gw（80gw減掉彈簧撐住的20gw），是全部重量的$\dfrac{60}{80}$倍，加速度也跟著等比例縮小成 $g$ 的$\dfrac{60}{80}$倍，完全不需要換算公克、牛頓等單位。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+\text{重量}&=80\ \text{gw}\\
+\text{彈簧力（瞬間仍為伸長1cm時的力）}&=20\ \text{gw}\\
+\text{淨力}&=80-20=60\ \text{gw}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算（比例法）</span>
+<div class="step">
+<span class="label">若淨力＝全部重量（80gw），加速度就是自由落體：</span>
+$$\begin{aligned}
+a_{\text{若淨力80gw}}&=g=10\ \text{公尺/秒}^2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">實際淨力只有60gw，是80gw的$\dfrac{60}{80}$倍，加速度也等比例縮小：</span>
+$$\begin{aligned}
+a&=\frac{60}{80}\times g=\frac{60}{80}\times10
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+a&=7.5\ \text{公尺/秒}^2
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) 7.5 m/s$^2$</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page30')">← 上一題</button>
+  <button onclick="showPage('page32')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page31 -->
+<div class="page" id="page32">
+<section id="q32">
+<h2>第 32 題（題組3）</h2>
+
+<div class="qbox">
+<p class="qstem">在一個陰雨的午後，一個質量約 20 毫克的雨滴從距地表約 1280 公尺的雲層中脫離，掉落到了地面上。（重力加速度 $g=10\text{m/s}^2$）【西松】忽略空氣阻力，這顆雨滴將在脫離雲層後幾秒掉落到地面上？</p>
+<ul class="opts">
+  <li>(A) 16</li>
+  <li>(B) $14\sqrt{10}$</li>
+  <li>(C) 20</li>
+  <li>(D) $2\sqrt{10}$</li>
+  <li>(E) 64 秒</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>忽略空氣阻力時就是單純的自由落體，直接用位移公式反推時間即可，跟質量無關。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+h&=\tfrac12 g t^2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+1280&=\tfrac12(10)t^2=5t^2
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+t^2&=256\ \Rightarrow\ t=16\ \text{秒}
+\end{aligned}$$
+</div>
+</div>
+
+<svg class="fig" viewBox="0 0 260 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="自由落體v-t圖">
+  <defs>
+    <marker id="ar32" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="140" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar32)"/>
+  <line x1="30" y1="140" x2="230" y2="140" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar32)"/>
+  <text x="12" y="30" font-size="12" class="lbl">v</text>
+  <text x="215" y="158" font-size="12" class="lbl">t</text>
+  <polygon points="40,140 200,40 200,140" fill="var(--v2)" fill-opacity="0.25" stroke="var(--v2)" stroke-width="1.3"/>
+  <line x1="40" y1="140" x2="200" y2="40" stroke="var(--v2)" stroke-width="2.2"/>
+  <text x="200" y="158" font-size="11" class="lbl-rm" text-anchor="middle">t</text>
+  <text x="30" y="44" font-size="11" class="lbl-rm" text-anchor="end">v=gt</text>
+</svg>
+<div class="figcap">圖32：另解——v-t圖是過原點、斜率為g的直線，三角形面積＝下落距離1280m</div>
+
+<div class="calcblock">
+<span class="tag">另解（v-t圖面積法）</span>
+<div class="step">
+<span class="label">v-t圖三角形面積＝位移：</span>
+$$\begin{aligned}
+1280&=\tfrac12\times t\times v=\tfrac12\times t\times(gt)=\tfrac12 g t^2
+\end{aligned}$$
+與公式解完全一致（因為公式本身就是從v-t圖面積推來的），代入後同樣得到 $t=16$ 秒。這個角度的好處是：即使一時想不起位移公式，只要記得「v-t圖是過原點的斜線、面積＝位移」，也能自己重新推導出來。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A) 16 秒</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page31')">← 上一題</button>
+  <button onclick="showPage('page33')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page32 -->
+<div class="page" id="page33">
+<section id="q33">
+<h2>第 33 題（題組3）</h2>
+
+<div class="qbox">
+<p class="qstem">承上題，這顆雨滴掉落地面的瞬間速率為何？</p>
+<ul class="opts">
+  <li>(A) 160</li>
+  <li>(B) $20\sqrt{10}$</li>
+  <li>(C) 200</li>
+  <li>(D) 14</li>
+  <li>(E) 2 公尺/秒</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+v&=gt=10\times16
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+v&=160\ \text{公尺/秒}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">另解（v-t圖面積法，不先求出t）</span>
+<div class="step">
+<span class="label">v-t圖三角形面積＝位移，把 $t=v/g$ 代入，直接以v為未知數：</span>
+$$\begin{aligned}
+1280&=\tfrac12\times\frac{v}{g}\times v=\frac{v^2}{2g}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+v^2&=2\times10\times1280=25600
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+v&=160\ \text{公尺/秒}
+\end{aligned}$$
+兩種算法互相驗證，答案一致。
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A) 160 公尺/秒</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page32')">← 上一題</button>
+  <button onclick="showPage('page34')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page33 -->
+<div class="page" id="page34">
+<section id="q34">
+<h2>第 34 題（題組3）</h2>
+
+<div class="qbox">
+<p class="qstem">若同時有一顆 50 毫克重的雨滴從同樣的高度靜止落下。在不計空氣阻力的情況下，這兩顆不同質量的雨滴的落地時間何者較短？</p>
+<ul class="opts">
+  <li>(A) 20 毫克</li>
+  <li>(B) 50 毫克</li>
+  <li>(C) 兩者同時落地</li>
+  <li>(D) 不一定</li>
+  <li>(E) 條件不足，無法判斷</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>不計空氣阻力時，自由落體的加速度恆為 $g$，跟物體質量無關（這是伽利略最早發現的重要結論），所以只要從同樣高度、同時靜止釋放，不同質量的物體會同時落地。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+$$\begin{aligned}
+h=\tfrac12 g t^2\ \Rightarrow\ t=\sqrt{\frac{2h}{g}}
+\end{aligned}$$
+$t$ 只跟 $h$、$g$ 有關，跟質量 $m$ 完全無關，所以兩顆雨滴落地時間相同。
+</div>
+
+<div class="ans">答案：<strong>(C) 兩者同時落地</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page33')">← 上一題</button>
+  <button onclick="showPage('page35')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page34 -->
+<div class="page" id="page35">
+<section id="q35">
+<h2>第 35 題（題組3）</h2>
+
+<div class="qbox">
+<p class="qstem">實際上雨滴在落下的過程中，作用在雨滴上的空氣阻力 $f=kv^2$ 會隨著雨滴的速度增加而增強，最後使雨滴以等速度掉落到地面上，稱為「終端速度」。已知雨滴的終端速度 $v_t$ 大小約為 $v_t=\sqrt{\dfrac{mg}{k}}$，其中 $m$ 為雨滴的質量、$g$ 為重力加速度、$k$ 為阻力常數。若使用 SI 單位制來表示，阻力常數 $k$ 的單位應為何？</p>
+<ul class="opts">
+  <li>(A) kg/m</li>
+  <li>(B) kg/s$^2$</li>
+  <li>(C) kg$\cdot$m$^3$/s$^4$</li>
+  <li>(D) kg$\cdot$m</li>
+  <li>(E) 無單位</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>等號兩邊的單位一定要一致，可以從 $f=kv^2$ 這個關係式反推 $k$ 的單位：$k=\dfrac{f}{v^2}$，把力跟速度平方的 SI 單位代進去化簡即可。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">公式：</span>
+$$\begin{aligned}
+k&=\frac{f}{v^2}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">代入SI單位（力：牛頓＝$\text{kg}\cdot\text{m/s}^2$；速度平方：$\text{m}^2/\text{s}^2$）：</span>
+$$\begin{aligned}
+[k]&=\frac{\text{kg}\cdot\text{m/s}^2}{\text{m}^2/\text{s}^2}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">化簡：</span>
+$$\begin{aligned}
+[k]&=\text{kg}\cdot\text{m}\cdot\text{s}^{-2}\times\text{m}^{-2}\cdot\text{s}^{2}=\text{kg}\cdot\text{m}^{-1}=\text{kg/m}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A) kg/m</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page34')">← 上一題</button>
+  <button onclick="showPage('page36')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page35 -->
+<div class="page" id="page36">
+<section id="q36">
+<h2>第 36 題（題組3）</h2>
+
+<div class="qbox">
+<p class="qstem">已知在 SI 單位制下，阻力常數的大小約為 $2.5\times10^{-6}$，試問一顆質量約 20 毫克的雨滴從距地表 1280 公尺的雲層脫離後，其終端速度為何？</p>
+<ul class="opts">
+  <li>(A) 2.2</li>
+  <li>(B) 5.6</li>
+  <li>(C) 8.9</li>
+  <li>(D) 11.5</li>
+  <li>(E) 14.1 公尺/秒</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 260 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="雨滴終端速度受力圖">
+  <defs>
+    <marker id="ar36" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <circle cx="130" cy="90" r="20" fill="var(--fill)" stroke="var(--ink)" stroke-width="1.6"/>
+  <line x1="130" y1="90" x2="130" y2="145" stroke="var(--v3)" stroke-width="2" marker-end="url(#ar36)"/>
+  <text x="138" y="130" font-size="13" class="lbl" fill="var(--v3)">mg（向下）</text>
+  <line x1="130" y1="90" x2="130" y2="35" stroke="var(--v1)" stroke-width="2" marker-end="url(#ar36)"/>
+  <text x="138" y="50" font-size="13" class="lbl" fill="var(--v1)">f=kv&#178;（向上，阻力）</text>
+</svg>
+<div class="figcap">圖36：終端速度時，重力與空氣阻力大小相等、方向相反，合力為0（等速度下降）</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>「終端速度」代表雨滴此時合力為0（等速度），受力圖上只有重力（向下）與空氣阻力（向上）兩個力，兩者大小必須相等才能維持等速。</li>
+  <li>力平衡：$mg=kv_t^2$，這就是題目已經幫忙整理好的公式 $v_t=\sqrt{\dfrac{mg}{k}}$ 背後的來源，把它拆開來看：先讓重力等於阻力，再解出 $v_t$。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+$$\begin{aligned}
+\text{力平衡（終端速度定義）：}\quad mg&=k\,v_t^2\\
+\Rightarrow\quad v_t^2&=\frac{mg}{k}\quad\Rightarrow\quad v_t=\sqrt{\frac{mg}{k}}
+\end{aligned}$$
+$$\begin{aligned}
+m&=20\ \text{毫克}=20\times10^{-6}\ \text{公斤}=2\times10^{-5}\ \text{公斤}\\
+g&=10\ \text{公尺/秒}^2,\quad k=2.5\times10^{-6}\ \text{kg/m}
+\end{aligned}$$
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">代入：</span>
+$$\begin{aligned}
+v_t^2&=\frac{mg}{k}=\frac{(2\times10^{-5})(10)}{2.5\times10^{-6}}=\frac{2\times10^{-4}}{2.5\times10^{-6}}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">化簡：</span>
+$$\begin{aligned}
+v_t^2&=80
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">結果：</span>
+$$\begin{aligned}
+v_t&=\sqrt{80}\approx8.9\ \text{公尺/秒}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) 8.9 公尺/秒</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page35')">← 上一題</button>
+  <button onclick="showPage('page37')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page36 -->
+<div class="page" id="page37">
+<section id="q37">
+<h2>第 37 題（題組4）</h2>
+
+<div class="qbox">
+<p class="qstem">如圖，有一質點於 $y=R$ 處靜止釋放，該質點僅受重力與彈力作用而在鉛直方向振動，其範圍為 $-R\le y\le R$，質點振動過程的位置與運動快慢的變化關係如右圖表所示，知振動的週期為 $T$，且定向上方向為正。該質點由 $t=0.25T$ 至 $t=0.75T$ 過程中，位移量值為</p>
+<ul class="opts">
+  <li>(A) 0</li>
+  <li>(B) $0.5R$</li>
+  <li>(C) $R$</li>
+  <li>(D) $1.5R$</li>
+  <li>(E) $2R$</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="質點y-t圖">
+  <defs>
+    <marker id="ar37" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="40" y1="180" x2="40" y2="20" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar37)"/>
+  <line x1="30" y1="100" x2="330" y2="100" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar37)"/>
+  <text x="20" y="30" font-size="12" class="lbl">y</text>
+  <text x="315" y="118" font-size="12" class="lbl">t</text>
+  <text x="30" y="35" font-size="11" class="lbl-rm" text-anchor="end">R</text>
+  <text x="30" y="168" font-size="11" class="lbl-rm" text-anchor="end">-R</text>
+  <polyline points="40.0,40.0 46.5,40.7 53.0,42.9 59.5,46.5 66.0,51.5 72.5,57.6 79.0,64.7 85.5,72.8 92.0,81.5 98.5,90.6 105.0,100.0 111.5,109.4 118.0,118.5 124.5,127.2 131.0,135.3 137.5,142.4 144.0,148.5 150.5,153.5 157.0,157.1 163.5,159.3 170.0,160.0 176.5,159.3 183.0,157.1 189.5,153.5 196.0,148.5 202.5,142.4 209.0,135.3 215.5,127.2 222.0,118.5 228.5,109.4 235.0,100.0 241.5,90.6 248.0,81.5 254.5,72.8 261.0,64.7 267.5,57.6 274.0,51.5 280.5,46.5 287.0,42.9 293.5,40.7 300.0,40.0"
+    fill="none" stroke="var(--v2)" stroke-width="2.4"/>
+  <line x1="170" y1="20" x2="170" y2="180" stroke="#c9cdd3" stroke-width="1" stroke-dasharray="1.5 3"/>
+  <line x1="105" y1="100" x2="105" y2="115" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="235" y1="100" x2="235" y2="115" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="300" y1="100" x2="300" y2="115" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="105" y="128" font-size="10" class="lbl-rm" text-anchor="middle">0.25T</text>
+  <text x="170" y="188" font-size="10" class="lbl-rm" text-anchor="middle">0.5T</text>
+  <text x="235" y="128" font-size="10" class="lbl-rm" text-anchor="middle">0.75T</text>
+  <text x="300" y="128" font-size="10" class="lbl-rm" text-anchor="middle">T</text>
+  <circle cx="105" cy="100" r="4" fill="var(--v1)"/>
+  <circle cx="235" cy="100" r="4" fill="var(--v1)"/>
+  <circle cx="170" cy="160" r="4" fill="var(--v3)"/>
+  <circle cx="40" cy="40" r="4" fill="var(--v3)"/>
+  <circle cx="300" cy="40" r="4" fill="var(--v3)"/>
+</svg>
+<div class="figcap">圖37：質點y-t圖——從$y=R$（靜止釋放）出發，經過中心$y=0$、最低點$y=-R$、再經過中心、回到$y=R$，完整一個週期</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>位移是「頭尾淨變化量」，不是路徑長；只要看 $t=0.25T$ 與 $t=0.75T$ 這兩個時刻「各自的位置」相減即可，中間繞了多遠不影響位移。</li>
+  <li>不用三角函數，直接用「加速度永遠指向中心$y=0$（這是彈力+重力這種回復力的共同特性）」搭配「速度方向」逐段判斷質點在哪裡：</li>
+  <li>在最高點$y=R$、最低點$y=-R$這兩個極端位置，質點瞬間靜止（速度為0），因為那裡是「往上走到底、要開始往下走」或「往下走到底、要開始往上走」的轉折點。</li>
+  <li>在正中心$y=0$，質點速度量值最大：因為從最高點開始，加速度（指向中心）與速度同向，質點一路變快，一直到中心之前都是加速度與速度同向（變快）；通過中心之後，加速度轉為與速度反向（變慢），直到下一個極端點瞬間靜止。</li>
+</ul>
+</div>
+
+<div class="flow">
+<span class="tag">流程：由對稱性讀出各時刻位置</span>
+<ol>
+  <li>由於「從一個極端點加速衝向中心，再減速抵達另一個極端點」這整個「半趟」的加速、減速模式完全對稱（回復力大小只跟離中心的距離有關，跟方向無關），所以「極端→中心」與「中心→極端」花的時間相等，各佔半個週期的一半，也就是四分之一週期。</li>
+  <li>質點$t=0$在最高點$y=R$（極端）；經過四分之一週期後，也就是$t=0.25T$，質點剛好通過中心，$y=0$。</li>
+  <li>再經過四分之一週期（$t=0.5T$），質點抵達另一個極端點$y=-R$，瞬間靜止。</li>
+  <li>再經過四分之一週期（$t=0.75T$），質點又通過中心，$y=0$（跟$t=0.25T$時位置相同，因為振動具有對稱性）。</li>
+</ol>
+</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">由上述對稱性讀出位置：</span>
+$$\begin{aligned}
+y(0.25T)&=0\ \text{（第一次通過中心）}\\
+y(0.75T)&=0\ \text{（第二次通過中心）}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">位移：</span>
+$$\begin{aligned}
+\Delta y=y(0.75T)-y(0.25T)=0-0=0
+\end{aligned}$$
+（過程中質點先下降到 $-R$、再回升到 $0$，路徑長是 $2R$，但頭尾位置相同，淨位移是 $0$。）
+</div>
+</div>
+
+<div class="ans">答案：<strong>(A) 0</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page36')">← 上一題</button>
+  <button onclick="showPage('page38')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page37 -->
+<div class="page" id="page38">
+<section id="q38">
+<h2>第 38 題（題組4）</h2>
+
+<div class="qbox">
+<p class="qstem">關於該質點於各時間區間的運動物理量的方向何者完全正確？（表格：$0.25T\sim0.5T$與$0.5T\sim0.75T$兩區間的速度、加速度方向）</p>
+<ul class="opts">
+  <li>(A) +,+ ｜ −,−</li>
+  <li>(B) −,+ ｜ +,+</li>
+  <li>(C) +,− ｜ −,−</li>
+  <li>(D) −,+ ｜ +,−</li>
+  <li>(E) +,+ ｜ −,+</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>速度方向：看質點「往哪個方向移動」——位置 $y$ 是在增加還是減少。</li>
+  <li>加速度方向：這題是彈簧的鉛直振動，加速度方向永遠指向平衡點（$y=0$），可以用「$y$ 為正時加速度為負、$y$ 為負時加速度為正」來判斷（彈力＋重力的合力永遠把質點往回拉向平衡位置）。</li>
+</ul>
+</div>
+
+<div class="calcblock">
+<span class="tag">$0.25T\sim0.5T$</span>
+<div class="step">
+<span class="label">位置變化：</span>
+這段期間 $y$ 從 $0$ 降到 $-R$（持續往下移動），速度方向為負（−）。
+</div>
+<div class="step">
+<span class="label">加速度方向：</span>
+這段期間 $y$ 皆為負值（在平衡點下方），加速度方向指向平衡點（向上），為正（+）。
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">$0.5T\sim0.75T$</span>
+<div class="step">
+<span class="label">位置變化：</span>
+這段期間 $y$ 從 $-R$ 回升到 $0$（持續往上移動），速度方向為正（+）。
+</div>
+<div class="step">
+<span class="label">加速度方向：</span>
+這段期間 $y$ 仍然是負值（尚未回到平衡點以上），加速度方向依然指向平衡點（向上），為正（+）。
+</div>
+</div>
+
+<div class="calcblock">
+<span class="tag">結論</span>
+$0.25T\sim0.5T$：速度負、加速度正（−,+）；$0.5T\sim0.75T$：速度正、加速度正（+,+）。對照選項，符合(B)。
+</div>
+
+<div class="ans">答案：<strong>(B)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page37')">← 上一題</button>
+  <button onclick="showPage('page39')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page38 -->
+<div class="page" id="page39">
+<section id="q39">
+<h2>第 39 題（題組4）</h2>
+
+<div class="qbox">
+<p class="qstem">下列何者最有可能是該質點的速度對時間關係圖？</p>
+<ul class="opts">
+  <li>(A)(B)(C)(D)(E) 選項圖形略，詳見原題五個 v-t 示意圖</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>不用三角函數或微分，只靠「y-t圖上這一段是變快還是變慢、方向是正是負」就能一段一段推出v-t圖的形狀。</li>
+  <li>判斷「變快或變慢」看y-t圖的彎曲程度：曲線越來越陡（斜率的量值變大）＝速率變快；曲線越來越平（斜率的量值變小，趨近水平）＝速率變慢。</li>
+  <li>判斷方向看y是增加還是減少：y在減少＝速度為負；y在增加＝速度為正。</li>
+</ul>
+</div>
+
+<div class="flow">
+<span class="tag">流程：逐段判斷v-t圖形狀</span>
+<ol>
+  <li><strong>$0\sim0.25T$：</strong>y從$R$降到$0$（減少，速度為負），且y-t圖從水平（$t=0$靜止釋放）變得越來越陡（速率變快）。所以v從0開始，往負的方向愈變愈負，在$t=0.25T$附近負到最深。</li>
+  <li><strong>$0.25T\sim0.5T$：</strong>y從$0$降到$-R$（仍在減少，速度仍為負），但y-t圖越來越平緩（在$-R$處變成水平，速率變慢）。所以v仍是負的，但負的程度逐漸縮小，回到$t=0.5T$時v回到0。</li>
+  <li><strong>$0.5T\sim0.75T$：</strong>y從$-R$升到$0$（增加，速度為正），y-t圖又變得越來越陡（速率變快）。所以v從0開始，往正的方向愈變愈正，在$t=0.75T$附近正到最高。</li>
+  <li><strong>$0.75T\sim T$：</strong>y從$0$升到$R$（仍在增加，速度仍為正），y-t圖越來越平緩（在$R$處變成水平，速率變慢）。所以v仍是正的，但正的程度逐漸縮小，回到$t=T$時v回到0。</li>
+</ol>
+</div>
+
+<svg class="fig" viewBox="0 0 440 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="質點v-t圖">
+  <defs>
+    <marker id="ar39" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="60" y1="180" x2="60" y2="15" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar39)"/>
+  <line x1="45" y1="100" x2="425" y2="100" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar39)"/>
+  <text x="30" y="25" font-size="12" class="lbl">v</text>
+  <text x="410" y="118" font-size="12" class="lbl">t</text>
+  <polyline points="60.0,100.0 66.0,111.0 72.0,121.6 78.0,131.8 84.0,141.1 90.0,149.5 96.0,156.6 102.0,162.4 108.0,166.6 114.0,169.1 120.0,170.0 126.0,169.1 132.0,166.6 138.0,162.4 144.0,156.6 150.0,149.5 156.0,141.1 162.0,131.8 168.0,121.6 174.0,111.0 180.0,100.0 186.0,89.0 192.0,78.4 198.0,68.2 204.0,58.9 210.0,50.5 216.0,43.4 222.0,37.6 228.0,33.4 234.0,30.9 240.0,30.0 246.0,30.9 252.0,33.4 258.0,37.6 264.0,43.4 270.0,50.5 276.0,58.9 282.0,68.2 288.0,78.4 294.0,89.0 300.0,100.0 306.0,111.0 312.0,121.6 318.0,131.8 324.0,141.1 330.0,149.5 336.0,156.6 342.0,162.4 348.0,166.6 354.0,169.1 360.0,170.0 366.0,169.1 372.0,166.6 378.0,162.4 384.0,156.6 390.0,149.5 396.0,141.1 402.0,131.8 408.0,121.6 414.0,111.0 420.0,100.0"
+    fill="none" stroke="var(--v2)" stroke-width="2.2"/>
+  <line x1="180" y1="100" x2="180" y2="112" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="300" y1="100" x2="300" y2="112" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="420" y1="100" x2="420" y2="112" stroke="var(--aux)" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="180" y="128" font-size="11" class="lbl-rm" text-anchor="middle">0.5T</text>
+  <text x="300" y="128" font-size="11" class="lbl-rm" text-anchor="middle">T</text>
+  <text x="420" y="128" font-size="11" class="lbl-rm" text-anchor="middle">1.5T</text>
+  <text x="118" y="185" font-size="11" class="lbl-rm" text-anchor="middle">0.25T(最負)</text>
+  <text x="238" y="20" font-size="11" class="lbl-rm" text-anchor="middle">0.75T(最正)</text>
+</svg>
+<div class="figcap">圖39：由「快慢變化＋方向」逐段拼出的v-t圖：0出發先變負、負到最深後變淺回0，再變正、正到最高後變淺回0，如此重複</div>
+
+<div class="calcblock">
+<span class="tag">判斷</span>
+符合「$t=0$從0出發、先變負（在0.25T附近負到最深）、再回到0（0.5T）、接著變正（在0.75T附近正到最高）、回到0（T）」這個規律的選項是 (A)。
+</div>
+
+<div class="ans">答案：<strong>(A)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page38')">← 上一題</button>
+  <button onclick="showPage('page40')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page39 -->
+<div class="page" id="page40">
+<section id="q40">
+<h2>第 40 題（題組5）</h2>
+
+<div class="qbox">
+<p class="qstem">2021年諾貝爾物理學獎的隨機漫步情境：一質點位於座標原點0，每經過1.0秒，該質點有一半機率往正方向走1.0m、一半機率往負方向走1.0m。已知該質點從座標原點0出發，經過4.0秒後，質點在座標$-2$的位置，試回答下列問題。該質點在前4.0秒的位移 $x$ 公尺，路徑長 $s$ 公尺，寫成數對 $(x,s)$，下列何者正確？</p>
+<ul class="opts">
+  <li>(A) (2,4)</li>
+  <li>(B) (−2,4)</li>
+  <li>(C) (−2,2)</li>
+  <li>(D) (2,2)</li>
+  <li>(E) (−2,−2)</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>位移是頭尾淨變化量：已知4秒後的座標就是位移，直接讀出來即可，不用管中途怎麼走。</li>
+  <li>路徑長是每一步「走過的距離」總和：不管方向是正是負，每一步都貢獻1.0公尺的路徑長，4秒（4步）路徑長固定是4公尺，跟最後停在哪裡無關。</li>
+</ul>
+</div>
+
+<svg class="fig" viewBox="0 -15 360 125" preserveAspectRatio="xMidYMid meet" role="img" aria-label="數線示意圖">
+  <defs>
+    <marker id="ar40" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L8,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="55" x2="340" y2="55" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar40)"/>
+  <!-- ticks at -4..4, x=180 is 0, 40px per unit -->
+  <g stroke="var(--ink)" stroke-width="1.2">
+    <line x1="20" y1="50" x2="20" y2="60"/>
+    <line x1="60" y1="50" x2="60" y2="60"/>
+    <line x1="100" y1="50" x2="100" y2="60"/>
+    <line x1="140" y1="50" x2="140" y2="60"/>
+    <line x1="180" y1="45" x2="180" y2="65"/>
+    <line x1="220" y1="50" x2="220" y2="60"/>
+    <line x1="260" y1="50" x2="260" y2="60"/>
+    <line x1="300" y1="50" x2="300" y2="60"/>
+  </g>
+  <text x="20" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-4</text>
+  <text x="60" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-3</text>
+  <text x="100" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-2</text>
+  <text x="140" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-1</text>
+  <text x="180" y="75" font-size="11" class="lbl-rm" text-anchor="middle">0</text>
+  <text x="220" y="75" font-size="11" class="lbl-rm" text-anchor="middle">1</text>
+  <text x="260" y="75" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <!-- example path: 0 -> -1 -> -2 -> -1 -> -2 (steps -1,-1,+1,-1), 4 sequential stacked arcs -->
+  <path d="M180,50 Q160,38 140,50" fill="none" stroke="var(--v1)" stroke-width="1.6" marker-end="url(#ar40)"/>
+  <text x="160" y="34" font-size="9" class="lbl-rm" text-anchor="middle">1</text>
+  <path d="M140,45 Q120,25 100,45" fill="none" stroke="var(--v1)" stroke-width="1.6" marker-end="url(#ar40)"/>
+  <text x="120" y="21" font-size="9" class="lbl-rm" text-anchor="middle">2</text>
+  <path d="M100,40 Q120,15 140,40" fill="none" stroke="var(--v2)" stroke-width="1.6" marker-end="url(#ar40)"/>
+  <text x="120" y="11" font-size="9" class="lbl-rm" text-anchor="middle">3</text>
+  <path d="M140,35 Q120,5 100,35" fill="none" stroke="var(--v1)" stroke-width="1.6" marker-end="url(#ar40)"/>
+  <text x="120" y="1" font-size="9" class="lbl-rm" text-anchor="middle">4</text>
+  <circle cx="180" cy="55" r="4" fill="var(--v3)"/>
+  <text x="180" y="95" font-size="10" class="lbl-rm" text-anchor="middle">起點(0秒)</text>
+  <circle cx="100" cy="55" r="4" fill="var(--v1)"/>
+  <text x="100" y="95" font-size="10" class="lbl-rm" text-anchor="middle">終點-2(4秒後)</text>
+</svg>
+<div class="figcap">圖40：數線示意——起點0，其中一種可能路徑（-1,-1,+1,-1）最終停在-2，路徑長為每步1m共4步＝4m，位移為頭尾距離＝-2m</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">位移：</span>
+題目已告知4秒後質點在座標$-2$，所以位移
+$$\begin{aligned}
+x=-2\ \text{公尺}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">路徑長：</span>
+每一步不論往正或往負都走了1公尺，4步（4秒）一定走了
+$$\begin{aligned}
+s=4\times1=4\ \text{公尺}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(B) (−2,4)</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page39')">← 上一題</button>
+  <button onclick="showPage('page41')">下一題 →</button>
+</div>
+</section>
+</div><!-- /page40 -->
+<div class="page" id="page41">
+<section id="q41">
+<h2>第 41 題（題組5）</h2>
+
+<div class="qbox">
+<p class="qstem">若再經過2.0秒，則該質點在前6.0秒的平均速度，最大機率為多少 $m/s$？</p>
+<ul class="opts">
+  <li>(A) −1.0</li>
+  <li>(B) $-\dfrac12$</li>
+  <li>(C) $-\dfrac13$</li>
+  <li>(D) 0</li>
+  <li>(E) $\dfrac12$</li>
+</ul>
+</div>
+
+<div class="concept">
+<span class="tag">觀念</span>
+<ul class="concept-list">
+  <li>已知前4秒質點停在$-2$，接下來再走2步（第5、6秒），每一步仍然是各一半機率往正、往負走1公尺，要先列出這2步所有可能的組合與機率，才能判斷6秒後「最可能」停在哪個位置。</li>
+  <li>平均速度＝總位移／總時間，找到最大機率的位置後，直接除以6秒即可。</li>
+</ul>
+</div>
+
+<div class="basecalc">
+<span class="tag">基本量</span>
+接下來2步的可能組合（各步驟機率相等，各$\tfrac12$）：
+$$\begin{aligned}
+(+1,+1)&:\ \text{機率}\ \tfrac14,\ \text{位移變化}+2\\
+(+1,-1)\ \text{或}\ (-1,+1)&:\ \text{機率共}\ \tfrac12,\ \text{位移變化}\ 0\\
+(-1,-1)&:\ \text{機率}\ \tfrac14,\ \text{位移變化}-2
+\end{aligned}$$
+「位移變化為0」的機率最高（$\tfrac12$），所以6秒後最可能的位置，就是維持在4秒時的位置不變。
+</div>
+
+<svg class="fig" viewBox="0 -10 360 105" preserveAspectRatio="xMidYMid meet" role="img" aria-label="6秒後三種可能位置數線">
+  <defs>
+    <marker id="ar41" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L8,3.5 L0,7 Z" fill="context-stroke"/>
+    </marker>
+  </defs>
+  <line x1="20" y1="55" x2="340" y2="55" stroke="var(--ink)" stroke-width="1.6" marker-end="url(#ar41)"/>
+  <g stroke="var(--ink)" stroke-width="1.2">
+    <line x1="20" y1="50" x2="20" y2="60"/>
+    <line x1="60" y1="50" x2="60" y2="60"/>
+    <line x1="100" y1="50" x2="100" y2="60"/>
+    <line x1="140" y1="50" x2="140" y2="60"/>
+    <line x1="180" y1="45" x2="180" y2="65"/>
+    <line x1="220" y1="50" x2="220" y2="60"/>
+    <line x1="260" y1="50" x2="260" y2="60"/>
+  </g>
+  <text x="20" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-4</text>
+  <text x="60" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-3</text>
+  <text x="100" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-2</text>
+  <text x="140" y="75" font-size="11" class="lbl-rm" text-anchor="middle">-1</text>
+  <text x="180" y="75" font-size="11" class="lbl-rm" text-anchor="middle">0</text>
+  <text x="220" y="75" font-size="11" class="lbl-rm" text-anchor="middle">1</text>
+  <text x="260" y="75" font-size="11" class="lbl-rm" text-anchor="middle">2</text>
+  <!-- start point at -2 (x=100), three outcomes: -4(x=20,p=1/4), -2(x=100,p=1/2,highlighted), 0(x=180,p=1/4) -->
+  <circle cx="100" cy="55" r="4" fill="var(--v3)"/>
+  <text x="100" y="18" font-size="10" class="lbl-rm" text-anchor="middle">4秒時起點(-2)</text>
+  <circle cx="20" cy="55" r="5" fill="var(--v1)"/>
+  <text x="20" y="95" font-size="10" class="lbl" fill="var(--v1)" text-anchor="middle">-4(機率1/4)</text>
+  <circle cx="100" cy="55" r="7" fill="none" stroke="var(--v2)" stroke-width="2.2"/>
+  <text x="100" y="95" font-size="10" class="lbl" fill="var(--v2)" text-anchor="middle">-2(機率1/2，最大)</text>
+  <circle cx="180" cy="55" r="5" fill="var(--v1)"/>
+  <text x="180" y="95" font-size="10" class="lbl" fill="var(--v1)" text-anchor="middle">0(機率1/4)</text>
+</svg>
+<div class="figcap">圖41：數線標出6秒後三種可能位置，機率最高的是留在原地-2（機率$\tfrac12$，比左右兩側各$\tfrac14$都高）</div>
+
+<div class="calcblock">
+<span class="tag">計算</span>
+<div class="step">
+<span class="label">6秒後最可能的位置：</span>
+$$\begin{aligned}
+x(6)_{\text{最大機率}}=x(4)+0=-2+0=-2\ \text{公尺}
+\end{aligned}$$
+</div>
+<div class="step">
+<span class="label">平均速度：</span>
+$$\begin{aligned}
+v_{\text{平}}=\frac{x(6)}{6}=\frac{-2}{6}=-\frac13\ \text{公尺/秒}
+\end{aligned}$$
+</div>
+</div>
+
+<div class="ans">答案：<strong>(C) $-\dfrac13$</strong></div>
+<div class="qnav">
+  <button onclick="showPage('page40')">← 上一題</button>
+  <button disabled>下一題 →</button>
+</div>
+</section>
+</div><!-- /page41 -->
+
+<div id="zoomOverlay"><div id="zoomInner"></div></div>
+
+<script>
+  function showPage(id){
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p.id === id); });
+    var sel = document.getElementById('pageSelect');
+    if (sel) sel.value = id;
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  var pageSelectEl = document.getElementById('pageSelect');
+  if (pageSelectEl){ pageSelectEl.addEventListener('change', function(){ showPage(this.value); }); }
+
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('.katex-display, .katex');
+    if (e.target.closest('#zoomOverlay')) return;
+    if (!el) return;
+    var target = el.closest('.katex-display') || el;
+    var overlay = document.getElementById('zoomOverlay');
+    var inner = document.getElementById('zoomInner');
+    inner.innerHTML = target.outerHTML;
+    overlay.classList.add('show');
+  });
+  document.getElementById('zoomOverlay').addEventListener('click', function(){ this.classList.remove('show'); });
+</script>
+
+</body>
+</html>
