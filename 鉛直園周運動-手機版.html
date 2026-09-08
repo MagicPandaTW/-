@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>038 直立內軌圓周運動（手機版）</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+body {
+  width:390px; height:100%;
+  background:#0a0e1a;
+  font-family:'Noto Sans TC',sans-serif;
+  color:#e0e8ff;
+  display:flex; flex-direction:column;
+}
+
+/* ── 畫布 ── */
+#canvas-wrap {
+  width:390px; flex-shrink:0;
+}
+canvas { display:block; }
+
+/* ── 面板 ── */
+#panel {
+  flex:1;
+  background:linear-gradient(180deg,#0d1326,#0a0e1a);
+  border-top:1px solid #1e3a5f;
+  padding:12px 14px 12px 14px;
+  display:flex; flex-direction:column; gap:9px;
+  overflow:hidden;
+}
+
+/* 速度卡 */
+.v-card { background:#0d1a2e; border:1px solid #1e3a5f; border-radius:9px; padding:11px 13px 9px 13px; }
+.v-card-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px; }
+.v-label { font-size:13px; color:#8ab4d4; letter-spacing:1px; }
+.v-val   { font-family:monospace; font-size:18px; color:#60b4ff; font-weight:bold; }
+.v-slider-wrap input[type=range] {
+  width:100%; height:6px; -webkit-appearance:none; appearance:none;
+  background:#1e3a5f; border-radius:3px; outline:none; display:block;
+  margin-bottom:5px;
+}
+.v-slider-wrap input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:26px; height:26px; border-radius:50%;
+  background:#60b4ff; box-shadow:0 0 8px #60b4ff88;
+}
+.v-snap-row { position:relative; height:30px; }
+.vsnap {
+  position:absolute; transform:translateX(-50%);
+  padding:4px 6px; border:1px solid #1e3a5f; border-radius:5px;
+  background:#0a1020; color:#4a6a8a;
+  font-family:monospace; font-size:11px; cursor:pointer;
+  white-space:nowrap; transition:all 0.15s;
+}
+.vsnap.active { background:#1a3a6a; border-color:#60b4ff; color:#90d0ff; }
+
+/* 切換列 */
+.toggle-row { display:flex; align-items:center; gap:8px; }
+.toggle-label { font-size:13px; color:#8ab4d4; flex:1; }
+.toggle-btn {
+  padding:8px 13px; border-radius:18px; border:none; cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:1px; transition:all 0.2s;
+}
+.toggle-btn.on  { background:#1a4a1a; color:#6bffb3; border:1px solid #3a8a3a; }
+.toggle-btn.off { background:#1a1a1a; color:#4a6a8a; border:1px solid #2a3a4a; }
+
+/* 狀態 */
+.status-bar { background:#0d1a2e; border:1px solid #1e3a5f; border-radius:7px; padding:8px 12px; }
+.status-msg { font-size:13px; line-height:1.5; color:#c0d8f0; }
+
+/* 按鈕 */
+#btn-run {
+  width:100%; padding:16px; border:none; border-radius:10px;
+  font-family:'Noto Sans TC',sans-serif; font-size:17px; font-weight:900;
+  cursor:pointer; letter-spacing:2px; transition:all 0.2s;
+  background:linear-gradient(135deg,#1e4a8a,#2060b0); color:#e0f0ff; border:1px solid #3080d0;
+  margin-top:auto;
+}
+#btn-run.running { background:linear-gradient(135deg,#8a1e1e,#b02020); border-color:#d03030; }
+#btn-run.resetting { background:linear-gradient(135deg,#1a3a1a,#2a5a2a); border-color:#3a8a3a; color:#6bffb3; }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap">
+  <canvas id="c" width="390" height="390"></canvas>
+</div>
+
+<div id="panel">
+  <div class="v-card">
+    <div class="v-card-header">
+      <span class="v-label">底部初速度 v₀</span>
+      <span class="v-val" id="v-display">√4gR</span>
+    </div>
+    <div class="v-slider-wrap">
+      <input type="range" id="v-slider" min="1.0" max="2.4495" step="0.001" value="2.0" oninput="onSlider(this.value)">
+    </div>
+    <div class="v-snap-row">
+      <div class="vsnap" style="left:0%"     data-k="1"       onclick="snapV(1)">√gR</div>
+      <div class="vsnap" style="left:28.6%"  data-k="1.41421" onclick="snapV(1.41421356)">√2gR</div>
+      <div class="vsnap" style="left:50.5%"  data-k="1.73205" onclick="snapV(1.73205081)">√3gR</div>
+      <div class="vsnap active" style="left:69.0%" data-k="2" onclick="snapV(2)">√4gR</div>
+      <div class="vsnap" style="left:84.2%"  data-k="2.23607" onclick="snapV(2.23606798)">√5gR</div>
+      <div class="vsnap" style="left:100%"   data-k="2.44949" onclick="snapV(2.44948975)">√6gR</div>
+    </div>
+  </div>
+
+  <div class="toggle-row">
+    <span class="toggle-label">左半圓軌道</span>
+    <button class="toggle-btn on" id="left-toggle" onclick="toggleLeft()">● 封閉（完整圓）</button>
+  </div>
+  <div class="toggle-row">
+    <span class="toggle-label">軌道類型</span>
+    <button class="toggle-btn off" id="lock-toggle" onclick="toggleLock()">○ 內軌（可脫軌）</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-msg" id="status-msg">選擇初速度後按「開始」</div>
+  </div>
+
+  <button id="btn-run" onclick="handleBtn()">▶ 開始</button>
+</div>
+
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+const W=390, H=390;
+const g=9.8, R=1.0;
+// 圓心偏右 給左邊留出入軌道空間
+const CX=195, CY=200;
+const SC=140;
+const pxR=R*SC;
+
+const PHASE={SLIDE:0,TRACK:1,PROJECTILE:2,RETURN:3,EXIT:4,DONE:5,FREEFALL:6};
+let phase=PHASE.DONE;
+let running=false, raf=null, lastTime=null;
+let kFactor=2.0, v0=0, leftClosed=true, trackLocked=false;
+let theta=-Math.PI/2, maxTheta=-Math.PI/2;
+let detachTheta=null, detachCosAlpha=null;
+
+// 入軌起始 畫面左側固定點
+const SLIDE_START=30;
+let slideX=SLIDE_START;
+let exitX=0;  // 離開時的 x 位置
+let px=0,py=0,pvx=0,pvy=0;
+const projTrail=[];
+
+// 速度標記 記錄一次即可 
+let labelBottom=null, labelMid=null, labelTop=null, labelDetach=null;
+let returnPeakTheta=null;
+let showLabels=false;
+let hasDetached=false;  // 球真正脫軌後才設true
+
+function trackEntryX(){ return CX; }
+function bottomY()    { return CY+pxR; }
+
+//    速度轉根號字串   
+function fmtV(v){
+  if(v<0.001) return '0';
+  const k2=v*v/(g*R);
+  for(let n=1;n<=12;n++){
+    if(Math.abs(k2-n)<0.006){
+      return n===1?'√gR':'√'+n+'gR';
+    }
+  }
+  return (v/Math.sqrt(g*R)).toFixed(3)+'√gR';
+}
+
+// cos   轉分數或小數
+function fmtCos(c){
+  // 常見分數 1/3, 2/3, 1/2, 1/4, 3/4
+  const fracs=[[1,3],[2,3],[1,2],[1,4],[3,4],[0,1],[1,1]];
+  for(const [p,q] of fracs){
+    if(Math.abs(c-p/q)<0.003){
+      if(q===1) return p===0?'0':'1';
+      return p+'/'+q;
+    }
+  }
+  return c.toFixed(4);
+}
+
+function initV(){ v0=kFactor*Math.sqrt(g*R); decideMode(); }
+
+function initState(){
+  initV();  // 內含 decideMode()，設好 detachTheta 等
+  phase=PHASE.SLIDE; slideX=SLIDE_START; exitX=0;
+  theta=-Math.PI/2; maxTheta=-Math.PI/2;
+  // detachTheta/detachCosAlpha 由 decideMode() 設定，不在此重置
+  px=py=pvx=pvy=0; projTrail.length=0;
+  returnPeakTheta=null; showLabels=false; hasDetached=false;
+  lastTime=null;
+}
+
+function h(t)   { return R*(1+Math.sin(t)); }
+function v2at(t){ return v0*v0-2*g*h(t); }
+function vat(t) { const s=v2at(t); return s>0?Math.sqrt(s):0; }
+function Nat(t) { return v2at(t)/R-g*Math.sin(t); }
+function cosTheta(td){ return Math.sin(td); }
+function isAtTop(td){ return Math.abs(td-Math.PI/2)<0.12; }
+
+// ── 三種模式（initV後立即決定）──
+const MODE={RETURN:0, DETACH:1, LOOP:2};
+let mode=MODE.LOOP;
+let peakThetaExact=null;
+let detachThetaExact=null;
+let peakAction='return'; // 'return' 或 'freefall'
+
+function decideMode(){
+  const k2=v0*v0/(g*R);
+
+  labelBottom={v:v0};
+  labelMid=null;
+  detachTheta=null; detachCosAlpha=null;
+  peakAction='return';
+
+  if(trackLocked){
+    if(k2 < 4-1e-9){
+      mode=MODE.RETURN; peakAction='return';
+      const s=k2/2-1;
+      peakThetaExact=Math.asin(Math.max(-1,Math.min(1,s)));
+      detachThetaExact=null;
+      labelMid = peakThetaExact>=0 ? {v:vat(0)} : null;
+      labelTop=null; labelDetach=null;
+    } else if(Math.abs(k2-4)<1e-6){
+      // 封閉圓：頂點有軌道，不穩定平衡靜止；開放半球：頂點無軌道，自由落體
+      mode=MODE.RETURN;
+      peakAction = leftClosed ? 'stop' : 'freefall';
+      peakThetaExact=Math.PI/2;
+      detachThetaExact=null;
+      labelMid={v:vat(0)};
+      labelTop={v:0}; labelDetach=null;
+    } else if(k2 < 5-1e-9){
+      mode=MODE.LOOP; peakAction='return';
+      peakThetaExact=null; detachThetaExact=null;
+      labelMid={v:vat(0)};
+      labelTop={v:vat(Math.PI/2)}; labelDetach=null;
+    } else {
+      mode=MODE.LOOP; peakAction='return';
+      peakThetaExact=null; detachThetaExact=null;
+      labelMid={v:vat(0)};
+      labelTop={v:vat(Math.PI/2)}; labelDetach=null;
+    }
+  } else {
+    if(k2 <= 2+1e-9){
+      mode=MODE.RETURN; peakAction='return';
+      const s=k2/2-1;
+      peakThetaExact=Math.asin(Math.max(-1,Math.min(1,s)));
+      detachThetaExact=null;
+      labelMid = peakThetaExact>=0 ? {v:vat(0)} : null;
+      labelTop=null; labelDetach=null;
+    } else if(k2 < 5-1e-9){
+      mode=MODE.DETACH; peakAction='return';
+      peakThetaExact=null;
+      const td=Math.asin((k2-2)/3);
+      detachThetaExact=td;
+      detachTheta=td; detachCosAlpha=cosTheta(td);
+      labelMid={v:vat(0)};
+      labelTop=null;
+      labelDetach={theta:td, v:vat(td), cosA:cosTheta(td)};
+    } else {
+      mode=MODE.LOOP; peakAction='return';
+      peakThetaExact=null; detachThetaExact=null;
+      labelMid={v:vat(0)};
+      labelTop={v:vat(Math.PI/2)}; labelDetach=null;
+    }
+  }
+}
+
+function step(ts){
+  if(!running) return;
+  if(lastTime===null) lastTime=ts;
+  const dt=Math.min((ts-lastTime)/1000,0.033);
+  lastTime=ts;
+
+  if(phase===PHASE.SLIDE){
+    if(labelBottom===null) labelBottom={v:v0};
+    slideX+=v0*SC*dt;
+    if(slideX>=trackEntryX()){
+      slideX=trackEntryX();
+      theta=-Math.PI/2; phase=PHASE.TRACK;
+    }
+  }
+  else if(phase===PHASE.TRACK){
+    const v2=v2at(theta), N=Nat(theta);
+
+    if(!leftClosed && theta>Math.PI/2+0.05){
+      doDetach(detachThetaExact!==null ? detachThetaExact : Math.PI/2);
+    } else if(mode===MODE.RETURN){
+      const v=vat(theta);
+      if(v < 0.001){
+        // 速度趨近0，直接snap到頂點
+        theta=peakThetaExact;
+        maxTheta=peakThetaExact;
+        if(peakAction==='freefall'){
+          // 切到專用自由落體 phase
+          phase=PHASE.FREEFALL;
+          px=CX; py=CY-pxR; pvx=0; pvy=0;
+          hasDetached=true;
+        } else if(peakAction==='stop'){
+          phase=PHASE.DONE;
+        } else {
+          phase=PHASE.RETURN;
+        }
+      } else {
+        theta+=v/R*dt;
+        if(theta>maxTheta) maxTheta=theta;
+        if(theta>=peakThetaExact){
+          theta=peakThetaExact;
+          maxTheta=peakThetaExact;
+          if(peakAction==='freefall'){
+            phase=PHASE.FREEFALL;
+            px=CX; py=CY-pxR; pvx=0; pvy=0;
+            hasDetached=true;
+          } else if(peakAction==='stop'){
+            phase=PHASE.DONE;
+          } else {
+            phase=PHASE.RETURN;
+          }
+        }
+      }
+    } else if(mode===MODE.DETACH){
+      theta+=vat(theta)/R*dt;
+      if(theta>maxTheta) maxTheta=theta;
+      if(theta>=detachThetaExact){
+        doDetach(detachThetaExact);
+      }
+    } else {
+      // LOOP
+      theta+=vat(theta)/R*dt;
+      if(theta>maxTheta) maxTheta=theta;
+      if(theta>=-Math.PI/2+2*Math.PI-0.04){
+        theta=-Math.PI/2;
+        showLabels=true;  // 繞完第一圈，顯示標記，動畫繼續
+      }
+    }
+  }
+  else if(phase===PHASE.RETURN){
+    if(returnPeakTheta===null){
+      returnPeakTheta=peakThetaExact;
+      // 첫 프레임: theta를 최고점에서 살짝 아래로 밀어서 dh>0 보장
+      theta=peakThetaExact-0.01;
+    }
+    const dh=h(returnPeakTheta)-h(theta);
+    const v=dh>0?Math.sqrt(2*g*dh):0;
+    theta-=(v/R)*dt;
+    if(theta<=-Math.PI/2){
+      theta=-Math.PI/2;
+      exitX=CX;
+      phase=PHASE.EXIT;
+    }
+  }
+  else if(phase===PHASE.EXIT){
+    exitX -= v0*SC*dt;
+    if(exitX < -20) phase=PHASE.DONE;
+  }
+  else if(phase===PHASE.FREEFALL){
+    // 頂點自由落體：只有垂直重力
+    pvy+=g*SC*dt;
+    py+=pvy*dt;
+    if(py>=bottomY()+60) phase=PHASE.DONE;
+  }
+  else if(phase===PHASE.PROJECTILE){
+    pvy+=g*SC*dt; px+=pvx*dt; py+=pvy*dt;
+    projTrail.push({x:px,y:py});
+    if(projTrail.length>160) projTrail.shift();
+    // 落出畫面底部，或往左超出畫面
+    if(py>=bottomY()+60 || px<-50 || px>W+50) phase=PHASE.DONE;
+  }
+
+  updateInfo(); draw();
+  if(phase!==PHASE.DONE){
+    raf=requestAnimationFrame(step);
+  } else {
+    running=false; btnState='done';
+    showLabels=true;
+    setControlsDisabled(false);
+    const btn=document.getElementById('btn-run');
+    btn.textContent='↺ 重置'; btn.className='resetting';
+    draw(); updateInfo();
+  }
+}
+
+function doDetach(td){
+  hasDetached=true;
+  const vExact=isAtTop(td)?vat(Math.PI/2):vat(td);
+  px=CX+pxR*Math.cos(td); py=CY-pxR*Math.sin(td);
+  pvx=-Math.sin(td)*vExact*SC;
+  pvy=-Math.cos(td)*vExact*SC;
+  phase=PHASE.PROJECTILE;
+}
+
+function updateInfo(){
+  const phi=(theta+Math.PI/2)*180/Math.PI;
+  const maxPhi=(maxTheta+Math.PI/2)*180/Math.PI;
+  const msgEl=document.getElementById('status-msg');
+  const vcrit=Math.sqrt(5*g*R);
+  const vcritLock=Math.sqrt(4*g*R);
+  const isLoop = trackLocked ? v0>=vcritLock-0.01 : v0>=vcrit-0.01;
+  const loopMsg = trackLocked ? 'v₀ >= √4gR，完整繞圈中！' : 'v₀ >= √5gR，完整繞圈中！';
+  if(phase===PHASE.SLIDE){
+    msgEl.style.color='#c0d8f0'; msgEl.textContent='球正滑向軌道...';
+  } else if(phase===PHASE.TRACK){
+    if(isLoop){ msgEl.style.color='#6bffb3'; msgEl.textContent=loopMsg; }
+    else { msgEl.style.color='#c0d8f0'; msgEl.textContent='爬升中 '+phi.toFixed(1)+'°  h='+h(theta).toFixed(3)+'m'; }
+  } else if(phase===PHASE.RETURN){
+    msgEl.style.color='#ff8888'; msgEl.textContent='速度不足，折返（最高 '+((maxTheta+Math.PI/2)*180/Math.PI).toFixed(1)+'°）';
+  } else if(phase===PHASE.PROJECTILE){
+    if(isAtTop(detachTheta)){
+      msgEl.style.color='#ffb347'; msgEl.textContent='頂點脫軌，平拋運動中';
+    } else {
+      const cosStr=fmtCos(detachCosAlpha);
+      msgEl.style.color='#ffb347';
+      msgEl.textContent='脫軌！cos θ = '+cosStr+' (sin θ='+Math.sin(detachTheta).toFixed(4)+')';
+    }
+  } else {
+    if(peakAction==='stop' && phase===PHASE.DONE){
+      msgEl.style.color='#ffb347'; msgEl.textContent='⚖ 頂點靜止（不穩定平衡）';
+    } else {
+      msgEl.style.color='#7a9aba'; msgEl.textContent='模擬結束';
+    }
+  }
+}
+
+//    主繪圖   
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  // 背景
+  const bg=ctx.createRadialGradient(CX,CY,30,CX,CY,420);
+  bg.addColorStop(0,'#0d1526'); bg.addColorStop(1,'#06080f');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // 地面虛線
+  ctx.strokeStyle='#1a2a40'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(20,bottomY()); ctx.lineTo(W-10,bottomY()); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 軌道
+  drawArc(CX,CY,pxR,-Math.PI/2,Math.PI/2);
+  if(leftClosed){
+    drawArc(CX,CY,pxR,Math.PI/2,3*Math.PI/2);
+  } else {
+    ctx.save(); ctx.setLineDash([7,5]);
+    ctx.strokeStyle='#1a3050'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(CX,CY,pxR,-Math.PI/2,Math.PI/2,true); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle='#2a4a6a'; ctx.lineWidth=2;
+    [[CX,CY-pxR,1],[CX,CY+pxR,-1]].forEach(([x,y,d])=>{
+      ctx.beginPath(); ctx.moveTo(x-10,y+d*4); ctx.lineTo(x+10,y+d*4); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  // 角度刻度
+  for(let a=0;a<360;a+=30){
+    const mAng=a*Math.PI/180-Math.PI/2;
+    const px2=CX+pxR*Math.cos(mAng), py2=CY-pxR*Math.sin(mAng);
+    const ox=CX+(pxR+10)*Math.cos(mAng), oy=CY-(pxR+10)*Math.sin(mAng);
+    ctx.strokeStyle=a%90===0?'#2a5080':'#162840'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(px2,py2); ctx.lineTo(ox,oy); ctx.stroke();
+    if(a%90===0){
+      const tx=CX+(pxR+26)*Math.cos(mAng), ty=CY-(pxR+26)*Math.sin(mAng);
+      ctx.font='12px monospace'; ctx.fillStyle='#2a5080';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(a+'°',tx,ty);
+    }
+  }
+
+  // 軌跡高亮
+  if(phase>=PHASE.TRACK && theta>-Math.PI/2+0.02){
+    ctx.save(); ctx.beginPath();
+    ctx.arc(CX,CY,pxR,Math.PI/2,-theta,true);
+    ctx.strokeStyle='#2060c0'; ctx.lineWidth=3; ctx.stroke(); ctx.restore();
+  }
+
+  // 拋體軌跡 實線 無虛線 
+  if(projTrail.length>1){
+    ctx.save(); ctx.beginPath(); ctx.moveTo(projTrail[0].x,projTrail[0].y);
+    for(let i=1;i<projTrail.length;i++) ctx.lineTo(projTrail[i].x,projTrail[i].y);
+    ctx.strokeStyle='#ff8844'; ctx.lineWidth=2;
+    ctx.stroke(); ctx.restore();
+  }
+
+  //      角度示意 僅在非頂點脫軌時顯示   
+  if(showLabels && detachTheta!==null && !isAtTop(detachTheta)){
+    const td=detachTheta;
+
+    // 頂點座標 軌道上 
+    const topX=CX+pxR*Math.cos(Math.PI/2);   // = CX
+    const topY=CY-pxR*Math.sin(Math.PI/2);   // = CY - pxR
+
+    // 脫離點座標 軌道上 
+    const detX=CX+pxR*Math.cos(td);
+    const detY=CY-pxR*Math.sin(td);
+
+    ctx.save();
+    ctx.strokeStyle='#ffb347'; ctx.lineWidth=1.8;
+    ctx.setLineDash([5,3]);
+
+    // 虛線1 圓心   頂點 軌道邊緣 
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(topX,topY); ctx.stroke();
+
+    // 虛線2 圓心   脫離點 軌道邊緣 
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(detX,detY); ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    // 弧：從頂點方向到脫離點方向（畫布角：頂點=-π/2，脫離點=-td）
+    const ra=pxR*0.38;
+    // 在畫布中，頂點在上方（-π/2），脫離點在右上方（-td，td<π/2時-td>-π/2）
+    // 從 -π/2 逆時針到 -td（td在第一象限時，逆時針是往右轉，即正確方向）
+    ctx.beginPath();
+    ctx.arc(CX, CY, ra, -Math.PI/2, -td, false); // false=順時針（canvas）
+    ctx.strokeStyle='#ffb347'; ctx.lineWidth=1.5; ctx.stroke();
+
+    //   文字
+    const midMath=(Math.PI/2+td)/2;
+    const textR=ra+20;
+    const lax=CX+textR*Math.cos(midMath);
+    const lay=CY-textR*Math.sin(midMath);
+    ctx.font='bold 18px monospace'; ctx.fillStyle='#ffb347';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('θ',lax,lay);
+
+    ctx.restore();
+  }
+
+  // ── 速度 badge（動畫結束後才顯示）──
+  if(showLabels) {
+    // 底部
+    if(labelBottom){
+      const bax = CX;
+      drawVBadge(bax, bottomY(), labelBottom.v, '#ffd700', 'v₀', 'center', -1);
+    }
+    // 側邊
+    if(labelMid){
+      drawVBadge(CX+pxR, CY, labelMid.v, '#6bffb3', '側邊', 'right', 0);
+    }
+    // 頂部（包含速度=0的自由落體情況）
+    if(labelTop){
+      drawVBadge(CX, CY-pxR, labelTop.v, '#ff6b6b', '頂部', 'center', 1);
+    }
+    // 脫軌點（左上方顯示）
+    if(labelDetach){
+      const td=labelDetach.theta;
+      drawDetachBadge(CX+pxR*Math.cos(td), CY-pxR*Math.sin(td), labelDetach.v, labelDetach.cosA, isAtTop(td));
+    }
+    // 折返最高點粉紅小球
+    // 折返最高點粉紅小球
+    if(peakThetaExact!==null && mode===MODE.RETURN && peakAction==='return'){
+      const rpx=CX+pxR*Math.cos(peakThetaExact);
+      const rpy=CY-pxR*Math.sin(peakThetaExact);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(rpx,rpy,9,0,Math.PI*2);
+      ctx.fillStyle='#ff80b0'; ctx.shadowBlur=14; ctx.shadowColor='#ff60a0';
+      ctx.fill(); ctx.shadowBlur=0;
+      ctx.strokeStyle='#ffb0d0'; ctx.lineWidth=1.5; ctx.stroke();
+      const hPeak = R*(1+Math.sin(peakThetaExact));
+      ctx.font='bold 14px monospace'; ctx.fillStyle='#ff80b0';
+      ctx.textAlign='center'; ctx.textBaseline='bottom';
+      ctx.fillText('h = '+hPeak.toFixed(3)+' m', rpx, rpy-12);
+      ctx.restore();
+    }
+  }  // end showLabels
+
+  // 圓心
+  ctx.beginPath(); ctx.arc(CX,CY,5,0,Math.PI*2);
+  ctx.fillStyle='#3a6a9a'; ctx.fill();
+
+  // 入軌道
+  ctx.fillStyle='#1e3a5f';
+  ctx.fillRect(SLIDE_START, bottomY(), trackEntryX()-SLIDE_START+2, 3);
+  ctx.font='13px monospace'; ctx.fillStyle='#3a6a8a';
+  ctx.textAlign='left'; ctx.textBaseline='bottom';
+  ctx.fillText('v₀ ──>', SLIDE_START+8, bottomY()-6);
+
+  // 球位置
+  let bx, by;
+  if(phase===PHASE.SLIDE){ bx=slideX; by=bottomY(); }
+  else if(phase===PHASE.PROJECTILE){ bx=px; by=py; }
+  else if(phase===PHASE.FREEFALL){ bx=px; by=py; }
+  else if(phase===PHASE.EXIT){ bx=exitX; by=bottomY(); }
+  else if(phase===PHASE.DONE && hasDetached){ bx=-999; by=-999; }
+  else if(phase===PHASE.DONE && peakAction==='stop'){
+    bx=CX; by=CY-pxR;
+  }
+  else { bx=CX+pxR*Math.cos(theta); by=CY-pxR*Math.sin(theta); }
+
+  drawBall(bx,by);
+}
+
+//    繪製工具   
+function drawArc(cx,cy,r,start,end){
+  const cs=-start, ce=-end;
+  // 發光底層
+  for(let i=3;i>=1;i--){
+    ctx.beginPath(); ctx.arc(cx,cy,r,cs,ce,true);
+    ctx.strokeStyle=`rgba(32,80,160,${0.07*(4-i)})`;
+    ctx.lineWidth=(4-i)*5; ctx.stroke();
+  }
+  if(trackLocked){
+    // 鎖定：畫外軌（稍大）和內軌（稍小），表示槽道夾住
+    ctx.beginPath(); ctx.arc(cx,cy,r+5,cs,ce,true);
+    ctx.strokeStyle='#3a7a3a'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,r-5,cs,ce,true);
+    ctx.strokeStyle='#3a7a3a'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,r,cs,ce,true);
+    ctx.strokeStyle='#40c040'; ctx.lineWidth=2; ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.arc(cx,cy,r,cs,ce,true);
+    ctx.strokeStyle='#2060a0'; ctx.lineWidth=2; ctx.stroke();
+  }
+}
+
+function drawBall(x,y){
+  const gr=ctx.createRadialGradient(x-4,y-4,2,x,y,13);
+  gr.addColorStop(0,'#a0d8ff'); gr.addColorStop(0.5,'#3090e0'); gr.addColorStop(1,'#1050a0');
+  ctx.beginPath(); ctx.arc(x,y,13,0,Math.PI*2);
+  ctx.fillStyle=gr; ctx.shadowBlur=16; ctx.shadowColor='#4090ff';
+  ctx.fill(); ctx.shadowBlur=0;
+  ctx.strokeStyle='#80c0ff'; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+function drawArrow(x1,y1,x2,y2,col,lw){
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<4)return;
+  const ux=dx/len,uy=dy/len,hl=9;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=lw;
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-hl*ux+hl*0.4*uy,y2-hl*uy-hl*0.4*ux);
+  ctx.lineTo(x2-hl*ux-hl*0.4*uy,y2-hl*uy+hl*0.4*ux);
+  ctx.closePath(); ctx.fill();
+}
+
+// 速度 badge
+// dir: -1=往上, 0=垂直居中, 1=往下 相對錨點 
+function drawVBadge(ax,ay,v,col,label,align,dir){
+  const sqrtStr=fmtV(v);
+  const mps=v.toFixed(2)+' m/s';
+  const line1=label+': '+sqrtStr;
+  const line2='= '+mps;
+  ctx.font='bold 16px monospace'; const w1=ctx.measureText(line1).width;
+  ctx.font='14px monospace';      const w2=ctx.measureText(line2).width;
+  const bw=Math.max(w1,w2)+22, bh=48, pad=10;
+  let rx,ry;
+  if(align==='center')      rx=ax-bw/2;
+  else if(align==='right')  rx=ax-bw-pad;
+  else                      rx=ax+pad;
+  // dir=-1: badge在錨點上方; dir=1: 下方; dir=0: 居中
+  if(dir===-1)      ry=ay-bh-8;
+  else if(dir===1)  ry=ay+8;
+  else              ry=ay-bh/2;
+
+  ctx.save();
+  ctx.fillStyle='rgba(6,10,22,0.93)'; ctx.strokeStyle=col; ctx.lineWidth=1.5;
+  roundRect(rx,ry,bw,bh,6); ctx.fill(); ctx.stroke();
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillStyle=col; ctx.font='bold 16px monospace'; ctx.fillText(line1,rx+8,ry+5);
+  ctx.fillStyle=col+'bb'; ctx.font='14px monospace'; ctx.fillText(line2,rx+8,ry+26);
+  // 錨點圓點
+  ctx.beginPath(); ctx.arc(ax,ay,6,0,Math.PI*2);
+  ctx.fillStyle=col; ctx.shadowBlur=8; ctx.shadowColor=col; ctx.fill(); ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function drawDetachBadge(ax,ay,v,cosA,atTop){
+  const col='#ffb347';
+  const sqrtStr=fmtV(v);
+  const mps=v.toFixed(2)+' m/s';
+  const line1='脫軌: '+sqrtStr;
+  const line2='= '+mps;
+  const cosStr=fmtCos(cosA);
+  const cosDecStr=cosA.toFixed(4);
+  // 若能化分數 顯示 分數 (小數)  頂點不顯示第三行
+  const line3=atTop?null:('cos θ = '+(cosStr!==cosDecStr?cosStr+' ('+cosDecStr+')':cosDecStr));
+
+  ctx.font='bold 16px monospace';
+  const w1=ctx.measureText(line1).width;
+  ctx.font='14px monospace'; const w2=ctx.measureText(line2).width;
+  ctx.font='bold 16px monospace'; const w3=line3?ctx.measureText(line3).width:0;
+  const bw=Math.max(w1,w2,w3)+22;
+  const bh=line3?70:50;
+  // 脫離點 badge 固定右上角，加邊界保護
+  let rx = Math.min(ax + 14, W - bw - 4);
+  let ry = Math.max(4, ay - bh - 8);
+
+  ctx.save();
+  ctx.fillStyle='rgba(6,10,22,0.93)'; ctx.strokeStyle=col; ctx.lineWidth=1.5;
+  roundRect(rx,ry,bw,bh,6); ctx.fill(); ctx.stroke();
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillStyle=col; ctx.font='bold 16px monospace'; ctx.fillText(line1,rx+8,ry+5);
+  ctx.fillStyle=col+'bb'; ctx.font='14px monospace'; ctx.fillText(line2,rx+8,ry+26);
+  if(line3){
+    ctx.fillStyle='#ffdd88'; ctx.font='bold 16px monospace'; ctx.fillText(line3,rx+8,ry+47);
+  }
+  ctx.beginPath(); ctx.arc(ax,ay,8,0,Math.PI*2);
+  ctx.fillStyle=col; ctx.shadowBlur=12; ctx.shadowColor=col; ctx.fill(); ctx.shadowBlur=0;
+  ctx.restore();
+}
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+//    控制   
+const SNAP_KS=[1,Math.sqrt(2),Math.sqrt(3),2,Math.sqrt(5),Math.sqrt(6)];
+const SNAP_NAMES=['√gR','√2gR','√3gR','√4gR','√5gR','√6gR'];
+const SNAP_TOL=0.03;
+
+function onSlider(val){
+  let k=parseFloat(val);
+  for(const sk of SNAP_KS){ if(Math.abs(k-sk)<SNAP_TOL){k=sk;break;} }
+  kFactor=k;
+  document.getElementById('v-slider').value=k;
+  updateVDisplay();
+  if(!running){initState();draw();}
+}
+
+function snapV(k){
+  kFactor=k;
+  document.getElementById('v-slider').value=k;
+  updateVDisplay();
+  if(!running){initState();draw();}
+}
+
+function updateVDisplay(){
+  const k=kFactor;
+  let label=null;
+  for(let i=0;i<SNAP_KS.length;i++){
+    if(Math.abs(k-SNAP_KS[i])<0.0003){label=SNAP_NAMES[i];break;}
+  }
+  document.getElementById('v-display').textContent=label||k.toFixed(3)+'√gR';
+  document.querySelectorAll('.vsnap').forEach(b=>{
+    b.classList.toggle('active',Math.abs(parseFloat(b.dataset.k)-k)<0.003);
+  });
+}
+
+function toggleLeft(){
+  leftClosed=!leftClosed;
+  const btn=document.getElementById('left-toggle');
+  btn.textContent=leftClosed?'● 封閉（完整圓）':'○ 開放（半球碗）';
+  btn.className='toggle-btn '+(leftClosed?'on':'off');
+  if(!running){initState();draw();}
+}
+
+function toggleLock(){
+  trackLocked=!trackLocked;
+  const btn=document.getElementById('lock-toggle');
+  btn.textContent=trackLocked?'● 鎖定軌道（強制繞行）':'○ 內軌（可脫軌）';
+  btn.className='toggle-btn '+(trackLocked?'on':'off');
+  if(!running){initState();draw();}
+}
+
+// 三態：idle → running → done(wait reset) → idle
+// btnState: 'idle' | 'running' | 'done'
+let btnState='idle';
+
+function handleBtn(){
+  const btn=document.getElementById('btn-run');
+  if(btnState==='idle'){
+    // 開始模擬
+    initState(); running=true; btnState='running';
+    btn.textContent='⏹ 停止'; btn.className='running';
+    setControlsDisabled(true);
+    raf=requestAnimationFrame(step);
+  } else if(btnState==='running'){
+    // 停止
+    running=false; cancelAnimationFrame(raf); btnState='done';
+    btn.textContent='↺ 重置'; btn.className='resetting';
+    setControlsDisabled(false);
+  } else {
+    // 重置 → 回到 idle
+    initState(); btnState='idle';
+    btn.textContent='▶ 開始'; btn.className='';
+    setControlsDisabled(false);
+    draw();
+  }
+}
+
+function toggleRun(){ handleBtn(); }
+
+function setControlsDisabled(disabled){
+  ['left-toggle','lock-toggle'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.style.opacity = disabled ? '0.4' : '1';
+    el.style.pointerEvents = disabled ? 'none' : 'auto';
+  });
+}
+
+// resetSim 合併到 handleBtn 三態循環
+
+updateVDisplay(); initState(); draw();
+</script>
+</body>
+</html>
