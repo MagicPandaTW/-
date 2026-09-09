@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>斜拋運動｜三軌自由探索（手機版）</title>
+<style>
+:root{
+  --bg:#0f1117; --stage-bg:#0f1117;
+  --panel:#1a1a17; --panel2:#1e1e1a; --panel3:#171713;
+  --border:#2a2a26; --border2:#3a3a34;
+  --text:#dedad0; --text-dim:#918d80; --text-mute:#66625a;
+  --accent-text:#F0D48A; --btn-bg:#1e1e1a; --btn-border:#3a3a34;
+  --grid:rgba(255,255,255,0.16); --axis:rgba(255,255,255,0.55);
+  --ghost:rgba(200,196,186,0.38);
+  --magnet:#F0D48A; --magnet-glow:rgba(240,212,138,0.35);
+  --A:#5BA3E8; --B:#EF9F27; --C:#E07055; --D:#B49AE8; --E:#6FC79A;
+}
+html.light{
+  --bg:#faf7ee; --stage-bg:#faf7ee;
+  --panel:#ffffff; --panel2:#fbf5e6; --panel3:#fffdf6;
+  --border:#c9bc98; --border2:#a3936c;
+  --text:#2b2620; --text-dim:#5c5340; --text-mute:#6b5f48;
+  --accent-text:#7a5a10; --btn-bg:#ffffff; --btn-border:#a3936c;
+  --grid:rgba(55,45,20,0.30); --axis:rgba(45,35,15,0.75);
+  --ghost:rgba(70,58,35,0.55);
+  --magnet:#8a5a10; --magnet-glow:rgba(138,90,16,0.22);
+  --A:#2a5ca5; --B:#8a5a10; --C:#a5342a; --D:#6a4fa0; --E:#2f7a52;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+  -webkit-touch-callout:none;}
+html,body{width:100vw;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;}
+:root{
+  --fs-title: clamp(13px, 2.15dvh, 20px);
+  --fs-body:  clamp(12px, 1.9dvh, 18px);
+  --fs-small: clamp(10.5px, 1.6dvh, 15px);
+  --fs-mini:  clamp(9.5px, 1.35dvh, 13px);
+}
+#stage{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--stage-bg);
+  height:100dvh;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);}
+
+#top-bar{display:flex;align-items:center;gap:0.5em;padding:0.6dvh 2.6vw;flex-shrink:0;}
+#top-bar h1{font-size:var(--fs-title);font-weight:800;color:var(--accent-text);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;}
+.spacer{flex:1;min-width:0;}
+.icon-btn{border-radius:8px;border:1.5px solid var(--btn-border);background:var(--btn-bg);color:var(--text);
+  font-size:var(--fs-body);padding:0.7dvh 2vw;line-height:1;cursor:pointer;min-width:9vw;min-height:4.2dvh;}
+.icon-btn:active{transform:scale(0.93);}
+.icon-btn:disabled{opacity:0.32;}
+.icon-btn:disabled:active{transform:none;}
+
+#tab-bar{display:flex;gap:1.4vw;padding:0.5dvh 2.6vw;flex-shrink:0;}
+.tabbtn{flex:1;min-width:0;border-radius:8px;border:1.5px solid var(--border2);background:var(--panel2);
+  color:var(--text-dim);font-size:var(--fs-mini);font-weight:700;padding:0.9dvh 0.4vw;cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tabbtn:active{transform:scale(0.96);}
+.tabbtn.active{background:var(--panel);color:var(--accent-text);border-color:var(--accent-text);}
+
+#main{width:calc(100% - 5.2vw);margin:0 auto;aspect-ratio:4/3;flex-shrink:0;position:relative;}
+canvas{display:block;width:100%;height:100%;touch-action:none;}
+canvas.dragging{opacity:0.97;}
+
+#phase-hint{font-size:var(--fs-mini);color:var(--text-dim);padding:0.5dvh 2.6vw;flex-shrink:0;
+  line-height:1.3; max-height:3.4em; overflow:hidden;}
+
+#scroll-area{flex:1;min-height:0;overflow-y:auto;padding:0 2.6vw 1dvh;-webkit-overflow-scrolling:touch;}
+
+#quick-dock{flex-shrink:0;padding:0.5dvh 2.6vw 0.2dvh;border-top:1px solid var(--border);background:var(--panel3);}
+#quick-dock.hidden{display:none;}
+#quick-panel{display:flex;gap:1.6vw;padding:0.5dvh 0;flex-shrink:0;}
+.qbtn{flex:1;border-radius:8px;border:1.5px solid var(--btn-border);background:var(--btn-bg);color:var(--text);
+  font-size:var(--fs-small);font-weight:700;padding:0.9dvh 0.5vw;cursor:pointer;min-height:4.4dvh;}
+.qbtn:active{transform:scale(0.95);}
+.qbtn.pending{border-color:var(--magnet);color:var(--magnet);background:var(--magnet-glow);}
+#quick-hint{font-size:var(--fs-mini);color:var(--text-dim);line-height:1.3;padding:0.2dvh 0 0.4dvh;
+  max-height:2.8em;overflow:hidden;}
+
+.traj-card{display:flex;flex-direction:column;gap:0.5dvh;background:var(--panel);
+  border:1.5px solid var(--border);border-radius:10px;padding:0.9dvh 3vw;margin-bottom:1dvh;}
+.tc-head{display:flex;align-items:center;gap:1.6vw;}
+.dot{width:2.4vw;height:2.4vw;border-radius:50%;flex-shrink:0;max-width:11px;max-height:11px;}
+.tj-name{font-size:var(--fs-small);font-weight:800;flex-shrink:0;border:1.5px solid transparent;
+  border-radius:7px;background:transparent;padding:0.5dvh 2vw;cursor:pointer;font-family:inherit;}
+.tj-name:active{transform:scale(0.95);}
+.tj-name.selected{border-color:currentColor;background:rgba(240,212,138,0.14);}
+.tj-mode{font-size:var(--fs-mini);color:var(--text-mute);flex:1;min-width:0;text-align:right;}
+.tj-clear{font-size:var(--fs-mini);color:var(--text-mute);border:1px solid var(--border2);border-radius:6px;
+  padding:0.5dvh 2vw;background:transparent;cursor:pointer;flex-shrink:0;}
+.tj-clear:active{transform:scale(0.9);}
+.chiprow{display:grid;grid-template-columns:1fr 1fr;gap:1.4vw;}
+.rchip{border-radius:7px;border:1.5px solid var(--border2);background:var(--panel2);
+  padding:0.7dvh 2.2vw;display:flex;align-items:baseline;justify-content:space-between;gap:0.4em;cursor:pointer;min-height:4.2dvh;}
+.rchip:active{transform:scale(0.96);}
+.rchip .k{font-size:var(--fs-mini);color:var(--text-dim);font-weight:700;}
+.rchip .v{font-size:var(--fs-small);font-weight:800;color:var(--text);}
+.rchip.fixed{border-style:solid;border-width:2px;background:var(--panel);}
+.rchip.fixed .v{color:var(--accent-text);}
+.rchip.magnet{box-shadow:0 0 0 2.5px var(--magnet) inset,0 0 6px var(--magnet-glow);}
+.rchip.magnet .v{color:var(--magnet);}
+
+#preset-info{font-size:var(--fs-small);color:var(--text-dim);line-height:1.6;padding:1dvh 1vw;}
+#preset-info b{color:var(--accent-text);}
+
+#control-bar{display:flex;align-items:center;gap:1.6vw;padding:0.8dvh 2.6vw;
+  padding-bottom:max(0.8dvh, env(safe-area-inset-bottom));flex-shrink:0;border-top:1px solid var(--border);}
+.cbtn{border-radius:9px;border:1.5px solid var(--btn-border);background:var(--btn-bg);color:var(--text);
+  font-size:var(--fs-body);font-weight:700;padding:1dvh 0;cursor:pointer;flex-shrink:0;
+  min-width:10vw;min-height:5dvh;text-align:center;}
+.cbtn:active{transform:scale(0.93);}
+.cbtn:disabled{opacity:0.3;}
+.cbtn:disabled:active{transform:none;}
+.cbtn-main{flex:1.4;border-color:var(--magnet);color:var(--magnet);font-size:var(--fs-small);}
+#frameLabel{font-size:var(--fs-mini);color:var(--magnet);font-weight:800;min-width:11vw;text-align:center;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="top-bar">
+    <h1>斜拋運動｜三軌自由探索</h1>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="btnTheme" onclick="toggleTheme()">☀️</button>
+  </div>
+  <div id="tab-bar">
+    <button class="tabbtn" id="tabFree" onclick="switchTab('free')">自由模式</button>
+    <button class="tabbtn" id="tabSimul3" onclick="switchTab('simul3')">同時拋</button>
+    <button class="tabbtn" id="tabSeq5" onclick="switchTab('seq5')">依序拋</button>
+  </div>
+  <div id="main"><canvas id="c"></canvas></div>
+  <div id="phase-hint"></div>
+  <div id="scroll-area">
+    <div id="value-strip"></div>
+    <div id="preset-info"></div>
+  </div>
+  <div id="quick-dock">
+    <div id="quick-panel">
+      <button class="qbtn" data-action="copy" onclick="toggleQuickAction('copy')">複製參數</button>
+      <button class="qbtn" onclick="applySelfComp()" title="把目前這條軌跡的角度換成 90°−目前角度">餘角</button>
+    </div>
+    <div id="quick-hint"></div>
+  </div>
+  <div id="control-bar">
+    <button class="cbtn" id="btnBack" onclick="backToSetup()">↺</button>
+    <button class="cbtn" id="btnPrev" onclick="stepFrame(-1)">◀</button>
+    <span id="frameLabel">—</span>
+    <button class="cbtn" id="btnNext" onclick="stepFrame(1)">▶</button>
+    <button class="cbtn" id="btnReplay" onclick="replay()">↻</button>
+    <button class="cbtn cbtn-main" id="btnExec" onclick="startExecute()">▶ 執行</button>
+    <button class="cbtn" onclick="resetAll()">🔄</button>
+  </div>
+</div>
+
+<script>
+
+/* ---------- 物理常數與固定顯示範圍 ---------- */
+const G = 9.8;
+const STAGE_MAX_R = 85;
+const STAGE_MAX_H = 55;
+const V0_ABS_MAX = 34, V0_MIN = 4;
+const THETA_MIN = 3, THETA_MAX = 87;
+const VEC_M_PER_MS = 1.55;
+
+const PARAM_META = { v0:{grid:1}, theta:{grid:5}, H:{grid:2}, R:{grid:5} };
+const CROSS_TOL = {v0:0.4, theta:1.2, H:0.7, R:1.6};
+const COMP_TOL = 1.2;
+const V0_MATCH_TOL = 0.4;
+const EQ_TOL = {R:0.35, H:0.3};
+const COMP_LIVE_TOL = 0.6;
+const PRESET_V0_3 = 28; // 手機版畫布較方正，改用 R≤85m, H≤55m 的範圍重新校準
+const PRESET_V0_5 = 28; // 五角度（含75°）用同一個初速，畫面比例更一致
+
+const TRAJ_DEFS = [
+  {name:'軌跡 A', color:'var(--A)', key:'A'},
+  {name:'軌跡 B', color:'var(--B)', key:'B'},
+  {name:'軌跡 C', color:'var(--C)', key:'C'},
+];
+function defaultTraj(i){
+  const base = TRAJ_DEFS[i];
+  const preset = i===0 ? {v0:PRESET_V0_3, theta:30} : i===1 ? {v0:PRESET_V0_3, theta:45} : {v0:PRESET_V0_3, theta:60};
+  return {...base, ...preset, fixedKey:null};
+}
+let trajectories = TRAJ_DEFS.map((_,i)=>defaultTraj(i));
+trajectories.forEach(solveTrajectory);
+
+/* ---------- 求解：一律以 v0,theta 為權威值，H,R,T 都由它們算出 ---------- */
+function v0Cap(thetaDeg){
+  const rad = thetaDeg*Math.PI/180;
+  const capR = Math.sqrt(G*STAGE_MAX_R/Math.max(1e-6,Math.sin(2*rad)));
+  const capH = Math.sqrt(2*G*STAGE_MAX_H)/Math.max(1e-6,Math.sin(rad));
+  return Math.min(V0_ABS_MAX, capR, capH);
+}
+function solveTrajectory(t){
+  const g=G;
+  const rad=t.theta*Math.PI/180;
+  t.R=t.v0*t.v0*Math.sin(2*rad)/g;
+  t.H=t.v0*t.v0*Math.sin(rad)*Math.sin(rad)/(2*g);
+  t.T=2*t.v0*Math.sin(rad)/g;
+}
+
+/* ---------- 目前設定中的軌跡（其餘在設定階段不顯示） ---------- */
+let selectedIdx = 0;
+function selectTraj(i){
+  // 「複製參數」是點數值框套用的，點名稱時視同放棄本次快速設定
+  pendingQuickAction=null;
+  selectedIdx = i;
+  updateControls();
+}
+
+/* ---------- 快速設定：複製參數／餘角 ---------- */
+let pendingQuickAction = null; // null | 'copy'
+function toggleQuickAction(action){
+  if(phase!=='setup') return;
+  pendingQuickAction = (pendingQuickAction===action) ? null : action;
+  renderQuickPanel();
+}
+function renderQuickPanel(){
+  const dock = document.getElementById('quick-dock');
+  const panel = document.getElementById('quick-panel');
+  if(!panel) return;
+  if(dock) dock.classList.toggle('hidden', phase!=='setup');
+  panel.querySelectorAll('.qbtn').forEach(b=>{
+    b.classList.toggle('pending', b.dataset.action===pendingQuickAction);
+  });
+  const cur = trajectories[selectedIdx].name;
+  document.getElementById('quick-hint').textContent =
+    pendingQuickAction==='copy' ? `已選「複製參數」：點上方另一條軌跡的任一個數值框，複製到「${cur}」並自動鎖定該參數`
+    : '快速設定：「複製參數」先點一下，再點另一條軌跡的數值框；「餘角」直接套用在目前這條';
+}
+function applySelfComp(){
+  if(phase!=='setup') return;
+  pendingQuickAction=null;
+  const t=trajectories[selectedIdx];
+  let theta=90-t.theta;
+  theta=Math.max(THETA_MIN, Math.min(THETA_MAX, theta));
+  const v0=Math.max(V0_MIN, Math.min(v0Cap(theta), t.v0));
+  t.v0=v0; t.theta=theta;
+  solveTrajectory(t);
+  updateControls();
+}
+function copyParam(key, curTi, refTi){
+  // 複製過來的值優先權高於「固定」，一律直接覆蓋；複製完該參數自動鎖定。
+  const t=trajectories[curTi], r=trajectories[refTi];
+  const g=G;
+  let v0=t.v0, theta=t.theta;
+  if(key==='v0'){
+    v0=r.v0;
+  } else if(key==='theta'){
+    theta=r.theta;
+  } else if(key==='H'){
+    v0=Math.sqrt(Math.max(0,2*g*r.H))/Math.max(1e-6,Math.sin(theta*Math.PI/180));
+  } else if(key==='R'){
+    v0=Math.sqrt(Math.max(0,g*r.R/Math.max(1e-6,Math.sin(2*theta*Math.PI/180))));
+  }
+  theta=Math.max(THETA_MIN, Math.min(THETA_MAX, theta));
+  v0=Math.max(V0_MIN, Math.min(v0Cap(theta), v0));
+  t.v0=v0; t.theta=theta;
+  solveTrajectory(t);
+  t.fixedKey=key;
+}
+function onChipClick(ti,key){
+  if(pendingQuickAction==='copy'){
+    if(ti!==selectedIdx){ copyParam(key, selectedIdx, ti); }
+    pendingQuickAction=null;
+    updateControls();
+    return;
+  }
+  toggleFixed(ti,key);
+}
+
+/* ---------- 階段狀態機：setup → playing → done ---------- */
+let phase = 'setup';
+let simTime = 0, lastTs = null;
+let frameDt = 0.3, frameCount = 1, frameIdx = 0;
+
+function maxTAll(){ return Math.max(...trajectories.map(t=>t.T)); }
+
+function gcdApproxStep(hA,hB,hC,maxT){
+  // 用「總格數落在一個範圍內」搜尋最佳格距，而不是固定格數；
+  // 格距一律用 maxT/格數，這樣最後一格必定精確落在 maxT（回到地面），
+  // 再從範圍內挑一個能讓三軌最高點時間最接近整數倍格線的格數（模糊近似），
+  // 誤差相近時優先選格數較多的（逐格檢視更絲滑）。
+  const hs=[hA,hB,hC];
+  const FRAME_MIN=10, FRAME_MAX=22;
+  let best=null, bestScore=Infinity;
+  for(let count=FRAME_MIN; count<=FRAME_MAX; count++){
+    const dt=maxT/count;
+    let err=0;
+    hs.forEach(h=>{ const r=h%dt; const d=Math.min(r,dt-r); err+=d/dt; });
+    const score = err - (count-FRAME_MIN)*0.02; // 誤差相近時偏向較多格數，逐格更絲滑
+    if(score<bestScore){ bestScore=score; best={dt,count}; }
+  }
+  return best;
+}
+
+function startExecuteFree(){
+  if(phase!=='setup') return;
+  pendingQuickAction=null;
+  const hs = trajectories.map(t=>t.T/2);
+  const mt = maxTAll();
+  const r = gcdApproxStep(hs[0],hs[1],hs[2],mt);
+  frameDt = r.dt; frameCount = r.count; // 最後一格 = frameCount*frameDt = mt，精確回到地面
+  phase='playing'; simTime=0; lastTs=null;
+  updateControls();
+}
+function replayFree(){
+  if(phase==='setup') return;
+  phase='playing'; simTime=0; lastTs=null;
+  updateControls();
+}
+function backToSetupFree(){
+  phase='setup'; simTime=0; frameIdx=0;
+  updateControls();
+}
+function stepFrameFree(dir){
+  if(phase!=='done') return;
+  const total = frameCount+1; // 0..frameCount 共 total 格
+  frameIdx = ((frameIdx+dir)%total + total) % total; // 最後一格再按下一步會繞回開頭
+  simTime = frameIdx===frameCount ? maxTAll() : frameIdx*frameDt;
+  updateControls();
+}
+function updateControlsFree(){
+  const setup = phase==='setup', playing=phase==='playing', done=phase==='done';
+  document.getElementById('btnExec').disabled = !setup;
+  document.getElementById('btnBack').disabled = setup;
+  document.getElementById('btnReplay').disabled = setup || playing;
+  document.getElementById('btnPrev').disabled = !done;
+  document.getElementById('btnNext').disabled = !done;
+  document.getElementById('frameLabel').textContent = done ? `格 ${frameIdx}/${frameCount}` : (playing? '播放中…' : '—');
+  document.getElementById('phase-hint').textContent = setup
+    ? `設定「${trajectories[selectedIdx].name}」：拖◆設 v₀,θ；拖頂點●設 H,R；拖地面 R 點單獨調射程。點數值框可固定 📌`
+    : playing ? '執行中…請稍候'
+    : '已降落，軌跡保留，可用下方 ◀▶ 逐格檢視';
+  canvas.classList.toggle('locked', !setup);
+  buildValueStrip();
+  renderQuickPanel();
+}
+
+/* ---------- 分頁（自由模式／同時拋／依序拋）派送 ---------- */
+let currentTab = 'free';
+function switchTab(tab){
+  currentTab = tab;
+  document.getElementById('tabFree').classList.toggle('active', tab==='free');
+  document.getElementById('tabSimul3').classList.toggle('active', tab==='simul3');
+  document.getElementById('tabSeq5').classList.toggle('active', tab==='seq5');
+  document.getElementById('value-strip').style.display = tab==='free' ? '' : 'none';
+  document.getElementById('quick-dock').classList.toggle('hidden', tab!=='free' || phase!=='setup');
+  dragging=null;
+  updateControls();
+}
+function startExecute(){ currentTab==='free' ? startExecuteFree() : currentTab==='simul3' ? startExecuteSimul3() : startExecuteSeq5(); }
+function replay(){ currentTab==='free' ? replayFree() : currentTab==='simul3' ? replaySimul3() : replaySeq5(); }
+function backToSetup(){ currentTab==='free' ? backToSetupFree() : currentTab==='simul3' ? backToReadySimul3() : backToReadySeq5(); }
+function stepFrame(dir){ if(currentTab==='free') stepFrameFree(dir); else if(currentTab==='simul3') stepFrameSimul3(dir); }
+function updateControls(){
+  if(currentTab==='free') updateControlsFree();
+  else if(currentTab==='simul3') updateControlsSimul3();
+  else updateControlsSeq5();
+}
+
+/* ---------- 預設資料：同時拋 30°/45°/60°（相同初速） ---------- */
+function makePresetTraj(theta, v0, colorVar, key){
+  const t = {key, color:colorVar, v0, theta, fixedKey:null};
+  solveTrajectory(t); return t;
+}
+let simul3Traj = [
+  makePresetTraj(30,PRESET_V0_3,'var(--A)','A'),
+  makePresetTraj(45,PRESET_V0_3,'var(--B)','B'),
+  makePresetTraj(60,PRESET_V0_3,'var(--C)','C'),
+];
+let simul3Phase='setup', simul3SimTime=0, simul3LastTs=null;
+let simul3FrameDt=0.3, simul3FrameCount=1, simul3FrameIdx=0;
+function maxTSimul3(){ return Math.max(...simul3Traj.map(t=>t.T)); }
+function startExecuteSimul3(){
+  if(simul3Phase!=='setup') return;
+  const hs = simul3Traj.map(t=>t.T/2);
+  const mt = maxTSimul3();
+  const r = gcdApproxStep(hs[0],hs[1],hs[2],mt);
+  simul3FrameDt=r.dt; simul3FrameCount=r.count;
+  simul3Phase='playing'; simul3SimTime=0; simul3LastTs=null;
+  updateControls();
+}
+function replaySimul3(){
+  if(simul3Phase==='setup') return;
+  simul3Phase='playing'; simul3SimTime=0; simul3LastTs=null;
+  updateControls();
+}
+function backToReadySimul3(){
+  simul3Phase='setup'; simul3SimTime=0; simul3FrameIdx=0;
+  updateControls();
+}
+function stepFrameSimul3(dir){
+  if(simul3Phase!=='done') return;
+  const total=simul3FrameCount+1;
+  simul3FrameIdx=((simul3FrameIdx+dir)%total+total)%total;
+  simul3SimTime = simul3FrameIdx===simul3FrameCount ? maxTSimul3() : simul3FrameIdx*simul3FrameDt;
+  updateControls();
+}
+function updateControlsSimul3(){
+  const setup=simul3Phase==='setup', playing=simul3Phase==='playing', done=simul3Phase==='done';
+  document.getElementById('btnExec').disabled=!setup;
+  document.getElementById('btnBack').disabled=setup;
+  document.getElementById('btnReplay').disabled=setup||playing;
+  document.getElementById('btnPrev').disabled=!done;
+  document.getElementById('btnNext').disabled=!done;
+  document.getElementById('frameLabel').textContent = done? `格 ${simul3FrameIdx}/${simul3FrameCount}` : (playing?'播放中…':'—');
+  document.getElementById('phase-hint').textContent = setup
+    ? '三軌初速相同（'+PRESET_V0_3+' m/s），角度固定 30°／45°／60°'
+    : playing ? '執行中…請稍候'
+    : '已降落，軌跡保留，可用下方 ◀▶ 逐格檢視';
+  canvas.classList.toggle('locked', true);
+  document.getElementById('quick-dock').classList.add('hidden');
+}
+function tickSimul3(dt){
+  if(simul3Phase==='playing'){
+    simul3SimTime += dt*0.85;
+    const mt=maxTSimul3();
+    if(simul3SimTime>=mt){ simul3SimTime=mt; simul3Phase='done'; simul3FrameIdx=simul3FrameCount; updateControls(); }
+  }
+}
+
+/* ---------- 預設資料：依序拋 15°/30°/45°/60°/75°（相同初速，3倍速，留下軌跡） ---------- */
+const SEQ5_ANGLES = [15,30,45,60,75];
+const SEQ5_COLORS = ['A','B','E','C','D'];
+let seq5Traj = SEQ5_ANGLES.map((th,i)=>makePresetTraj(th, PRESET_V0_5, 'var(--'+SEQ5_COLORS[i]+')', 'S'+i));
+let seq5Phase='setup', seq5SimTime=0, seq5LastTs=null;
+const SEQ5_GAP=0.25, SEQ5_SPEED=3; // 3倍速
+function seq5Starts(){
+  let acc=0; return seq5Traj.map(t=>{ const s=acc; acc+=t.T+SEQ5_GAP; return s; });
+}
+function seq5TotalTime(){ const starts=seq5Starts(); return starts[starts.length-1] + seq5Traj[seq5Traj.length-1].T; }
+function startExecuteSeq5(){
+  if(seq5Phase!=='setup') return;
+  seq5Phase='playing'; seq5SimTime=0; seq5LastTs=null;
+  updateControls();
+}
+function replaySeq5(){
+  if(seq5Phase==='setup') return;
+  seq5Phase='playing'; seq5SimTime=0; seq5LastTs=null;
+  updateControls();
+}
+function backToReadySeq5(){
+  seq5Phase='setup'; seq5SimTime=0;
+  updateControls();
+}
+function updateControlsSeq5(){
+  const setup=seq5Phase==='setup', playing=seq5Phase==='playing', done=seq5Phase==='done';
+  document.getElementById('btnExec').disabled=!setup;
+  document.getElementById('btnBack').disabled=setup;
+  document.getElementById('btnReplay').disabled=setup||playing;
+  document.getElementById('btnPrev').disabled=true;
+  document.getElementById('btnNext').disabled=true;
+  document.getElementById('frameLabel').textContent = '—';
+  document.getElementById('phase-hint').textContent = setup
+    ? '五軌初速相同（'+PRESET_V0_5+' m/s），角度 15/30/45/60/75° 依序發射、留下軌跡，3倍速播放'
+    : playing ? '依序發射中…（3倍速）'
+    : '五球皆已降落，軌跡全部留存';
+  canvas.classList.toggle('locked', true);
+  document.getElementById('quick-dock').classList.add('hidden');
+}
+function tickSeq5(dt){
+  if(seq5Phase==='playing'){
+    seq5SimTime += dt*SEQ5_SPEED;
+    if(seq5SimTime>=seq5TotalTime()){ seq5SimTime=seq5TotalTime(); seq5Phase='done'; updateControls(); }
+  }
+}
+
+
+const valueStripEl = document.getElementById('value-strip');
+function buildValueStrip(){
+  valueStripEl.innerHTML = trajectories.map((t,ti)=>{
+    const chips = ['v0','theta','H','R'].map(k=>{
+      const isFixed = t.fixedKey===k;
+      const cls=['rchip', isFixed?'fixed':'', isMagnetChip(ti,k)?'magnet':''].filter(Boolean).join(' ');
+      const style = isFixed? `border-color:${t.color};` : '';
+      const label = k==='v0'?'v₀':k==='theta'?'θ':k;
+      const val=t[k];
+      const txt = k==='theta'? val.toFixed(1)+'°' : val.toFixed(1)+(k==='v0'?'m/s':'m');
+      return `<div class="${cls}" style="${style}" onclick="onChipClick(${ti},'${k}')" title="點一下固定/取消固定這個參數"><span class="k">${isFixed?'📌 ':''}${label}</span><span class="v">${txt}</span></div>`;
+    }).join('');
+    const selCls = ti===selectedIdx ? ' selected' : '';
+    const modeTxt = t.fixedKey ? `固定 ${t.fixedKey==='v0'?'v₀':t.fixedKey==='theta'?'θ':t.fixedKey}` : '自由拖曳';
+    return `<div class="traj-card">
+      <div class="tc-head">
+        <div class="dot" style="background:${t.color}"></div>
+        <button class="tj-name${selCls}" style="color:${t.color}" onclick="selectTraj(${ti})">${t.name}</button>
+        <div class="tj-mode">${modeTxt}</div>
+        <button class="tj-clear" onclick="resetOne(${ti})">重設</button>
+      </div>
+      <div class="chiprow">${chips}</div>
+    </div>`;
+  }).join('');
+}
+function toggleFixed(ti,key){
+  const t = trajectories[ti];
+  t.fixedKey = (t.fixedKey===key) ? null : key;
+  buildValueStrip();
+}
+function isMagnetChip(ti,k){
+  const t=trajectories[ti];
+  for(let oi=0;oi<trajectories.length;oi++){
+    if(oi===ti) continue;
+    const ot=trajectories[oi];
+    if(k==='R' && Math.abs(t.R-ot.R)<EQ_TOL.R) return true;
+    if(k==='H' && Math.abs(t.H-ot.H)<EQ_TOL.H) return true;
+    if(k==='theta' && Math.abs(t.v0-ot.v0)<V0_MATCH_TOL && Math.abs((t.theta+ot.theta)-90)<COMP_LIVE_TOL) return true;
+    if(k==='v0' && Math.abs(t.v0-ot.v0)<V0_MATCH_TOL) return true;
+  }
+  return false;
+}
+function resetOne(ti){
+  trajectories[ti] = defaultTraj(ti);
+  solveTrajectory(trajectories[ti]);
+  if(phase!=='setup'){ phase='setup'; simTime=0; frameIdx=0; updateControls(); }
+  else buildValueStrip();
+}
+function resetAll(){
+  trajectories = TRAJ_DEFS.map((_,i)=>defaultTraj(i));
+  trajectories.forEach(solveTrajectory);
+  phase='setup'; simTime=0; frameIdx=0;
+  updateControls();
+}
+
+/* ---------- 主題 ---------- */
+let isLight=false;
+function pal(){
+  return isLight? {
+    BG:'#faf7ee', GRID:'rgba(55,45,20,0.30)', AX:'rgba(45,35,15,0.75)', TXT:'#2b2620',
+    GHOST:'rgba(70,58,35,0.55)', A:'#2a5ca5', B:'#8a5a10', C:'#a5342a', D:'#6a4fa0', E:'#2f7a52', MAGNET:'#8a5a10'
+  } : {
+    BG:'#0f1117', GRID:'rgba(255,255,255,0.16)', AX:'rgba(255,255,255,0.55)', TXT:'#dedad0',
+    GHOST:'rgba(200,196,186,0.38)', A:'#5BA3E8', B:'#EF9F27', C:'#E07055', D:'#B49AE8', E:'#6FC79A', MAGNET:'#F0D48A'
+  };
+}
+function toggleTheme(){
+  isLight=!isLight;
+  document.documentElement.classList.toggle('light',isLight);
+  document.getElementById('btnTheme').textContent = isLight?'🌙 深色':'☀️ 米白';
+  draw();
+}
+
+/* ---------- Canvas 座標（固定比例尺） ---------- */
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let W=0,H=0,DPR=1,SCALE=1;
+const PAD_L=42, PAD_R=14, PAD_T=16, PAD_B=34;
+function resizeCanvas(){
+  const wrap=document.getElementById('main');
+  DPR=Math.min(2, window.devicePixelRatio||1);
+  W=wrap.clientWidth; H=wrap.clientHeight;
+  canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const availW=Math.max(50,W-PAD_L-PAD_R), availH=Math.max(50,H-PAD_T-PAD_B);
+  SCALE=Math.min(availW/STAGE_MAX_R, availH/STAGE_MAX_H);
+}
+window.addEventListener('resize', ()=>{ resizeCanvas(); draw(); });
+function toPx(wx,wy){ return {x:PAD_L+wx*SCALE, y:(H-PAD_B)-wy*SCALE}; }
+function toWorld(px,py){ return {x:(px-PAD_L)/SCALE, y:((H-PAD_B)-py)/SCALE}; }
+function trajPoint(t,time){
+  const rad=t.theta*Math.PI/180; const tt=Math.min(time,t.T);
+  const x=t.v0*Math.cos(rad)*tt, y=t.v0*Math.sin(rad)*tt-0.5*G*tt*tt;
+  return {x, y:Math.max(0,y)};
+}
+
+/* ---------- 拖曳互動（僅設定階段） ---------- */
+let dragging=null;
+function handlePositions(){
+  const list=[];
+  trajectories.forEach((t,ti)=>{
+    if(phase==='setup' && ti!==selectedIdx) return;
+    const origin=toPx(0,0);
+    const rad=t.theta*Math.PI/180;
+    const len=t.v0*VEC_M_PER_MS*SCALE;
+    list.push({ti,type:'vec', px:origin.x+Math.cos(rad)*len, py:origin.y-Math.sin(rad)*len});
+    const apex=toPx(t.R/2,t.H);
+    list.push({ti,type:'apex', px:apex.x, py:apex.y});
+    if(t.fixedKey!=='R'){
+      const land=toPx(t.R,0);
+      list.push({ti,type:'land', px:land.x, py:land.y});
+    }
+  });
+  return list;
+}
+function getPos(e){ const r=canvas.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+canvas.addEventListener('pointerdown', e=>{
+  if(currentTab!=='free' || phase!=='setup') return;
+  const pos=getPos(e); const hs=handlePositions();
+  let best=null, bd=32*32;
+  hs.forEach(h=>{ const d=(h.px-pos.x)**2+(h.py-pos.y)**2; if(d<bd){bd=d;best=h;} });
+  if(best){ dragging={ti:best.ti,type:best.type}; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging'); }
+});
+canvas.addEventListener('pointermove', e=>{
+  if(!dragging || phase!=='setup') return;
+  const pos=getPos(e); const t=trajectories[dragging.ti]; const origin=toPx(0,0);
+  const ti=dragging.ti; const fk=t.fixedKey; const g=G;
+  let theta, v0;
+
+  if(dragging.type==='vec'){
+    const dx=pos.x-origin.x, dy=origin.y-pos.y;
+    let rawTheta=Math.max(THETA_MIN, Math.min(THETA_MAX, Math.atan2(dy,dx)*180/Math.PI));
+    let rawV0=Math.hypot(dx,dy)/(VEC_M_PER_MS*SCALE);
+    if(fk==='theta'){
+      theta=t.theta; v0=snapCross(ti,'v0',rawV0);
+    } else if(fk==='v0'){
+      theta=snapTheta(ti,rawTheta,t.v0); v0=t.v0;
+    } else if(fk==='H'){
+      theta=snapTheta(ti,rawTheta,null);
+      v0=Math.sqrt(Math.max(0,2*g*t.H))/Math.max(1e-6,Math.sin(theta*Math.PI/180));
+    } else if(fk==='R'){
+      theta=snapTheta(ti,rawTheta,null);
+      const s2=Math.sin(2*theta*Math.PI/180);
+      v0=Math.sqrt(Math.max(0,g*t.R/Math.max(1e-6,s2)));
+    } else {
+      theta=snapTheta(ti,rawTheta,t.v0); v0=snapCross(ti,'v0',rawV0);
+    }
+  } else if(dragging.type==='apex'){
+    const w=toWorld(pos.x,pos.y);
+    const wx=Math.max(0.5, Math.min(STAGE_MAX_R/2, w.x));
+    const wy=Math.max(0.3, Math.min(STAGE_MAX_H, w.y));
+    if(fk==='v0'){
+      const s=Math.max(0,Math.min(1, Math.sqrt(Math.max(0,2*g*wy))/t.v0));
+      theta=snapTheta(ti,Math.asin(s)*180/Math.PI,t.v0); v0=t.v0;
+    } else if(fk==='theta'){
+      theta=t.theta;
+      v0=snapCross(ti,'v0', Math.sqrt(Math.max(0,2*g*wy))/Math.max(1e-6,Math.sin(theta*Math.PI/180)));
+    } else if(fk==='H'){
+      const R=snapCross(ti,'R',2*wx);
+      theta=Math.atan(4*t.H/Math.max(1e-6,R))*180/Math.PI;
+      v0=Math.sqrt(Math.max(0,2*g*t.H))/Math.max(1e-6,Math.sin(theta*Math.PI/180));
+    } else if(fk==='R'){
+      const Hh=snapCross(ti,'H',wy);
+      theta=Math.atan(4*Hh/Math.max(1e-6,t.R))*180/Math.PI;
+      v0=Math.sqrt(Math.max(0,2*g*Hh))/Math.max(1e-6,Math.sin(theta*Math.PI/180));
+    } else {
+      const R=snapCross(ti,'R',2*wx);
+      const Hh=snapCross(ti,'H',wy);
+      theta=Math.atan(4*Hh/Math.max(1e-6,R))*180/Math.PI;
+      v0=Math.sqrt(Math.max(0,2*g*Hh))/Math.max(1e-6,Math.sin(theta*Math.PI/180));
+    }
+  } else if(dragging.type==='land'){
+    const w=toWorld(pos.x,pos.y);
+    const wx=Math.max(1, Math.min(STAGE_MAX_R, w.x));
+    if(fk==='v0'){
+      const R=snapCross(ti,'R',wx);
+      const s2=Math.max(-1,Math.min(1, g*R/(t.v0*t.v0)));
+      const ang2=Math.asin(s2)*180/Math.PI;
+      const lo=ang2/2, hi=90-ang2/2;
+      theta=Math.abs(lo-t.theta)<=Math.abs(hi-t.theta)? lo : hi;
+      v0=t.v0;
+    } else if(fk==='theta'){
+      theta=t.theta;
+      const R=snapCross(ti,'R',wx);
+      const s2=Math.sin(2*theta*Math.PI/180);
+      v0=Math.sqrt(Math.max(0,g*R/Math.max(1e-6,s2)));
+    } else {
+      // fk===null 或 fk==='H'：射程自由拖曳，高度維持現值
+      const R=snapCross(ti,'R',wx);
+      theta=Math.atan(4*t.H/Math.max(1e-6,R))*180/Math.PI;
+      v0=Math.sqrt(Math.max(0,2*g*t.H))/Math.max(1e-6,Math.sin(theta*Math.PI/180));
+    }
+  }
+
+  theta=Math.max(THETA_MIN, Math.min(THETA_MAX, theta));
+  const cap=v0Cap(theta);
+  v0=Math.max(V0_MIN, Math.min(cap, v0));
+  t.theta=theta; t.v0=v0;
+  solveTrajectory(t);
+  buildValueStrip();
+});
+function endDrag(){ dragging=null; canvas.classList.remove('dragging'); }
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+
+function snapCross(ti,key,val){
+  let best=null, bd=CROSS_TOL[key];
+  trajectories.forEach((ot,oi)=>{ if(oi===ti) return; const d=Math.abs(val-ot[key]); if(d<bd){bd=d;best=ot[key];} });
+  if(best!=null) return best;
+  const g=PARAM_META[key].grid; const r=Math.round(val/g)*g;
+  if(Math.abs(val-r)<g*0.28) return r;
+  return val;
+}
+function snapTheta(ti,theta,myV0){
+  let best=null, bd=CROSS_TOL.theta;
+  trajectories.forEach((ot,oi)=>{ if(oi===ti) return; const d=Math.abs(theta-ot.theta); if(d<bd){bd=d;best=ot.theta;} });
+  if(best!=null) return best;
+  let bd2=COMP_TOL, best2=null;
+  if(myV0!=null){
+    trajectories.forEach((ot,oi)=>{
+      if(oi===ti) return;
+      if(Math.abs(ot.v0-myV0)>V0_MATCH_TOL) return;
+      const comp=90-ot.theta; const d=Math.abs(theta-comp);
+      if(d<bd2){bd2=d;best2=comp;}
+    });
+  }
+  if(best2!=null) return best2;
+  const g=PARAM_META.theta.grid; const r=Math.round(theta/g)*g;
+  if(Math.abs(theta-r)<g*0.28) return r;
+  return theta;
+}
+
+/* ---------- 主迴圈 ---------- */
+function tick(ts){
+  if(lastTs==null) lastTs=ts;
+  const dt=Math.min(0.05,(ts-lastTs)/1000); lastTs=ts;
+  if(currentTab==='free'){
+    if(phase==='playing'){
+      simTime += dt*0.85;
+      const mt = maxTAll();
+      if(simTime>=mt){ simTime=mt; phase='done'; frameIdx=frameCount; updateControls(); }
+    }
+  } else if(currentTab==='simul3'){
+    tickSimul3(dt);
+  } else {
+    tickSeq5(dt);
+  }
+  draw();
+  requestAnimationFrame(tick);
+}
+
+/* ---------- 磁吸群組 ---------- */
+function clusterBy(items,key,tol){
+  const sorted=[...items].sort((a,b)=>a.t[key]-b.t[key]);
+  const groups=[]; let cur=[];
+  sorted.forEach(it=>{
+    if(cur.length===0 || it.t[key]-cur[cur.length-1].t[key]<=tol) cur.push(it);
+    else { groups.push(cur); cur=[it]; }
+  });
+  if(cur.length) groups.push(cur);
+  return groups.filter(g=>g.length>=2);
+}
+function findMagnetGroups(){
+  const all=trajectories.map(t=>({t}));
+  let rGroups=clusterBy(all,'R',EQ_TOL.R);
+  let hGroups=clusterBy(all,'H',EQ_TOL.H);
+  let compPairs=[];
+  for(let a=0;a<trajectories.length;a++) for(let b=a+1;b<trajectories.length;b++){
+    const ta=trajectories[a], tb=trajectories[b];
+    if(Math.abs(ta.v0-tb.v0)<V0_MATCH_TOL && Math.abs((ta.theta+tb.theta)-90)<COMP_LIVE_TOL) compPairs.push([ta,tb]);
+  }
+  if(phase==='setup'){
+    // 設定階段：其他軌跡不顯示，磁吸提示只留下跟目前這條有關的，避免暗示未顯示軌跡的完整形狀
+    const selT = trajectories[selectedIdx];
+    rGroups = rGroups.filter(g=>g.some(o=>o.t===selT));
+    hGroups = hGroups.filter(g=>g.some(o=>o.t===selT));
+    compPairs = compPairs.filter(([a,b])=>a===selT||b===selT);
+  }
+  return {rGroups,hGroups,compPairs};
+}
+
+/* ---------- 繪圖 ---------- */
+function niceStep(maxVal){
+  const raw=maxVal/6; const pow=Math.pow(10,Math.floor(Math.log10(raw))); const n=raw/pow;
+  let step; if(n<1.5) step=1; else if(n<3.5) step=2; else if(n<7.5) step=5; else step=10;
+  return step*pow;
+}
+function drawGridAxis(P,LWm){
+  ctx.clearRect(0,0,W,H); ctx.fillStyle=P.BG; ctx.fillRect(0,0,W,H);
+  const groundY=H-PAD_B;
+  ctx.strokeStyle=P.GRID; ctx.lineWidth=1*LWm;
+  ctx.font=Math.max(9,H/48)+'px sans-serif'; ctx.fillStyle=P.TXT;
+  const stepR=niceStep(STAGE_MAX_R);
+  for(let x=0;x<=STAGE_MAX_R;x+=stepR){
+    const p=toPx(x,0);
+    ctx.beginPath(); ctx.moveTo(p.x,PAD_T); ctx.lineTo(p.x,groundY); ctx.stroke();
+    ctx.globalAlpha=0.85; ctx.textAlign='center'; ctx.fillText(x.toFixed(0),p.x,groundY+13); ctx.globalAlpha=1;
+  }
+  const stepH=niceStep(STAGE_MAX_H);
+  for(let y=0;y<=STAGE_MAX_H;y+=stepH){
+    const p=toPx(0,y);
+    ctx.beginPath(); ctx.moveTo(PAD_L,p.y); ctx.lineTo(W-PAD_R,p.y); ctx.stroke();
+    ctx.globalAlpha=0.85; ctx.textAlign='right'; ctx.fillText(y.toFixed(0),PAD_L-10,p.y+4); ctx.globalAlpha=1;
+  }
+  ctx.strokeStyle=P.AX; ctx.lineWidth=2*LWm;
+  ctx.beginPath(); ctx.moveTo(PAD_L,groundY); ctx.lineTo(W-PAD_R,groundY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD_L,PAD_T); ctx.lineTo(PAD_L,groundY); ctx.stroke();
+  ctx.textAlign='left'; ctx.globalAlpha=0.8;
+  ctx.save(); ctx.translate(20,PAD_T+10); ctx.fillText('高度 (m)',0,0); ctx.restore();
+  ctx.globalAlpha=1;
+  return groundY;
+}
+function draw(){
+  if(currentTab==='free') drawFree();
+  else if(currentTab==='simul3') drawSimul3();
+  else drawSeq5();
+}
+function drawFree(){
+  if(W<=0||H<=0) return;
+  const P=pal(); const LWm=(isLight?1.35:1)*0.6;
+  const groundY=drawGridAxis(P,LWm);
+
+  const origin=toPx(0,0);
+  const colorOf={A:P.A,B:P.B,C:P.C};
+  const setup = phase==='setup';
+
+  const {rGroups,hGroups,compPairs}=findMagnetGroups();
+  ctx.save();
+  ctx.strokeStyle=P.MAGNET; ctx.setLineDash([6,6]); ctx.lineWidth=2*LWm;
+  ctx.font='bold '+Math.max(10,H/44)+'px sans-serif'; ctx.fillStyle=P.MAGNET;
+  rGroups.forEach((g,gi)=>{
+    const p=toPx(g[0].t.R,0);
+    ctx.beginPath(); ctx.moveTo(p.x,PAD_T+4+gi*15); ctx.lineTo(p.x,groundY); ctx.stroke();
+    ctx.textAlign='center'; ctx.fillText('R相同：'+g.map(o=>o.t.key).join('/'), p.x, PAD_T+gi*15);
+  });
+  hGroups.forEach((g,gi)=>{
+    const p=toPx(0,g[0].t.H);
+    ctx.beginPath(); ctx.moveTo(PAD_L,p.y); ctx.lineTo(W-PAD_R-2,p.y); ctx.stroke();
+    ctx.textAlign='right'; ctx.fillText('H相同：'+g.map(o=>o.t.key).join('/'), W-PAD_R-4, p.y-8-gi*15);
+  });
+  compPairs.forEach(([ta,tb],gi)=>{
+    const p=toPx(ta.R,0); ctx.textAlign='center';
+    ctx.fillText(`${ta.key}·${tb.key} 互余 ${ta.theta.toFixed(0)}°+${tb.theta.toFixed(0)}°=90°`, p.x, PAD_T+18+gi*15);
+  });
+  ctx.restore();
+
+  trajectories.forEach((t,ti)=>{
+    if(setup && ti!==selectedIdx) return; // 設定階段只顯示正在設定的那一條
+    const col=colorOf[t.key];
+    // 完整淡淡整條軌跡（一直都畫，作為目前設定的視覺參考）
+    ctx.beginPath();
+    const N=60;
+    for(let i=0;i<=N;i++){
+      const tm=t.T*i/N; const pt=trajPoint(t,tm); const p=toPx(pt.x,pt.y);
+      if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+    }
+    ctx.strokeStyle=P.GHOST; ctx.lineWidth=2*LWm; ctx.globalAlpha=0.55; ctx.stroke(); ctx.globalAlpha=1;
+
+    // 頂點/落點參考線與小點（一直都畫）
+    const apexP=toPx(t.R/2,t.H);
+    ctx.setLineDash([4,4]); ctx.strokeStyle=col; ctx.globalAlpha=0.55; ctx.lineWidth=1.3*LWm;
+    ctx.beginPath(); ctx.moveTo(PAD_L,apexP.y); ctx.lineTo(apexP.x,apexP.y); ctx.stroke();
+    ctx.globalAlpha=1; ctx.setLineDash([1,0]);
+
+    // 發射角小弧
+    ctx.strokeStyle=col; ctx.lineWidth=2*LWm; ctx.globalAlpha=0.85;
+    const arcR=14+ti*9;
+    ctx.beginPath(); ctx.arc(origin.x,origin.y,arcR,-t.theta*Math.PI/180,0,false); ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=col; ctx.font='bold '+Math.max(9,H/50)+'px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(t.theta.toFixed(0)+'°', origin.x+arcR+4, origin.y-6-ti*14);
+
+    if(setup){
+      // 設定階段：畫可拖曳的大手把
+      const apexActive = dragging && dragging.ti===ti && dragging.type==='apex';
+      ctx.fillStyle=col;
+      ctx.beginPath(); ctx.arc(apexP.x,apexP.y, apexActive?7:5, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle=P.BG; ctx.lineWidth=2; ctx.stroke();
+      if(apexActive){ ctx.strokeStyle=P.MAGNET; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(apexP.x,apexP.y,10,0,Math.PI*2); ctx.stroke(); }
+
+      const landP=toPx(t.R,0);
+      const landActive = dragging && dragging.ti===ti && dragging.type==='land';
+      ctx.fillStyle=col;
+      ctx.beginPath(); ctx.arc(landP.x,landP.y, landActive?7:5, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle=P.BG; ctx.lineWidth=2; ctx.stroke();
+      if(landActive){ ctx.strokeStyle=P.MAGNET; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(landP.x,landP.y,10,0,Math.PI*2); ctx.stroke(); }
+      ctx.font=Math.max(9,H/54)+'px sans-serif'; ctx.fillStyle=col; ctx.textAlign='center';
+      ctx.globalAlpha=0.85; ctx.fillText('R', landP.x, landP.y+15); ctx.globalAlpha=1;
+
+      const vecLen=t.v0*VEC_M_PER_MS*SCALE;
+      const rad=t.theta*Math.PI/180;
+      const tipX=origin.x+Math.cos(rad)*vecLen, tipY=origin.y-Math.sin(rad)*vecLen;
+      const vecActive = dragging && dragging.ti===ti && dragging.type==='vec';
+      ctx.strokeStyle=col; ctx.lineWidth=(vecActive?3:2)*LWm; ctx.globalAlpha=0.95;
+      ctx.beginPath(); ctx.moveTo(origin.x,origin.y); ctx.lineTo(tipX,tipY); ctx.stroke();
+      const ah=7, aang=0.45;
+      ctx.beginPath();
+      ctx.moveTo(tipX,tipY);
+      ctx.lineTo(tipX-ah*Math.cos(rad-aang), tipY+ah*Math.sin(rad-aang));
+      ctx.lineTo(tipX-ah*Math.cos(rad+aang), tipY+ah*Math.sin(rad+aang));
+      ctx.closePath(); ctx.fillStyle=col; ctx.fill();
+      ctx.globalAlpha=1;
+      if(vecActive){ ctx.strokeStyle=P.MAGNET; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(tipX,tipY,9,0,Math.PI*2); ctx.stroke(); }
+      ctx.font=(vecActive?'bold ':'')+Math.max(9,H/52)+'px sans-serif';
+      ctx.fillStyle=col; ctx.textAlign='left';
+      ctx.fillText('v₀', tipX+8, tipY+4);
+
+      if(dragging && dragging.ti===ti){
+        const hp = dragging.type==='vec' ? {x:tipX,y:tipY} : dragging.type==='land' ? landP : apexP;
+        const label = dragging.type==='vec'
+          ? `v₀=${t.v0.toFixed(1)} m/s ・ θ=${t.theta.toFixed(0)}°`
+          : dragging.type==='land'
+          ? `R=${t.R.toFixed(1)} m（H 維持 ${t.H.toFixed(1)} m）`
+          : `H=${t.H.toFixed(1)} m ・ R=${t.R.toFixed(1)} m`;
+        ctx.font='bold '+Math.max(10,H/44)+'px sans-serif';
+        const tw=ctx.measureText(label).width;
+        const bx=Math.min(W-tw-24, Math.max(4,hp.x+14)), by=Math.max(24,hp.y-16);
+        ctx.fillStyle=P.BG; ctx.globalAlpha=0.85; ctx.fillRect(bx-8,by-20,tw+16,26); ctx.globalAlpha=1;
+        ctx.fillStyle=col; ctx.textAlign='left'; ctx.fillText(label,bx,by);
+      }
+    } else {
+      // 執行／完成階段：畫小型固定標記（不可拖曳）＋ 飛行軌跡
+      ctx.fillStyle=col;
+      ctx.beginPath(); ctx.arc(apexP.x,apexP.y,2.6,0,Math.PI*2); ctx.fill();
+
+      const curT=Math.min(simTime,t.T);
+      ctx.beginPath();
+      const N2=Math.max(2,Math.round(60*curT/t.T));
+      for(let i=0;i<=N2;i++){
+        const tm=curT*i/N2; const pt=trajPoint(t,tm); const p=toPx(pt.x,pt.y);
+        if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+      }
+      ctx.strokeStyle=col; ctx.lineWidth=3.4*LWm; ctx.stroke();
+
+      const landP=toPx(t.R,0);
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(landP.x,landP.y,3.2,0,Math.PI*2); ctx.fill();
+
+      const pt=trajPoint(t,curT); const bp=toPx(pt.x,pt.y);
+      ctx.fillStyle=col; ctx.beginPath(); ctx.arc(bp.x,bp.y,5,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=P.BG; ctx.lineWidth=1.5; ctx.stroke();
+    }
+  });
+
+  ctx.fillStyle=P.TXT; ctx.beginPath(); ctx.arc(origin.x,origin.y,3,0,Math.PI*2); ctx.fill();
+
+  ctx.textAlign='left'; ctx.font=Math.max(9,H/50)+'px sans-serif'; ctx.globalAlpha=0.7;
+  let extra = phase==='done' ? `　格放 ${frameDt.toFixed(2)}s` : '';
+  ctx.fillText('g=9.8  R≤'+STAGE_MAX_R+'m H≤'+STAGE_MAX_H+'m'+extra, PAD_L, H-8);
+  ctx.globalAlpha=1;
+}
+
+/* ---------- 畫一條「靜態展示」用的軌跡（無手把、僅參考弧+實際飛行） ---------- */
+function drawStaticTrajectory(t, col, P, LWm, localTime, idx){
+  const origin=toPx(0,0);
+  // 完整淡淡整條軌跡
+  ctx.beginPath();
+  const N=60;
+  for(let i=0;i<=N;i++){
+    const tm=t.T*i/N; const pt=trajPoint(t,tm); const p=toPx(pt.x,pt.y);
+    if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+  }
+  ctx.strokeStyle=P.GHOST; ctx.lineWidth=2*LWm; ctx.globalAlpha=0.5; ctx.stroke(); ctx.globalAlpha=1;
+
+  const apexP=toPx(t.R/2,t.H);
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(apexP.x,apexP.y,2.6,0,Math.PI*2); ctx.fill();
+
+  // 角度標籤：貼著頂點旁邊，事先安排好位置（同一畫面上的軌跡角度固定已知，不會互相遮擋）
+  const label = t.theta.toFixed(0)+'°';
+  const fontPx = Math.max(13, H/26);
+  ctx.font='bold '+fontPx+'px sans-serif';
+  const tw = ctx.measureText(label).width;
+  const lx = apexP.x+10, ly = apexP.y-10-((idx||0)%2)*fontPx*1.15;
+  ctx.fillStyle=P.BG; ctx.globalAlpha=0.78;
+  ctx.fillRect(lx-5, ly-fontPx*0.95, tw+10, fontPx*1.2);
+  ctx.globalAlpha=1;
+  ctx.fillStyle=col; ctx.textAlign='left';
+  ctx.fillText(label, lx, ly);
+
+  if(localTime==null) return; // 尚未開始飛行（依序拋還沒輪到）
+  const curT=Math.min(Math.max(0,localTime),t.T);
+  ctx.beginPath();
+  const N2=Math.max(2,Math.round(60*curT/t.T));
+  for(let i=0;i<=N2;i++){
+    const tm=curT*i/N2; const pt=trajPoint(t,tm); const p=toPx(pt.x,pt.y);
+    if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+  }
+  ctx.strokeStyle=col; ctx.lineWidth=3.4*LWm; ctx.stroke();
+
+  const landP=toPx(t.R,0);
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(landP.x,landP.y,3.2,0,Math.PI*2); ctx.fill();
+
+  const pt=trajPoint(t,curT); const bp=toPx(pt.x,pt.y);
+  ctx.fillStyle=col; ctx.beginPath(); ctx.arc(bp.x,bp.y,5,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=P.BG; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+function drawSimul3(){
+  if(W<=0||H<=0) return;
+  const P=pal(); const LWm=(isLight?1.35:1)*0.6;
+  drawGridAxis(P,LWm);
+  const colorOf={A:P.A,B:P.B,C:P.C};
+  const playingOrDone = simul3Phase!=='setup';
+  simul3Traj.forEach((t,idx)=>{
+    const col=colorOf[t.key];
+    const localTime = playingOrDone ? simul3SimTime : null;
+    drawStaticTrajectory(t, col, P, LWm, localTime, idx);
+  });
+  ctx.textAlign='left'; ctx.font=Math.max(9,H/50)+'px sans-serif'; ctx.globalAlpha=0.7;
+  let extra = simul3Phase==='done' ? `　格放間隔 ${simul3FrameDt.toFixed(2)}s` : '';
+  ctx.fillText('v₀='+PRESET_V0_3+'m/s（固定）'+extra, PAD_L, H-8);
+  ctx.globalAlpha=1;
+}
+
+function drawSeq5(){
+  if(W<=0||H<=0) return;
+  const P=pal(); const LWm=(isLight?1.35:1)*0.6;
+  drawGridAxis(P,LWm);
+  const colorOf={A:P.A,B:P.B,C:P.C,D:P.D,E:P.E};
+  const playingOrDone = seq5Phase!=='setup';
+  const starts = seq5Starts();
+  seq5Traj.forEach((t,i)=>{
+    const col=colorOf[SEQ5_COLORS[i]];
+    let localTime=null;
+    if(playingOrDone){
+      const lt = seq5SimTime - starts[i];
+      if(lt>=0) localTime=lt; // 還沒輪到就維持 null（不顯示已飛行部分，只留參考弧）
+    }
+    drawStaticTrajectory(t, col, P, LWm, localTime, i);
+  });
+  ctx.textAlign='left'; ctx.font=Math.max(9,H/50)+'px sans-serif'; ctx.globalAlpha=0.7;
+  ctx.fillText('v₀='+PRESET_V0_5+'m/s（固定，3倍速）', PAD_L, H-8);
+  ctx.globalAlpha=1;
+}
+
+/* ---------- 初始化 ---------- */
+switchTab('free');
+resizeCanvas();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
