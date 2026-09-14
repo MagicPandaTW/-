@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+
+<!--
+  物理詳解骨架樣板（檔名編號 260914-1，取代 物理詳解樣板_260908-1.html）
+  規格依據：白底、手機優先、inline SVG 圖解、KaTeX 公式
+  使用方式：複製本檔，填入題目/詳解/圖形內容；禁止重寫 CSS 變數與 defs 區塊
+
+  【重要變更】完整規則說明已全部移至 Project Instructions 與各主題專用規則檔
+  （檔案庫中檔名格式：xxx_YYMMDD-N.md），本檔只保留最小必要的版本識別留言。
+  製作任何詳解前，務必先讀取檔案庫中最新的 Project Instructions 檔案。
+
+
+  【260914-1 重要變更】
+  學生預設只查自己的錯題，因此所有題目從一開始即可直接進入。checkpoint 只鎖本題內後續正文，
+  不得以 disabled option 或跨題解鎖機制限制其他題。每個 checkpoint 需保存 protected semantic ids，
+  並位於 evidence 之後、被保護結論之前。多小題採「小題標題→必要圖→緊鄰解說／計算」垂直結構；
+  圖形 evidence 使用唯一 figure id。
+
+  【本次修訂重要教訓，故技術規則寫在這裡而非外部md，避免同一bug重演】
+  HTML留言（以角括號驚嘆號雙減號開始、雙減號角括號結束的區塊）內，絕對
+  不能包含「雙減號＋角括號」這三個字元連續出現的組合，即使只是想舉例
+  說明也不行，否則留言會在該處提早結束，導致其後大量文字被瀏覽器誤判
+  為真正的網頁內容，破壞整份文件結構、造成空白頁。這正是舊版
+  template_solution_v5.html 開頭留言曾經踩到的地雷；連本說明文字第一次
+  撰寫時都不小心親自示範了一次這個錯誤，足見多容易中招，寫留言時務必
+  格外小心，交稿前用程式掃描確認全文只有一個開頭留言、一個結尾。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
+<title>2025高二上(9)｜平拋詳解</title>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js">
+</script>
+<script defer="" onload="renderMathInElement(document.body,{
+    delimiters:[
+      {left:'$$',right:'$$',display:true},
+      {left:'$',right:'$',display:false}
+    ]
+  });" src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root{
+    --ink:#1a1a1a; --aux:#8a8a8a;
+    --v1:#c62828; --v2:#1565c0; --v3:#2e7d32;
+    --fill:#f2f4f7; --bg:#ffffff; --line:#e5e7eb;
+    --fs-h1:clamp(20px,5vw,26px); --fs-h2:clamp(16px,4.2vw,20px);
+    --fs-body:clamp(15px,4vw,17px); --fs-small:clamp(13px,3.4vw,14px);
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;
+    line-height:1.7; -webkit-text-size-adjust:100%;
+  }
+  body{ max-width:720px; margin:0 auto; padding:16px 16px 48px; }
+  h1{ font-size:var(--fs-h1); margin:0 0 4px; }
+  h2{ font-size:var(--fs-h2); margin:28px 0 10px; padding-top:14px; border-top:1px solid var(--line); }
+  .subtitle{ font-size:var(--fs-small); color:var(--aux); margin-bottom:20px; }
+  p, li{ font-size:var(--fs-body); }
+
+  /* ===== 題目卡：題幹與選項分開 ===== */
+  .qbox{
+    background:var(--fill); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; margin:16px 0; font-size:var(--fs-body);
+  }
+  .qstem{ margin:0 0 8px; }
+  .opts{ margin:0; padding:0; list-style:none; }
+  .opts li{ margin:6px 0; padding-left:2.4em; text-indent:-2.4em; }
+
+  /* ===== 圖形容器 ===== */
+  .fig{ display:block; width:100%; max-width:520px; height:auto; margin:1.2em auto; overflow:visible; }
+  .figrow{ display:flex; flex-wrap:wrap; gap:1em; justify-content:center; margin:1.2em 0; }
+  .figrow .fig{ flex:1 1 260px; margin:0.4em auto; }
+  .figcap{ text-align:center; font-size:var(--fs-small); color:var(--aux); margin-top:-0.6em; margin-bottom:1.2em; }
+  /* 多小題：手機以垂直語意單元呈現，不把不同小題的圖先堆在一起 */
+  .subq{ margin:20px 0 24px; padding:14px 14px 4px; border:1px solid var(--line); border-radius:10px; background:var(--bg); }
+  .subq-title{ margin:0 0 10px; font-size:var(--fs-h2); font-weight:700; }
+  @media (max-width:520px){
+    .figrow:not(.compare){ display:block; }
+    .figrow:not(.compare) .fig{ width:100%; margin:1em auto; }
+  }
+  .lbl{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; font-style:italic; }
+  .lbl-rm{ paint-order:stroke; stroke:var(--bg); stroke-width:3; stroke-linejoin:round; }
+
+  .ans{ background:#e8f5e9; border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; }
+  .flag{ color:#e65100; font-weight:bold; }
+
+  /* ===== 觀念：條列式，每項前面一個● ===== */
+  .concept{ background:#eef4fb; border-left:4px solid var(--v2); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .concept .tag, .flow .tag, .calcblock .tag, .basecalc .tag{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; color:#fff;
+    padding:2px 8px; border-radius:4px; margin-bottom:6px;
+  }
+  .concept .tag{ background:var(--v2); }
+  .concept-list{ list-style:none; margin:8px 0 0; padding:0; }
+  .concept-list li{ position:relative; margin:8px 0; padding-left:1.3em; }
+  .concept-list li::before{ content:"●"; position:absolute; left:0; top:0.15em; font-size:0.55em; color:var(--v2); }
+
+  .flow{ background:var(--fill); border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; font-size:var(--fs-body); }
+  .flow .tag{ background:var(--aux); }
+  .flow ol{ margin:6px 0 0; padding-left:1.3em; }
+  .flow li{ margin:4px 0; }
+
+  /* ===== 計算：綠色框討論選項；灰色框放共用基本量 ===== */
+  .calcblock{ border-left:4px solid var(--v3); padding:10px 14px; margin:14px 0; border-radius:4px; background:#f4faf5; }
+  .calcblock .tag{ background:var(--v3); }
+  .calcblock .katex-display{ text-align:left; margin:8px 0; }
+
+  .basecalc{ border-left:4px solid var(--aux); padding:10px 14px; margin:14px 0; border-radius:4px; background:var(--fill); }
+  .basecalc .tag{ background:var(--aux); }
+  .basecalc .katex-display{ text-align:left; margin:8px 0; }
+
+  .step{ margin:12px 0; }
+  .step .label{ font-weight:600; color:var(--v2); }
+
+  /* ===== 分頁導覽：固定用下拉式（題數通常>5） ===== */
+  .pager{ position:sticky; top:0; background:var(--bg); z-index:10; border-bottom:1px solid var(--line); padding:8px 0 0; margin-bottom:14px; }
+  .tabs{ display:none; }
+  .pagesel{ display:block; }
+  .pagesel select{
+    width:100%; font-size:var(--fs-body); padding:8px 10px;
+    position:relative; z-index:30; pointer-events:auto; touch-action:manipulation;
+    border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); margin-bottom:8px;
+  }
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  /* ===== 每題底部：上一題／下一題 ===== */
+  .qnav{ display:flex; justify-content:space-between; margin:24px 0 6px; }
+  .qnav button{ border:1px solid var(--line); background:var(--fill); color:var(--ink); font-size:var(--fs-small); padding:8px 14px; border-radius:8px; cursor:pointer; }
+  .qnav button:disabled{ opacity:0.4; cursor:default; }
+
+  /* ===== 公式點擊放大 ===== */
+  .katex{ cursor:pointer; } .katex-display{ cursor:pointer; }
+  #zoomOverlay{ position:fixed; inset:0; background:rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; padding:24px; z-index:999; -webkit-tap-highlight-color:transparent; }
+  #zoomOverlay.show{ display:flex; }
+  #zoomInner{ background:var(--bg); border-radius:12px; padding:24px 20px; max-width:92vw; max-height:80vh; overflow:auto; box-shadow:0 8px 30px rgba(0,0,0,0.25); font-size:clamp(22px,7vw,34px); }
+
+  /* ===== Interaction-ready semantic blocks / checkpoint ===== */
+  .semantic{ scroll-margin-top:72px; }
+  .gate{
+    border:1px solid #d8dee8; border-left:4px solid var(--v2);
+    background:#f8fafc; border-radius:8px; padding:12px 14px; margin:14px 0;
+  }
+  .gate .gate-tag{
+    display:inline-block; font-size:var(--fs-small); font-weight:700; color:#fff;
+    background:var(--v2); padding:2px 8px; border-radius:4px; margin-bottom:8px;
+  }
+  .gate-question{ margin:4px 0 10px; font-size:var(--fs-body); font-weight:600; }
+  .gate-options{ display:grid; gap:8px; }
+  .gate-options button{
+    width:100%; text-align:left; border:1px solid var(--line); border-radius:8px;
+    background:var(--bg); color:var(--ink); padding:10px 12px; font-size:var(--fs-body);
+    cursor:pointer;
+  }
+  .gate-options button:hover{ background:var(--fill); }
+  .gate-options button:focus-visible{ outline:3px solid rgba(21,101,192,.25); outline-offset:2px; }
+  .gate-feedback{ min-height:1.6em; margin-top:8px; font-size:var(--fs-small); }
+  .gate-feedback.ok{ color:var(--v3); font-weight:700; }
+  .gate-feedback.no{ color:#b45309; }
+  .locked{ display:none; }
+  .locked.is-unlocked{ display:block; }
+
+</style>
+</head>
+<body>
+<h1>2025高二上(9)｜平拋詳解</h1>
+<div class="subtitle">原卷：115高二上課堂小考(9)｜考試範圍：2-2 平拋｜高二預設採公式解法，搭配必要圖形理解</div>
+<nav class="pager">
+<div class="tabs" id="tabs"></div>
+<div class="pagesel" id="pagesel">
+<select id="pageSelect" onchange="showPage(this.value)" oninput="showPage(this.value)">
+<option value="page1">第1題｜水平、鉛直分量與方向</option>
+<option value="page2">第2題｜垂直撞斜面</option>
+<option value="page3">第3題｜速度方向 37° 到 53°</option>
+<option value="page4">第4題｜平拋落斜面</option>
+<option value="page5">第5題｜位移方向 vs 速度方向</option>
+<option value="page6">第6題｜切線加速度</option>
+<option value="page7">第7題｜平拋撞階梯</option>
+</select>
+</div>
+</nav>
+<div class="page active" id="page1"><section id="q1">
+<h2>第 1 題｜位移相等時的平拋狀態</h2>
+<div class="qbox">
+<p class="qstem">以速度 $v_0$ 水平拋出一小球，如果從拋出到某時刻小球的鉛直位移與水平位移大小相等，下列敘述中，哪些正確？</p>
+<ul class="opts">
+<li>(A) 此時令小球的鉛直速度大小為 $v_y$，水平速度大小為 $v_x$，則 $v_x\gt v_y$</li>
+<li>(B) 此時小球的速度大小為 $\sqrt5\,v_0$</li>
+<li>(C) 小球飛行的時間為 $2\dfrac{v_0}{g}$</li>
+<li>(D) 此時小球速度的方向與位移的方向相同</li>
+<li>(E) 此時小球運動方向與水平線夾角為 $\theta$，且 $\tan\theta=2$</li>
+</ul>
+</div>
+<div class="semantic" data-semantic-id="q1_concept_01" data-semantic-type="concept" id="q1_concept_01">
+<div class="concept"><span class="tag">觀念</span><ul class="concept-list">
+<li>平拋可拆成兩個互相獨立的運動：水平等速度、鉛直自由落體。</li>
+<li>取向下為鉛直正方向：$x=v_0t$、$y=\tfrac12gt^2$；速度分量為 $v_x=v_0$、$v_y=gt$。</li>
+<li><strong>位移方向</strong>看 $y/x$；<strong>速度方向</strong>看 $v_y/v_x$。兩個比值不必相同。</li>
+</ul></div></div>
+<div class="gate" data-checkpoint-id="q1_cp01" data-correct="B" data-evidence-figure-ids="" data-evidence-id="q1_concept_01" data-protected-ids="q1_flow_01,q1_calc_01,q1_result_01" data-question-id="q1" data-unlock="q1_after_cp01" id="q1_cp01">
+<span class="gate-tag">閱讀檢核</span><p class="gate-question">剛才的觀念中，要判斷小球「速度方向」，應看哪一個比值？</p>
+<div class="gate-options"><button data-choice="A" type="button">（A）$y/x$</button><button data-choice="B" type="button">（B）$v_y/v_x$</button><button data-choice="C" type="button">（C）$x/y$</button></div>
+<div aria-live="polite" class="gate-feedback"></div>
+</div>
+<div class="locked" id="q1_after_cp01">
+<div class="semantic" data-semantic-id="q1_flow_01" data-semantic-type="flow" id="q1_flow_01"><div class="flow"><span class="tag">流程</span><ol>
+<li>先用「鉛直位移＝水平位移」求出時間。</li><li>再求 $v_x$、$v_y$，依序檢查速度大小與方向。</li>
+</ol></div></div>
+<div class="semantic" data-semantic-id="q1_calc_01" data-semantic-type="calculation" id="q1_calc_01">
+<div class="basecalc"><span class="tag">基本量</span>
+<div class="step"><span class="label">位移條件</span> $$\begin{aligned}\tfrac12gt^2&amp;=v_0t\\ t&amp;=\frac{2v_0}{g}\end{aligned}$$</div>
+<div class="step"><span class="label">速度分量</span> $$\begin{aligned}v_x&amp;=v_0\\v_y&amp;=gt=2v_0\end{aligned}$$</div>
+</div>
+<div class="calcblock"><span class="tag">(A)</span>$v_x=v_0$、$v_y=2v_0$，所以 $v_x\lt v_y$，(A) 錯。</div>
+<div class="calcblock"><span class="tag">(B)</span>$$\begin{aligned}v&amp;=\sqrt{v_x^2+v_y^2}\\&amp;=\sqrt{v_0^2+(2v_0)^2}=\sqrt5\,v_0\end{aligned}$$所以 (B) 對。</div>
+<div class="calcblock"><span class="tag">(C)</span>由位移條件已得 $t=2v_0/g$，所以 (C) 對。</div>
+<div class="calcblock"><span class="tag">(D)(E)</span>位移方向有 $y/x=1$；速度方向則 $$\tan\theta=\frac{v_y}{v_x}=\frac{2v_0}{v_0}=2.$$ 因此速度方向與位移方向不同，(D) 錯、(E) 對。</div>
+</div>
+<div class="semantic" data-semantic-id="q1_result_01" data-semantic-type="result" id="q1_result_01"><div class="ans">答案：<strong>(B)(C)(E)</strong></div></div>
+<div class="qnav"><button disabled="">← 第1題</button><button onclick="showPage('page2')">第2題 →</button></div>
+</div></section></div>
+<div class="page" id="page2"><section id="q2">
+<h2>第 2 題｜垂直撞上 30° 斜面</h2>
+<div class="qbox"><p class="qstem">以 4.9 m/s 的水平初速拋出的小球，在空中飛行一段時間後，恰好垂直地撞在傾角 30° 的斜面上。求飛行時間。（不計空氣阻力，$g=9.8\ \text{m/s}^2$）</p>
+<svg aria-label="第2題原題情境圖：水平拋出後垂直撞上30度斜面" class="fig" id="q2_fig_original" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 220">
+<defs><marker id="q2_ar" markerheight="8" markerunits="userSpaceOnUse" markerwidth="10" orient="auto" refx="9" refy="4"><path d="M0,0 L10,4 L0,8 Z" fill="var(--ink)"></path></marker></defs>
+<line stroke="var(--ink)" stroke-width="1.6" x1="55" x2="320" y1="188" y2="188"></line>
+<g stroke="var(--aux)" stroke-width="1"><line x1="55" x2="48" y1="188" y2="198"></line><line x1="67" x2="60" y1="188" y2="198"></line><line x1="79" x2="72" y1="188" y2="198"></line><line x1="91" x2="84" y1="188" y2="198"></line><line x1="103" x2="96" y1="188" y2="198"></line><line x1="115" x2="108" y1="188" y2="198"></line><line x1="127" x2="120" y1="188" y2="198"></line><line x1="139" x2="132" y1="188" y2="198"></line><line x1="151" x2="144" y1="188" y2="198"></line><line x1="163" x2="156" y1="188" y2="198"></line><line x1="175" x2="168" y1="188" y2="198"></line><line x1="187" x2="180" y1="188" y2="198"></line><line x1="199" x2="192" y1="188" y2="198"></line><line x1="211" x2="204" y1="188" y2="198"></line><line x1="223" x2="216" y1="188" y2="198"></line><line x1="235" x2="228" y1="188" y2="198"></line><line x1="247" x2="240" y1="188" y2="198"></line><line x1="259" x2="252" y1="188" y2="198"></line><line x1="271" x2="264" y1="188" y2="198"></line><line x1="283" x2="276" y1="188" y2="198"></line><line x1="295" x2="288" y1="188" y2="198"></line><line x1="307" x2="300" y1="188" y2="198"></line></g>
+<line stroke="var(--ink)" stroke-width="1.8" x1="95" x2="285" y1="188" y2="78.30"></line>
+<polyline fill="none" points="80.00,55.00 82.04,55.04 84.09,55.15 86.13,55.33 88.18,55.59 90.22,55.92 92.27,56.33 94.31,56.81 96.36,57.36 98.40,57.99 100.45,58.69 102.49,59.46 104.54,60.31 106.58,61.23 108.63,62.23 110.67,63.30 112.72,64.44 114.76,65.66 116.80,66.95 118.85,68.32 120.89,69.76 122.94,71.27 124.98,72.86 127.03,74.52 129.07,76.25 131.12,78.06 133.16,79.94 135.21,81.89 137.25,83.92 139.30,86.03 141.34,88.20 143.39,90.45 145.43,92.78 147.47,95.17 149.52,97.65 151.56,100.19 153.61,102.81 155.65,105.50 157.70,108.27 159.74,111.11 161.79,114.03 163.83,117.01 165.88,120.08 167.92,123.21 169.97,126.42 172.01,129.70 174.06,133.06 176.10,136.49 178.15,140.00" stroke="var(--aux)" stroke-dasharray="5 4" stroke-width="1.5"></polyline>
+<circle cx="80" cy="55" fill="var(--ink)" r="4"></circle>
+<line marker-end="url(#q2_ar)" stroke="var(--ink)" stroke-width="1.8" x1="84" x2="145" y1="55" y2="55"></line>
+<text class="lbl" font-size="13" x="149" y="50">v₀=4.9 m/s</text>
+<circle cx="178.15" cy="140.00" fill="var(--ink)" r="3.5"></circle>
+<polyline fill="none" points="117.00,188.00 116.98,187.04 116.92,186.08 116.81,185.13 116.67,184.18 116.48,183.24 116.25,182.31 115.98,181.38 115.67,180.48 115.33,179.58 114.94,178.70 114.51,177.84 114.05,177.00" stroke="var(--ink)" stroke-width="1.4"></polyline>
+<text class="lbl-rm" font-size="13" x="118" y="181">30°</text>
+</svg>
+<div class="figcap">原題情境圖：小球最後垂直撞上傾角 30° 的斜面。</div>
+</div>
+<div class="semantic" data-semantic-id="q2_figure_01" data-semantic-type="figure" id="q2_figure_01">
+<svg aria-label="第2題方向示意圖：撞擊點的斜面、水平參考線與垂直斜面的速度方向" class="fig" id="q2_fig_direction" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 220">
+<defs><marker id="q2_ar2" markerheight="8" markerunits="userSpaceOnUse" markerwidth="10" orient="auto" refx="9" refy="4"><path d="M0,0 L10,4 L0,8 Z" fill="var(--v2)"></path></marker></defs>
+<line stroke="var(--aux)" stroke-dasharray="5 5" stroke-width="1.3" x1="60" x2="310" y1="104" y2="104"></line>
+<line stroke="var(--ink)" stroke-width="1.8" x1="70" x2="300" y1="170.40" y2="37.60"></line>
+<circle cx="185" cy="104" fill="var(--ink)" r="4.2"></circle>
+<line marker-end="url(#q2_ar2)" stroke="var(--v2)" stroke-width="2.3" x1="185" x2="208" y1="104" y2="143.84"></line>
+<polyline fill="none" points="209.00,104.00 208.98,102.95 208.91,101.91 208.79,100.87 208.64,99.83 208.43,98.81 208.18,97.79 207.89,96.78 207.55,95.79 207.17,94.82 206.75,93.86 206.29,92.92 205.78,92.00" stroke="var(--ink)" stroke-width="1.4"></polyline>
+<polyline fill="none" points="213.00,104.00 212.89,106.44 212.57,108.86 212.05,111.25 211.31,113.58 210.38,115.83 209.25,118.00 207.94,120.06 206.45,122.00 204.80,123.80 203.00,125.45 201.06,126.94 199.00,128.25" stroke="var(--v2)" stroke-width="1.4"></polyline>
+<path d="M 185.00 104.00 L 191.06 100.50 L 194.56 106.56 L 188.50 110.06" fill="none" stroke="var(--aux)" stroke-width="1.2"></path>
+<text class="lbl-rm" font-size="13" x="214" y="93">30°</text>
+<text class="lbl" fill="var(--v2)" font-size="13" x="206" y="125">60°</text>
+<text class="lbl-rm" font-size="12" x="269" y="95">水平參考線</text>
+<text class="lbl-rm" font-size="12" x="252" y="55">斜面</text>
+<text class="lbl" fill="var(--v2)" font-size="12" x="212" y="151">速度方向</text>
+</svg>
+<div class="figcap">方向示意：斜面和水平夾 30°，所以垂直於斜面的速度方向和水平夾 60°。</div>
+</div>
+<div class="semantic" data-semantic-id="q2_concept_01" data-semantic-type="concept" id="q2_concept_01"><div class="concept"><span class="tag">觀念</span><ul class="concept-list">
+<li>先把題目的「垂直撞斜面」翻成一個<strong>速度方向條件</strong>。</li>
+<li>斜面與水平夾 30°，所以撞擊瞬間的速度方向（垂直於斜面）與水平夾 60°。</li>
+<li>平拋時 $v_x=v_0=4.9\ \text{m/s}$，$v_y=gt$，因此可用 $\tan 60^\circ=v_y/v_x$ 列式。</li>
+</ul></div></div>
+<div class="semantic" data-semantic-id="q2_flow_01" data-semantic-type="flow" id="q2_flow_01"><div class="flow"><span class="tag">流程</span><ol><li>先由示意圖確認撞擊時速度方向與水平夾 60°。</li><li>再用 $\tan60^\circ=\dfrac{v_y}{v_x}=\dfrac{gt}{v_0}$ 求時間。</li></ol></div></div>
+<div class="semantic" data-semantic-id="q2_calc_01" data-semantic-type="calculation" id="q2_calc_01"><div class="calcblock"><span class="tag">計算</span>
+<div class="step"><span class="label">方向條件</span> $$\tan60^\circ=\frac{v_y}{v_x}=\frac{gt}{v_0}$$</div>
+<div class="step"><span class="label">代入</span> $$\begin{aligned}\sqrt3&amp;=\frac{9.8t}{4.9}\\t&amp;=\frac{\sqrt3}{2}\ \text{s}\end{aligned}$$</div>
+</div></div>
+<div class="semantic" data-semantic-id="q2_result_01" data-semantic-type="result" id="q2_result_01"><div class="ans">答案：<strong>$\dfrac{\sqrt3}{2}\ \text{s}$</strong></div></div>
+<div class="qnav"><button onclick="showPage('page1')">← 第1題</button><button onclick="showPage('page3')">第3題 →</button></div>
+</section></div><div class="page" id="page3"><section id="q3">
+<h2>第 3 題｜速度方向由 37° 變到 53°</h2>
+<div class="qbox"><p class="qstem">以 $v_0$ 的水平初速度水平拋出一石子，不計空氣阻力，其切線速度自與水平夾 37° 的角度變至 53°。求：(1) 所經時間；(2) 兩點位置的高度差。</p></div>
+<div class="semantic" data-semantic-id="q3_concept_01" data-semantic-type="concept" id="q3_concept_01"><div class="concept"><span class="tag">觀念</span><ul class="concept-list"><li>這題真正要比較的不是兩個時刻 $t_1,t_2$，而是<strong>兩點的鉛直速度</strong>。</li><li>平拋的水平分量始終不變：$v_x=v_0$。</li><li>速度方向滿足 $\tan\theta=\dfrac{v_y}{v_x}$，所以角度一改變，就代表鉛直分量 $v_y$ 改變。</li></ul></div></div>
+<div class="semantic" data-semantic-id="q3_figure_01" data-semantic-type="figure" id="q3_figure_01"><svg aria-label="第3題示意圖：平拋軌跡上P、Q兩點的速度、水平分量、鉛直分量與鉛直速度差" class="fig" id="q3_fig_velocity" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 265">
+<defs><marker id="q3_blue" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v2)"></path></marker><marker id="q3_red" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v1)"></path></marker><marker id="q3_ink" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--ink)"></path></marker></defs>
+<polyline fill="none" points="48.00,38.00 51.31,38.04 54.61,38.15 57.92,38.34 61.22,38.61 64.53,38.96 67.83,39.38 71.14,39.87 74.44,40.45 77.75,41.10 81.06,41.82 84.36,42.63 87.67,43.51 90.97,44.46 94.28,45.50 97.58,46.60 100.89,47.79 104.19,49.05 107.50,50.39 110.81,51.81 114.11,53.30 117.42,54.87 120.72,56.51 124.03,58.23 127.33,60.03 130.64,61.90 133.94,63.85 137.25,65.88 140.56,67.98 143.86,70.16 147.17,72.42 150.47,74.75 153.78,77.16 157.08,79.65 160.39,82.21 163.69,84.85 167.00,87.56 170.31,90.36 173.61,93.22 176.92,96.17 180.22,99.19 183.53,102.29 186.83,105.46 190.14,108.71 193.44,112.04 196.75,115.44 200.06,118.92 203.36,122.48 206.67,126.11 209.97,129.82 213.28,133.61 216.58,137.47 219.89,141.41 223.19,145.43 226.50,149.52 229.81,153.69 233.11,157.93 236.42,162.25 239.72,166.65 243.03,171.13 246.33,175.68 249.64,180.30 252.94,185.01 256.25,189.79 259.56,194.65 262.86,199.58 266.17,204.59 269.47,209.67 272.78,214.84 276.08,220.08 279.39,225.39 282.69,230.79 286.00,236.25" stroke="var(--aux)" stroke-dasharray="5 4" stroke-width="1.6"></polyline>
+<circle cx="155.14" cy="78.18" fill="var(--ink)" r="4.5"></circle><text class="lbl-rm" font-size="13" x="140.14" y="68.18">P</text>
+<line marker-end="url(#q3_blue)" stroke="var(--v2)" stroke-width="2" x1="155.14" x2="203.14" y1="78.18" y2="78.18"></line>
+<line marker-end="url(#q3_red)" stroke="var(--v1)" stroke-width="2" x1="155.14" x2="155.14" y1="78.18" y2="114.18"></line>
+<line marker-end="url(#q3_ink)" stroke="var(--ink)" stroke-width="2.2" x1="155.14" x2="203.14" y1="78.18" y2="114.18"></line>
+<line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="203.14" x2="203.14" y1="78.18" y2="114.18"></line>
+<line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="155.14" x2="203.14" y1="114.18" y2="114.18"></line>
+<polyline fill="none" points="174.14,78.18 174.11,79.20 174.03,80.21 173.89,81.22 173.70,82.22 173.46,83.21 173.16,84.19 172.82,85.15 172.42,86.08 171.97,87.00 171.47,87.89 170.93,88.75 170.34,89.58" stroke="var(--ink)" stroke-width="1.2"></polyline>
+<text class="lbl-rm" font-size="12" text-anchor="middle" x="181" y="91">37°</text><text class="lbl-rm" font-size="12" x="208.14" y="112.18">vₚ</text><text class="lbl" fill="var(--v2)" font-size="12" x="177.14" y="70.18">v₀</text><text class="lbl" fill="var(--v1)" font-size="12" x="124.14" y="98.18">vᵧ₁</text>
+<circle cx="238.48" cy="164.98" fill="var(--ink)" r="4.5"></circle><text class="lbl-rm" font-size="13" x="223.48" y="154.98">Q</text>
+<line marker-end="url(#q3_blue)" stroke="var(--v2)" stroke-width="2" x1="238.48" x2="286.48" y1="164.98" y2="164.98"></line>
+<line marker-end="url(#q3_red)" stroke="var(--v1)" stroke-width="2" x1="238.48" x2="238.48" y1="164.98" y2="228.98"></line>
+<line marker-end="url(#q3_ink)" stroke="var(--ink)" stroke-width="2.2" x1="238.48" x2="286.48" y1="164.98" y2="228.98"></line>
+<line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="286.48" x2="286.48" y1="164.98" y2="228.98"></line>
+<line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="238.48" x2="286.48" y1="228.98" y2="228.98"></line>
+<polyline fill="none" points="258.48,164.98 258.42,166.52 258.24,168.06 257.94,169.58 257.53,171.06 257.01,172.52 256.37,173.92 255.62,175.28 254.78,176.57 253.84,177.79 252.80,178.94 251.68,180.01 250.48,180.98" stroke="var(--ink)" stroke-width="1.2"></polyline>
+<text class="lbl-rm" font-size="12" text-anchor="middle" x="270" y="188">53°</text><text class="lbl-rm" font-size="12" x="291.48" y="225.98">v_Q</text><text class="lbl" fill="var(--v2)" font-size="12" x="260.48" y="156.98">v₀</text><text class="lbl" fill="var(--v1)" font-size="12" x="207.48" y="194.98">vᵧ₂</text>
+<line stroke="var(--v1)" stroke-width="1.4" x1="216.48" x2="224.48" y1="200.98" y2="200.98"></line><line stroke="var(--v1)" stroke-width="1.4" x1="216.48" x2="224.48" y1="228.98" y2="228.98"></line><line stroke="var(--v1)" stroke-width="1.4" x1="220.48" x2="220.48" y1="200.98" y2="228.98"></line><text class="lbl" fill="var(--v1)" font-size="12" x="178.48" y="218.98">Δvᵧ</text>
+</svg><div class="figcap">示意圖：水平分量都一樣是 $v_0$；真正改變的是鉛直分量 $v_y$，因此先比較 $v_{y1}$、$v_{y2}$ 最直接。</div></div>
+<div class="semantic" data-semantic-id="q3_flow_01" data-semantic-type="flow" id="q3_flow_01"><div class="flow"><span class="tag">流程</span><ol><li>由兩個方向角先找出兩點的鉛直速度 $v_{y1}$、$v_{y2}$。</li><li>用 $\Delta v_y=g\Delta t$ 求所經時間。</li><li>再用鉛直方向的平均速度 $\dfrac{v_{y1}+v_{y2}}2$ 乘上 $\Delta t$，得到高度差。</li></ol></div></div>
+<div class="semantic" data-semantic-id="q3_calc_01" data-semantic-type="calculation" id="q3_calc_01"><div class="basecalc"><span class="tag">基本量</span><div class="step"><span class="label">兩點的鉛直速度</span> 依本題常用的 $3$-$4$-$5$ 近似：$$\begin{aligned}v_{y1}&amp;=v_0\tan37^\circ=\frac34v_0\\v_{y2}&amp;=v_0\tan53^\circ=\frac43v_0\end{aligned}$$</div><div class="step"><span class="label">鉛直速度差</span> $$\Delta v_y=v_{y2}-v_{y1}=\left(\frac43-\frac34\right)v_0=\frac7{12}v_0$$</div></div><div class="subq"><div class="subq-title">(1) 所經時間</div><div class="calcblock"><span class="tag">計算</span>$$\begin{aligned}\Delta t&amp;=\frac{\Delta v_y}{g}\\&amp;=\frac{\tfrac7{12}v_0}{g}=\frac{7v_0}{12g}\end{aligned}$$</div></div><div class="subq"><div class="subq-title">(2) 兩點高度差</div><div class="calcblock"><span class="tag">計算</span>鉛直方向做等加速度運動，因此 $$\begin{aligned}\Delta y&amp;=\frac{v_{y1}+v_{y2}}2\,\Delta t\\&amp;=\frac12\left(\frac34v_0+\frac43v_0\right)\left(\frac{7v_0}{12g}\right)\\&amp;=\frac{175v_0^2}{288g}\end{aligned}$$</div></div></div>
+<div class="semantic" data-semantic-id="q3_result_01" data-semantic-type="result" id="q3_result_01"><div class="ans">答案：<strong>(1) $\dfrac{7v_0}{12g}$　(2) $\dfrac{175v_0^2}{288g}$</strong></div></div><div class="qnav"><button onclick="showPage('page2')">← 第2題</button><button onclick="showPage('page4')">第4題 →</button></div></section></div><div class="page" id="page4"><section id="q4"><h2>第 4 題｜水平拋出落在斜面</h2><div class="qbox"><p class="qstem">如右圖所示，自 A 點以 $v_0$ 初速沿水平方向拋出一物而落於斜角為 $\theta$ 的斜面 B 上，自由落體加速度以 $g$ 表示。求：(1) 所需時間；(2) 物體沿斜面射程。</p><svg aria-label="第4題原題情境圖：A點水平拋出落在斜面B" class="fig" id="q4_fig_original" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 230"><defs><marker id="q4_ar" markerheight="8" markerunits="userSpaceOnUse" markerwidth="10" orient="auto" refx="9" refy="4"><path d="M0,0 L10,4 L0,8 Z" fill="context-stroke"></path></marker></defs><line stroke="var(--ink)" stroke-width="1.8" x1="85" x2="85" y1="58" y2="188"></line><line stroke="var(--ink)" stroke-width="1.8" x1="85" x2="285" y1="188" y2="188"></line><line stroke="var(--ink)" stroke-width="1.8" x1="85" x2="285" y1="58" y2="188"></line><polyline fill="none" points="85.00,58.00 91.33,58.12 97.67,58.47 104.00,59.05 110.33,59.87 116.67,60.92 123.00,62.20 129.33,63.72 135.67,65.47 142.00,67.45 148.33,69.67 154.67,72.12 161.00,74.81 167.33,77.73 173.67,80.88 180.00,84.26 186.33,87.88 192.67,91.73 199.00,95.82 205.33,100.14 211.67,104.69 218.00,109.47 224.33,114.49 230.67,119.75 237.00,125.23 243.33,130.95 249.67,136.90 256.00,143.09 262.33,149.51 268.67,156.16 275.00,163.05" stroke="var(--aux)" stroke-dasharray="5 4" stroke-width="1.5"></polyline><circle cx="85" cy="58" fill="var(--ink)" r="7"></circle><text class="lbl-rm" font-size="15" x="77" y="38">A</text><text class="lbl-rm" font-size="15" x="292" y="184">B</text><line marker-end="url(#q4_ar)" stroke="var(--ink)" stroke-width="1.8" x1="92" x2="150" y1="58" y2="58"></line><text class="lbl" font-size="14" x="150" y="52">v₀</text><path d="M85 170 L103 170 L103 188" fill="none" stroke="var(--ink)" stroke-width="1.4"></path><polyline fill="none" points="263.00,188.00 263.03,186.94 263.10,185.89 263.23,184.84 263.40,183.80 263.63,182.77 263.91,181.75 264.23,180.74 264.60,179.75 265.02,178.78 265.49,177.83 266.00,176.91 266.55,176.01" stroke="var(--ink)" stroke-width="1.4"></polyline><text class="lbl" font-size="15" x="252" y="178">θ</text></svg><div class="figcap">原題情境圖：A 點水平拋出，落在斜面上的 B 點。</div></div><div class="semantic" data-semantic-id="q4_base_01" data-semantic-type="calculation" id="q4_base_01"><div class="basecalc"><span class="tag">基本量</span><div class="step"><span class="label">平拋的位移公式</span> $$x=v_0t,\qquad y=\frac12gt^2$$</div><div class="step"><span class="label">落點在斜面上</span> 幾何上有 $$\tan\theta=\frac yx$$</div></div></div><div class="gate" data-checkpoint-id="q4_cp01" data-correct="A" data-evidence-figure-ids="" data-evidence-id="q4_base_01" data-protected-ids="q4_flow_01,q4_figure_01,q4_calc_01,q4_result_01" data-question-id="q4" data-unlock="q4_after_cp01" id="q4_cp01"><span class="gate-tag">閱讀檢核</span><p class="gate-question">剛才先建立的 $x$ 方向與 $y$ 方向位移公式，各是哪一組？</p><div class="gate-options"><button data-choice="A" type="button">（A）$x=v_0t$，$y=\dfrac12gt^2$</button><button data-choice="B" type="button">（B）$x=\dfrac12gt^2$，$y=v_0t$</button><button data-choice="C" type="button">（C）$x=v_0$，$y=gt$</button></div><div aria-live="polite" class="gate-feedback"></div></div><div class="locked" id="q4_after_cp01"><div class="semantic" data-semantic-id="q4_flow_01" data-semantic-type="flow" id="q4_flow_01"><div class="flow"><span class="tag">流程</span><ol><li>先由落點在斜面上，建立 $\tan\theta=y/x$。</li><li>把 $x=v_0t$、$y=\tfrac12gt^2$ 代入，先求時間。</li><li>再由 $s\cos\theta=x$ 求沿斜面的射程。</li></ol></div></div><div class="semantic" data-semantic-id="q4_figure_01" data-semantic-type="figure" id="q4_figure_01"><svg aria-label="第4題幾何關係圖：水平位移x、鉛直位移y與斜面射程s" class="fig" id="q4_fig_geometry" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 220"><line stroke="var(--v1)" stroke-width="2" x1="72" x2="72" y1="50" y2="180"></line><line stroke="var(--ink)" stroke-width="1.8" x1="72" x2="292" y1="50" y2="180"></line><line stroke="var(--v2)" stroke-width="2" x1="72" x2="292" y1="180" y2="180"></line><circle cx="72" cy="50" fill="var(--ink)" r="4"></circle><circle cx="292" cy="180" fill="var(--ink)" r="4"></circle><text class="lbl" fill="var(--v1)" font-size="15" x="55" y="116">y</text><text class="lbl" fill="var(--v2)" font-size="15" x="180" y="202">x</text><text class="lbl" font-size="15" x="188" y="102">s</text><polyline fill="none" points="270.00,180.00 270.02,179.02 270.09,178.05 270.20,177.07 270.35,176.11 270.54,175.15 270.78,174.20 271.06,173.26 271.38,172.34 271.74,171.43 272.14,170.53 272.58,169.66 273.06,168.81" stroke="var(--ink)" stroke-width="1.4"></polyline><text class="lbl" font-size="15" x="257" y="170">θ</text></svg><div class="figcap">幾何關係圖：先用 $\tan\theta=\dfrac yx$ 求時間；再用 $s\cos\theta=x$ 求斜面射程。</div></div><div class="semantic" data-semantic-id="q4_calc_01" data-semantic-type="calculation" id="q4_calc_01"><div class="subq"><div class="subq-title">(1) 飛行時間</div><div class="calcblock"><span class="tag">計算</span>$$\begin{aligned}\tan\theta&amp;=\frac yx=\frac{\tfrac12gt^2}{v_0t}\\&amp;=\frac{gt}{2v_0}\\t&amp;=\frac{2v_0\tan\theta}{g}\end{aligned}$$</div></div><div class="subq"><div class="subq-title">(2) 沿斜面射程</div><div class="calcblock"><span class="tag">計算</span>先用 $x=v_0t$，再由 $s\cos\theta=x$：$$\begin{aligned}s&amp;=\frac x{\cos\theta}=\frac{v_0t}{\cos\theta}\\&amp;=\frac{2v_0^2\tan\theta}{g\cos\theta}\end{aligned}$$</div></div></div><div class="semantic" data-semantic-id="q4_result_01" data-semantic-type="result" id="q4_result_01"><div class="ans">答案：<strong>(1) $\dfrac{2v_0\tan\theta}{g}$　(2) $\dfrac{2v_0^2\tan\theta}{g\cos\theta}$</strong></div></div><div class="qnav"><button onclick="showPage('page3')">← 第3題</button><button onclick="showPage('page5')">第5題 →</button></div></div></section></div><div class="page" id="page5"><section id="q5"><h2>第 5 題｜位移方向 45° 與速度方向 45°</h2><div class="qbox"><p class="qstem">將一質點自屋頂水平拋出，若不計空氣阻力，則自拋出至位移方向與水平成 45° 所經歷時間 $t$，及速度方向與水平成 45° 所經歷時間 $t'$ 的比為何？</p></div><div class="semantic" data-semantic-id="q5_concept_01" data-semantic-type="concept" id="q5_concept_01"><div class="concept"><span class="tag">觀念</span><ul class="concept-list"><li>位移方向與水平夾 45°：看的是 $\dfrac yx=1$。</li><li>速度方向與水平夾 45°：看的是 $\dfrac{v_y}{v_x}=1$。</li><li>兩個條件長得很像，但一個屬於位移，一個屬於速度，不能混用。</li></ul></div></div><div class="semantic" data-semantic-id="q5_flow_01" data-semantic-type="flow" id="q5_flow_01"><div class="flow"><span class="tag">流程</span><ol><li>先用位移條件求 $t$。</li><li>再用速度條件求 $t'$。</li><li>最後把兩個時間相比。</li></ol></div></div><div class="semantic" data-semantic-id="q5_calc_01" data-semantic-type="calculation" id="q5_calc_01"><div class="calcblock"><span class="tag">計算</span><div class="step"><span class="label">位移方向 45°</span>$$\begin{aligned}\frac yx&amp;=\frac{\tfrac12gt^2}{v_0t}=1\\t&amp;=\frac{2v_0}{g}\end{aligned}$$</div><div class="step"><span class="label">速度方向 45°</span>$$\begin{aligned}\frac{v_y}{v_x}&amp;=\frac{gt'}{v_0}=1\\t'&amp;=\frac{v_0}{g}\end{aligned}$$</div>因此 $$t:t'=2:1.$$</div></div><div class="semantic" data-semantic-id="q5_result_01" data-semantic-type="result" id="q5_result_01"><div class="ans">答案：<strong>$2:1$</strong></div></div><div class="qnav"><button onclick="showPage('page4')">← 第4題</button><button onclick="showPage('page6')">第6題 →</button></div></section></div><div class="page" id="page6"><section id="q6"><h2>第 6 題｜切線加速度</h2><div class="qbox"><p class="qstem">水平拋物運動初速 10 m/s，當其切線加速度為 $6\ \text{m/s}^2$ 時，此物已落下多少時間？</p></div><div class="subtitle">題幹未另註 $g$；以下依本卷答案所採慣例取 $g=10\ \text{m/s}^2$。</div><div class="semantic" data-semantic-id="q6_concept_01" data-semantic-type="concept" id="q6_concept_01"><div class="concept"><span class="tag">觀念</span><ul class="concept-list"><li>平拋時加速度只有重力 $g$，方向永遠鉛直向下。</li><li>在該點先以速度方向當作<strong>切線軸</strong>，再畫出與它垂直的<strong>法線軸</strong>；$a_t$、$a_n$ 都是重力從同一原點投影到這兩條軸上的分量。</li><li>圖中的 $\theta$ 是速度與水平的夾角；因「切線 ⟂ 法線」且「水平 ⟂ 鉛直」，所以重力與法線的夾角也同樣是 $\theta$。</li></ul></div></div><div class="semantic" data-semantic-id="q6_figure_01" data-semantic-type="figure" id="q6_figure_01"><svg aria-label="第6題圖1：粒子在軌跡上，標示水平參考線、切線與法線座標軸、速度方向、重力及其切線法線分量" class="fig" id="q6_fig_decomp" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 250">
+<defs><marker id="q6_ink" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--ink)"></path></marker><marker id="q6_red" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v1)"></path></marker><marker id="q6_blue" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v2)"></path></marker><marker id="q6_green" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v3)"></path></marker></defs>
+<polyline fill="none" points="55.00,45.00 58.50,45.04 62.00,45.14 65.50,45.32 69.00,45.57 72.50,45.88 76.00,46.27 79.50,46.73 83.00,47.26 86.50,47.86 90.00,48.53 93.50,49.28 97.00,50.09 100.50,50.97 104.00,51.93 107.50,52.95 111.00,54.05 114.50,55.21 118.00,56.45 121.50,57.76 125.00,59.13 128.50,60.58 132.00,62.10 135.50,63.69 139.00,65.35 142.50,67.09 146.00,68.89 149.50,70.76 153.00,72.70 156.50,74.72 160.00,76.80 163.50,78.96 167.00,81.18 170.50,83.48 174.00,85.85 177.50,88.29 181.00,90.80 184.50,93.38 188.00,96.03 191.50,98.75 195.00,101.54 198.50,104.40 202.00,107.33 205.50,110.34 209.00,113.41 212.50,116.56 216.00,119.77 219.50,123.06 223.00,126.42 226.50,129.84 230.00,133.34 233.50,136.91 237.00,140.55 240.50,144.26 244.00,148.04 247.50,151.89 251.00,155.82 254.50,159.81 258.00,163.87 261.50,168.01 265.00,172.21 268.50,176.49 272.00,180.83 275.50,185.25 279.00,189.74 282.50,194.30 286.00,198.93 289.50,203.63 293.00,208.40 296.50,213.24 300.00,218.15" stroke="var(--aux)" stroke-dasharray="5 4" stroke-width="1.5"></polyline>
+<line stroke="var(--ink)" stroke-dasharray="5 5" stroke-opacity=".55" stroke-width="1.2" x1="72" x2="318" y1="93.75" y2="93.75"></line>
+<line stroke="var(--aux)" stroke-dasharray="6 5" stroke-opacity=".55" stroke-width="1.2" x1="101.00" x2="269.00" y1="30.75" y2="156.75"></line>
+<line stroke="var(--aux)" stroke-dasharray="6 5" stroke-opacity=".55" stroke-width="1.2" x1="239.00" x2="131.00" y1="21.75" y2="165.75"></line>
+<circle cx="185.00" cy="93.75" fill="var(--ink)" r="4.5"></circle>
+<polyline fill="none" points="208.00,93.75 207.97,94.98 207.87,96.21 207.70,97.43 207.47,98.65 207.18,99.84 206.82,101.02 206.40,102.18 205.92,103.32 205.37,104.42 204.77,105.50 204.11,106.54 203.40,107.55" stroke="var(--ink)" stroke-width="1.2"></polyline><text class="lbl-rm" font-size="12" text-anchor="middle" x="216" y="108">θ</text>
+<line marker-end="url(#q6_red)" stroke="var(--v1)" stroke-width="2.2" x1="185.00" x2="185.00" y1="93.75" y2="173.75"></line><text class="lbl" fill="var(--v1)" font-size="13" x="193.00" y="165.75">g</text>
+<line marker-end="url(#q6_blue)" stroke="var(--v2)" stroke-width="2.2" x1="185.00" x2="223.40" y1="93.75" y2="122.55"></line><text class="lbl" fill="var(--v2)" font-size="12" x="228.40" y="119.55">aₜ</text>
+<line marker-end="url(#q6_green)" stroke="var(--v3)" stroke-width="2.2" x1="185.00" x2="146.60" y1="93.75" y2="144.95"></line><text class="lbl" fill="var(--v3)" font-size="12" x="118.60" y="147.95">aₙ</text>
+<line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="223.40" x2="185.00" y1="122.55" y2="173.75"></line>
+<line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="146.60" x2="185.00" y1="144.95" y2="173.75"></line>
+<path d="M 223.40 122.55 L 217.80 118.35 L 213.60 123.95 L 219.20 128.15" fill="none" stroke="var(--aux)" stroke-width="1.1"></path><path d="M 146.60 144.95 L 150.80 139.35 L 156.40 143.55 L 152.20 149.15" fill="none" stroke="var(--aux)" stroke-width="1.1"></path>
+<text class="lbl-rm" font-size="12" x="286" y="85.75">水平參考線</text><text class="lbl-rm" font-size="12" x="236.00" y="149.75">切線軸</text><text class="lbl-rm" font-size="12" x="109.00" y="180.75">法線軸</text>
+<line marker-end="url(#q6_ink)" stroke="var(--ink)" stroke-width="2.1" x1="185.00" x2="202.60" y1="93.75" y2="106.95"></line><text class="lbl-rm" font-size="12" text-anchor="start" x="208" y="104">v</text></svg><div class="figcap">圖 1：先在該點畫出速度方向（切線）與法線方向，再把重力 $g$ 分解成 $a_t$ 與 $a_n$。</div></div><div class="gate" data-checkpoint-id="q6_cp01" data-correct="B" data-evidence-figure-ids="q6_fig_decomp" data-evidence-id="q6_figure_01" data-protected-ids="q6_flow_01,q6_figure_02,q6_calc_01,q6_result_01" data-question-id="q6" data-unlock="q6_after_cp01" id="q6_cp01"><span class="gate-tag">閱讀檢核</span><p class="gate-question">依剛才的分解圖，切線加速度 $a_t$ 應該是哪一個？</p><div class="gate-options"><button data-choice="A" type="button">（A）$g\cos\theta$</button><button data-choice="B" type="button">（B）$g\sin\theta$</button><button data-choice="C" type="button">（C）$g\tan\theta$</button></div><div aria-live="polite" class="gate-feedback"></div></div><div class="locked" id="q6_after_cp01"><div class="semantic" data-semantic-id="q6_flow_01" data-semantic-type="flow" id="q6_flow_01"><div class="flow"><span class="tag">流程</span><ol><li>由 $a_t=g\sin\theta$ 先求出 $\sin\theta$。</li><li>再從速度三角形找出鉛直速度 $v_y$。</li><li>最後用 $v_y=gt$ 求落下時間。</li></ol></div></div><div class="semantic" data-semantic-id="q6_figure_02" data-semantic-type="figure" id="q6_figure_02"><svg aria-label="第6題圖2：速度向量以及水平、鉛直分量" class="fig" id="q6_fig_velocity" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 220">
+<defs><marker id="q6_blue2" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v2)"></path></marker><marker id="q6_red2" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--v1)"></path></marker><marker id="q6_ink2" markerheight="7" markerunits="userSpaceOnUse" markerwidth="9" orient="auto" refx="8" refy="3.5"><path d="M0,0 L9,3.5 L0,7 Z" fill="var(--ink)"></path></marker></defs>
+<circle cx="92" cy="62" fill="var(--ink)" r="4"></circle>
+<line marker-end="url(#q6_blue2)" stroke="var(--v2)" stroke-width="2.2" x1="92" x2="212" y1="62" y2="62"></line><line marker-end="url(#q6_red2)" stroke="var(--v1)" stroke-width="2.2" x1="92" x2="92" y1="62" y2="152"></line><line marker-end="url(#q6_ink2)" stroke="var(--ink)" stroke-width="2.2" x1="92" x2="212" y1="62" y2="152"></line><line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="212" x2="212" y1="62" y2="152"></line><line stroke="var(--aux)" stroke-dasharray="4 4" stroke-width="1.1" x1="92" x2="212" y1="152" y2="152"></line><polyline fill="none" points="114.00,62.00 113.97,63.18 113.87,64.35 113.72,65.52 113.50,66.68 113.21,67.83 112.87,68.96 112.47,70.07 112.01,71.15 111.49,72.21 110.91,73.24 110.28,74.24 109.60,75.20" stroke="var(--ink)" stroke-width="1.2"></polyline><text class="lbl-rm" font-size="12" x="115" y="77">θ</text><text class="lbl" fill="var(--v2)" font-size="13" x="142" y="52">vₓ=10</text><text class="lbl" fill="var(--v1)" font-size="13" x="58" y="112">vᵧ</text><text class="lbl-rm" font-size="13" x="188" y="128">v</text>
+</svg><div class="figcap">圖 2：由 sinθ=3/5 得到速度三角形的 3:4:5 比例；水平分量 10 對應「4」，所以鉛直分量為 7.5 m/s。</div></div><div class="semantic" data-semantic-id="q6_calc_01" data-semantic-type="calculation" id="q6_calc_01"><div class="calcblock"><span class="tag">計算</span><div class="step"><span class="label">先求角度比例</span> $$\sin\theta=\frac{a_t}{g}=\frac6{10}=\frac35$$</div><div class="step"><span class="label">再求鉛直速度</span> 因此速度三角形可視為 $3:4:5$。水平分量 $v_x=10$ 對應到「4」，比例倍數是 $10/4=2.5$，所以 $$v_y=3\times2.5=7.5\ \text{m/s}.$$</div><div class="step"><span class="label">最後找時間</span> $$\begin{aligned}v_y&amp;=gt\\7.5&amp;=10t\\t&amp;=0.75\ \text{s}\end{aligned}$$</div></div></div><div class="semantic" data-semantic-id="q6_result_01" data-semantic-type="result" id="q6_result_01"><div class="ans">答案：<strong>$0.75\ \text{s}$</strong></div></div><div class="qnav"><button onclick="showPage('page5')">← 第5題</button><button onclick="showPage('page7')">第7題 →</button></div></div></section></div><div class="page" id="page7"><section id="q7"><h2>第 7 題｜平拋撞階梯</h2><div class="qbox"><p class="qstem">如圖，一石階夠長，每階高 20 cm、寬 30 cm，今將一物體以 5 m/s 的初速水平拋出，設重力加速度 $g=10\ \text{m/s}^2$，則經多少秒恰擊中階梯？</p><svg aria-label="第7題原題情境圖：每階高20公分寬30公分的階梯" class="fig" id="q7_fig_original" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 210"><defs><marker id="q7_ar" markerheight="8" markerunits="userSpaceOnUse" markerwidth="10" orient="auto" refx="9" refy="4"><path d="M0,0 L10,4 L0,8 Z" fill="var(--ink)"></path></marker></defs><circle cx="62" cy="45" fill="none" r="6" stroke="var(--ink)" stroke-width="1.6"></circle><line marker-end="url(#q7_ar)" stroke="var(--ink)" stroke-width="1.8" x1="69" x2="122" y1="45" y2="45"></line><text class="lbl-rm" font-size="14" x="126" y="50">v=5 m/s</text><polyline fill="none" points="68,52 68,68 92,68 92,84 116,84 116,100 140,100 140,116 164,116 164,132 188,132 188,148 212,148" stroke="var(--ink)" stroke-width="1.8"></polyline><text class="lbl-rm" font-size="13" x="76" y="82">1</text><text class="lbl-rm" font-size="13" x="100" y="98">2</text><text class="lbl-rm" font-size="13" x="124" y="114">3</text><text class="lbl-rm" font-size="13" x="148" y="130">4</text><circle cx="218" cy="154" fill="var(--ink)" r="2"></circle><circle cx="226" cy="161" fill="var(--ink)" r="2"></circle><circle cx="234" cy="168" fill="var(--ink)" r="2"></circle></svg><div class="figcap">原題情境圖：每階高 20 cm、寬 30 cm。</div></div><div class="semantic" data-semantic-id="q7_figure_00" data-semantic-type="figure" id="q7_figure_00"><svg aria-label="第7題詳解圖：假想斜面、平拋軌跡與真正撞擊階梯的位置" class="fig" id="q7_fig_helper" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 360 265"><defs><marker id="q7_blue" markerheight="8" markerunits="userSpaceOnUse" markerwidth="10" orient="auto" refx="9" refy="4"><path d="M0,0 L10,4 L0,8 Z" fill="var(--ink)"></path></marker></defs><polyline fill="none" points="35.00,25.00 35.00,41.00 59.00,41.00 59.00,57.00 83.00,57.00 83.00,73.00 107.00,73.00 107.00,89.00 131.00,89.00 131.00,105.00 155.00,105.00 155.00,121.00 179.00,121.00 179.00,137.00 203.00,137.00 203.00,153.00 227.00,153.00 227.00,169.00 251.00,169.00 251.00,185.00 275.00,185.00 275.00,201.00 299.00,201.00 299.00,217.00 323.00,217.00" stroke="var(--ink)" stroke-width="1.8"></polyline><line stroke="var(--v3)" stroke-width="5" x1="299.00" x2="323.00" y1="217.00" y2="217.00"></line><polyline fill="none" points="35.00,25.00 323.00,217.00" stroke="var(--v1)" stroke-dasharray="5 4" stroke-width="1.6"></polyline><polyline fill="none" points="35.00,25.00 37.77,25.02 40.54,25.08 43.31,25.17 46.09,25.31 48.86,25.48 51.63,25.69 54.40,25.94 57.17,26.23 59.94,26.56 62.71,26.92 65.48,27.32 68.26,27.76 71.03,28.24 73.80,28.76 76.57,29.32 79.34,29.92 82.11,30.55 84.88,31.22 87.65,31.93 90.43,32.68 93.20,33.47 95.97,34.29 98.74,35.16 101.51,36.06 104.28,37.00 107.05,37.98 109.82,39.00 112.60,40.05 115.37,41.15 118.14,42.28 120.91,43.45 123.68,44.66 126.45,45.91 129.22,47.20 131.99,48.52 134.77,49.88 137.54,51.28 140.31,52.72 143.08,54.20 145.85,55.72 148.62,57.28 151.39,58.87 154.17,60.50 156.94,62.17 159.71,63.88 162.48,65.63 165.25,67.41 168.02,69.24 170.79,71.10 173.56,73.00 176.34,74.94 179.11,76.92 181.88,78.93 184.65,80.99 187.42,83.08 190.19,85.21 192.96,87.38 195.73,89.59 198.51,91.84 201.28,94.12 204.05,96.44 206.82,98.80 209.59,101.20 212.36,103.64 215.13,106.12 217.90,108.64 220.68,111.19 223.45,113.78 226.22,116.41 228.99,119.08 231.76,121.79 234.53,124.53 237.30,127.32 240.07,130.14 242.85,133.00 245.62,135.90 248.39,138.84 251.16,141.81 253.93,144.83 256.70,147.88 259.47,150.97 262.25,154.10 265.02,157.27 267.79,160.48 270.56,163.72 273.33,167.00 276.10,170.32 278.87,173.68 281.64,177.08 284.42,180.52 287.19,184.00 289.96,187.51 292.73,191.06 295.50,194.65 298.27,198.28 301.04,201.95 303.81,205.65 306.59,209.40 309.36,213.18 312.13,217.00" stroke="var(--v2)" stroke-width="2.2"></polyline><line marker-end="url(#q7_blue)" stroke="var(--ink)" stroke-width="1.8" x1="41" x2="72" y1="25" y2="25"></line><text class="lbl" font-size="13" x="76" y="20">v₀=5 m/s</text><circle cx="301.67" cy="202.78" fill="var(--v1)" r="4"></circle><circle cx="312.13" cy="217.00" fill="var(--v3)" r="5"></circle><text class="lbl" fill="var(--v2)" font-size="13" x="56" y="42">平拋軌跡</text><text class="lbl" fill="var(--v1)" font-size="13" x="184" y="132">假想斜面</text><text class="lbl-rm" font-size="12" x="291.67" y="192.78">P</text><text class="lbl" fill="var(--v3)" font-size="12" x="319" y="211">Q</text><text class="lbl-rm" font-size="11" x="47" y="37">1</text><text class="lbl-rm" font-size="11" x="71" y="53">2</text><text class="lbl-rm" font-size="11" x="95" y="69">3</text></svg><div class="figcap">先把每階右下角連成假想斜面。紅點 P 是拋物線與假想斜面的交點，只用來定位階數；綠點 Q 才是真正撞到第 12 階的位置。</div></div><div class="semantic" data-semantic-id="q7_concept_01" data-semantic-type="concept" id="q7_concept_01"><div class="concept"><span class="tag">觀念</span><ul class="concept-list"><li>取拋出點為原點、向右為 $x$ 正向、向下為 $y$ 正向。平拋軌跡為 $y=\dfrac{g}{2v_0^2}x^2=\dfrac{x^2}5$。</li><li>每階寬 0.3 m、高 0.2 m，因此各階右下角連成的假想斜面是 $y=\dfrac23x$。</li><li><strong>假想斜面與拋物線的交點，只用來判斷第一個可能碰到的階梯；真正撞擊仍要回到實際水平階面驗證。</strong></li></ul></div></div><div class="gate" data-checkpoint-id="q7_cp01" data-correct="B" data-evidence-figure-ids="q7_fig_helper" data-evidence-id="q7_concept_01" data-protected-ids="q7_flow_01,q7_calc_01,q7_result_01" data-question-id="q7" data-unlock="q7_after_cp01" id="q7_cp01"><span class="gate-tag">閱讀檢核</span><p class="gate-question">在「假想斜面與真實階梯」這張圖中，紅點 P 的主要用途是什麼？</p><div class="gate-options"><button data-choice="A" type="button">（A）直接當成小球真正撞擊點</button><button data-choice="B" type="button">（B）用來定位第一個可能碰到的階梯，再回到真實階面驗證</button><button data-choice="C" type="button">（C）用來把重力加速度改成沿斜面的分量</button></div><div aria-live="polite" class="gate-feedback"></div></div><div class="locked" id="q7_after_cp01"><div class="semantic" data-semantic-id="q7_flow_01" data-semantic-type="flow" id="q7_flow_01"><div class="flow"><span class="tag">流程</span><ol><li>先用假想斜面和拋物線的交點，找出第一個可能碰到的階梯。</li><li>再回到真實階面，判斷實際撞擊的階數與高度。</li><li>最後用真正的鉛直位移求時間，並檢查水平位置是否真的落在該階上。</li></ol></div></div><div class="semantic" data-semantic-id="q7_calc_01" data-semantic-type="calculation" id="q7_calc_01"><div class="calcblock"><span class="tag">計算</span><div class="step"><span class="label">先找假想斜面的交會水平位置</span>$$\begin{aligned}\frac{x^2}5&amp;=\frac23x\\x&amp;=\frac{10}3\ \text{m}\approx3.33\ \text{m}\end{aligned}$$</div><div class="step"><span class="label">判斷真正撞到哪一階</span> 第 11 階右端在 $x=11\times0.3=3.3\ \text{m}$；交會位置已略過 3.3 m，因此下一個水平階面是第 12 階。第 12 階高度為 $12\times0.2=2.4\ \text{m}$。</div><div class="step"><span class="label">用真實鉛直位移求時間</span>$$\begin{aligned}\frac12gt^2&amp;=2.4\\5t^2&amp;=2.4\\t&amp;=\sqrt{\frac{12}{25}}=\frac{2\sqrt3}5\ \text{s}\end{aligned}$$</div><div class="step"><span class="label">位置驗證</span> 此時 $x=v_0t=5\cdot\dfrac{2\sqrt3}5=2\sqrt3\approx3.46\ \text{m}$，確實位於第 12 階水平面 $3.3\le x\le3.6\ \text{m}$ 內。</div></div></div><div class="semantic" data-semantic-id="q7_result_01" data-semantic-type="result" id="q7_result_01"><div class="ans">答案：<strong>$\dfrac{2\sqrt3}5\ \text{s}$</strong></div></div><div class="qnav"><button onclick="showPage('page6')">← 第6題</button><button disabled="">第7題 →</button></div></div></section></div><script id="checkpointData" type="application/json">[
+  {
+    "id": "q1_cp01",
+    "question_id": "q1",
+    "after_semantic_id": "q1_concept_01",
+    "evidence_span": "位移方向看 y/x；速度方向看 v_y/v_x。",
+    "evidence_figure_ids": [],
+    "target_type": "concept_relation",
+    "level": "R0",
+    "question": "剛才的觀念中，要判斷小球『速度方向』，應看哪一個比值？",
+    "options": [
+      {
+        "id": "A",
+        "text": "y/x",
+        "operator": "role_swap"
+      },
+      {
+        "id": "B",
+        "text": "v_y/v_x",
+        "correct": true
+      },
+      {
+        "id": "C",
+        "text": "x/y",
+        "operator": "role_swap"
+      }
+    ],
+    "unlock_target_id": "q1_after_cp01",
+    "protected_semantic_ids": [
+      "q1_flow_01",
+      "q1_calc_01",
+      "q1_result_01"
+    ],
+    "scope": "intra_question",
+    "hint": "回看剛才區分『位移方向』與『速度方向』的那一點。",
+    "validation": {
+      "single_answer": true,
+      "uses_future_content": false,
+      "requires_new_derivation": false,
+      "requires_external_knowledge": false,
+      "protected_content_not_shown_before_gate": true
+    }
+  },
+  {
+    "id": "q4_cp01",
+    "question_id": "q4",
+    "after_semantic_id": "q4_base_01",
+    "evidence_span": "x=v_0t，y=1/2 gt^2。",
+    "evidence_figure_ids": [],
+    "target_type": "symbol",
+    "level": "R0",
+    "question": "剛才先建立的 x 方向與 y 方向位移公式，各是哪一組？",
+    "options": [
+      {
+        "id": "A",
+        "text": "x=v_0t，y=1/2 gt^2",
+        "correct": true
+      },
+      {
+        "id": "B",
+        "text": "x=1/2 gt^2，y=v_0t",
+        "operator": "role_swap"
+      },
+      {
+        "id": "C",
+        "text": "x=v_0，y=gt",
+        "operator": "attribute_swap"
+      }
+    ],
+    "unlock_target_id": "q4_after_cp01",
+    "protected_semantic_ids": [
+      "q4_flow_01",
+      "q4_figure_01",
+      "q4_calc_01",
+      "q4_result_01"
+    ],
+    "scope": "intra_question",
+    "hint": "回看剛才那個『基本量』框，題目先建立的是位移公式。",
+    "validation": {
+      "single_answer": true,
+      "uses_future_content": false,
+      "requires_new_derivation": false,
+      "requires_external_knowledge": false,
+      "protected_content_not_shown_before_gate": true
+    }
+  },
+  {
+    "id": "q6_cp01",
+    "question_id": "q6",
+    "after_semantic_id": "q6_figure_01",
+    "evidence_span": "圖 1 先畫出切線軸、法線軸，並把重力分解成同一原點出發的 a_t 與 a_n；文字說明重力與法線夾角同為 θ。",
+    "evidence_figure_ids": [
+      "q6_fig_decomp"
+    ],
+    "target_type": "figure_relation",
+    "level": "R1",
+    "question": "依剛才的分解圖，切線加速度 a_t 應該是哪一個？",
+    "options": [
+      {
+        "id": "A",
+        "text": "g cosθ",
+        "operator": "role_swap"
+      },
+      {
+        "id": "B",
+        "text": "g sinθ",
+        "correct": true
+      },
+      {
+        "id": "C",
+        "text": "g tanθ",
+        "operator": "attribute_swap"
+      }
+    ],
+    "unlock_target_id": "q6_after_cp01",
+    "protected_semantic_ids": [
+      "q6_flow_01",
+      "q6_figure_02",
+      "q6_calc_01",
+      "q6_result_01"
+    ],
+    "scope": "intra_question",
+    "hint": "看重力 g 與法線軸的夾角 θ：a_t 是這個直角三角形中相對於 θ 的哪一邊？",
+    "validation": {
+      "single_answer": true,
+      "uses_future_content": false,
+      "requires_new_derivation": false,
+      "requires_external_knowledge": false,
+      "protected_content_not_shown_before_gate": true
+    }
+  },
+  {
+    "id": "q7_cp01",
+    "question_id": "q7",
+    "after_semantic_id": "q7_concept_01",
+    "evidence_span": "紅點 P 是拋物線與假想斜面的交點，只用來定位可能碰到的階梯；綠點 Q 才是真正撞擊點。",
+    "evidence_figure_ids": [
+      "q7_fig_helper"
+    ],
+    "target_type": "flow_announced",
+    "level": "R1",
+    "question": "在「假想斜面與真實階梯」這張圖中，紅點 P 的主要用途是什麼？",
+    "options": [
+      {
+        "id": "A",
+        "text": "直接當成小球真正撞擊點",
+        "operator": "attribute_swap"
+      },
+      {
+        "id": "B",
+        "text": "用來定位第一個可能碰到的階梯，再回到真實階面驗證",
+        "correct": true
+      },
+      {
+        "id": "C",
+        "text": "用來把重力加速度改成沿斜面的分量",
+        "operator": "neighbor_lure"
+      }
+    ],
+    "unlock_target_id": "q7_after_cp01",
+    "protected_semantic_ids": [
+      "q7_flow_01",
+      "q7_calc_01",
+      "q7_result_01"
+    ],
+    "scope": "intra_question",
+    "hint": "回看圖說與觀念框：紅點負責的是『定位階數』，不是直接當撞擊點。",
+    "validation": {
+      "single_answer": true,
+      "uses_future_content": false,
+      "requires_new_derivation": false,
+      "requires_external_knowledge": false,
+      "protected_content_not_shown_before_gate": true
+    }
+  }
+]</script>
+<div id="zoomOverlay"><div id="zoomInner"></div></div>
+<script>
+  function showPage(id){
+    var target = document.getElementById(id);
+    if (!target || !target.classList.contains('page')) return;
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.toggle('active', p === target); });
+    var sel = document.getElementById('pageSelect');
+    if (sel && sel.value !== id) sel.value = id;
+    window.scrollTo(0,0);
+  }
+  var pageSelectEl = document.getElementById('pageSelect');
+  if (pageSelectEl){
+    pageSelectEl.addEventListener('change', function(){ showPage(this.value); });
+    pageSelectEl.addEventListener('input', function(){ showPage(this.value); });
+  }
+
+  document.addEventListener('click', function(e){
+    if (e.target.closest('#zoomOverlay')) return;
+    if (e.target.closest('.gate-options') || e.target.closest('.pagesel')) return;
+    var el = e.target.closest('.katex-display, .katex');
+    if (!el) return;
+    var target = el.closest('.katex-display') || el;
+    var overlay = document.getElementById('zoomOverlay');
+    var inner = document.getElementById('zoomInner');
+    inner.innerHTML = target.outerHTML;
+    overlay.classList.add('show');
+  });
+  document.getElementById('zoomOverlay').addEventListener('click', function(){ this.classList.remove('show'); });
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.gate-options button');
+    if (!btn) return;
+    var gate = btn.closest('.gate');
+    if (!gate) return;
+    var feedback = gate.querySelector('.gate-feedback');
+    var correct = gate.getAttribute('data-correct');
+    var unlockId = gate.getAttribute('data-unlock');
+    if (btn.getAttribute('data-choice') === correct){
+      feedback.textContent = '正確，可以繼續閱讀。';
+      feedback.className = 'gate-feedback ok';
+      gate.querySelectorAll('button').forEach(function(b){ b.disabled = true; });
+      var target = document.getElementById(unlockId);
+      var ownerSection = gate.closest('section');
+      if (target && ownerSection && ownerSection.contains(target)) target.classList.add('is-unlocked');
+    } else {
+      var data = null;
+      try { data = JSON.parse(document.getElementById('checkpointData').textContent).find(function(x){return x.id===gate.id;}); } catch(err) {}
+      feedback.textContent = data && data.hint ? data.hint : '再回看剛才那一小段，找出文字裡直接提供的證據。';
+      feedback.className = 'gate-feedback no';
+    }
+  });
+</script>
+</body>
+</html>
