@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>多層介質視深證明</title>
+<style>
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+  -webkit-touch-callout:none;
+}
+:root{
+  --bg:#0f1117; --stage-bg:#0f1117;
+  --panel:#1a1a17; --panel2:#1e1e1a; --panel3:#171713;
+  --border:#2a2a26; --border2:#3a3a34;
+  --text:#dedad0; --text-dim:#918d80; --text-mute:#666;
+  --hover:#2a2a24; --accent-text:#F0D48A;
+  --btn-bg:#1e1e1a; --btn-border:#3a3a34;
+  --active-bg:#dedad0; --active-text:#111110;
+  --accent-blue:#5BA3E8; --accent-red:#E07055; --accent-green:#2DB890; --accent-amber:#EF9F27;
+  --ghost:rgba(200,196,186,0.55); --axis:rgba(255,255,255,0.6);
+  --fs-title: clamp(16px,2.7dvh,25px);
+  --fs-body:  clamp(15px,2.35dvh,21px);
+  --fs-small: clamp(14.5px,2.15dvh,20px);
+  --fs-mini:  clamp(12px,1.65dvh,15px);
+}
+html.light{
+  --bg:#faf7ee; --stage-bg:#faf7ee;
+  --panel:#ffffff; --panel2:#fbf5e6; --panel3:#fffdf6;
+  --border:#c9bc98; --border2:#a3936c;
+  --text:#2b2620; --text-dim:#5c5340; --text-mute:#5c5340;
+  --hover:#efe6d0; --accent-text:#7a5a10;
+  --btn-bg:#ffffff; --btn-border:#a3936c;
+  --active-bg:#2b2620; --active-text:#faf7ee;
+  --accent-blue:#2a5ca5; --accent-red:#a5342a; --accent-green:#1f6b52; --accent-amber:#8a5a10;
+  --ghost:rgba(70,58,35,0.7); --axis:rgba(45,35,15,0.85);
+}
+html,body{width:100vw;height:100dvh;overflow:hidden;background:var(--bg);color:var(--text);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;}
+#stage{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--stage-bg);}
+
+#top-bar{
+  flex:0 0 auto;display:flex;align-items:center;gap:0.6em;
+  padding:1.1dvh 3vw;border-bottom:1px solid var(--border);
+}
+#top-bar .ttl{font-size:var(--fs-title);font-weight:800;color:var(--accent-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#top-bar .stepTag{font-size:var(--fs-mini);color:var(--text-dim);white-space:nowrap;flex-shrink:0;margin-left:auto;}
+.theme-btn{
+  flex-shrink:0;border-radius:7px;border:1.3px solid var(--accent-text);
+  background:var(--btn-bg);color:var(--accent-text);font-weight:700;cursor:pointer;
+  font-size:var(--fs-mini);padding:0.5dvh 0.8em;white-space:nowrap;
+}
+
+#canvas-wrap{flex:0 0 41dvh;min-height:0;position:relative;border-bottom:1px solid var(--border);}
+#c{display:block;width:100%;height:100%;}
+
+#panel{
+  flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  background:var(--panel3);
+  padding:1.4dvh 3.2vw;gap:0.8dvh;overflow-y:auto;
+}
+#panel h2{font-size:var(--fs-body);font-weight:800;color:var(--text);line-height:1.4;}
+#panel .content{
+  font-size:var(--fs-small);line-height:1.6;color:var(--text);white-space:pre-line;
+}
+#panel .content .formula{ color:var(--accent-blue);font-weight:700; }
+#panel .content .result{
+  color:var(--accent-green);font-weight:800;
+  border-left:3px solid var(--accent-green);padding-left:0.55em;margin-top:0.1em;display:block;
+}
+#panel .content .eq{ display:block; }
+#panel .content .eq .ln{ display:block; margin-top:0.15em; }
+#panel .content .eq .cont{ display:block; padding-left:1.5em; margin-top:0.15em; }
+#legend{
+  flex:0 0 auto;display:flex;gap:0.9em;flex-wrap:wrap;font-size:var(--fs-mini);color:var(--text-dim);
+  padding:0.8dvh 3.2vw;border-top:1px solid var(--border);
+}
+#legend span{display:inline-flex;align-items:center;gap:0.3em;white-space:nowrap;}
+#legend i{width:1em;height:0;border-top:2.2px solid;display:inline-block;}
+
+#bot-bar{
+  flex:0 0 auto;display:flex;align-items:center;gap:0.6em;
+  padding:1.1dvh 3vw calc(1.1dvh + env(safe-area-inset-bottom,0px));
+  border-top:1px solid var(--border);
+}
+.stepbtn{
+  flex:1;border-radius:9px;border:1.4px solid var(--btn-border);background:var(--btn-bg);color:var(--text);
+  font-weight:700;font-size:var(--fs-body);padding:1.3dvh 0.4em;cursor:pointer;
+}
+.stepbtn:disabled{opacity:0.35;}
+.stepbtn:active:not(:disabled){transform:scale(0.96);}
+#stepInfo{
+  flex:0 0 auto;font-size:var(--fs-mini);font-weight:700;color:var(--text-dim);white-space:nowrap;padding:0 0.3em;
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="top-bar">
+    <div class="ttl">多層視深證明</div>
+    <div class="stepTag" id="stepTag"></div>
+    <button class="theme-btn" id="btnTheme" onclick="toggleTheme()">☀️</button>
+  </div>
+
+  <div id="canvas-wrap"><canvas id="c"></canvas></div>
+
+  <div id="panel">
+    <h2 id="stepTitle"></h2>
+    <div class="content" id="stepContent"></div>
+  </div>
+
+  <div id="legend">
+    <span><i style="border-color:var(--accent-red)"></i>實際光線</span>
+    <span><i style="border-color:var(--accent-blue);border-top-style:dashed"></i>虛擬延伸線</span>
+    <span><i style="border-color:var(--accent-green)"></i>h視</span>
+  </div>
+
+  <div id="bot-bar">
+    <button class="stepbtn" id="prevBtn" onclick="prevStep()">◀ 上一步</button>
+    <div id="stepInfo"></div>
+    <button class="stepbtn" id="nextBtn" onclick="nextStep()">下一步 ▶</button>
+  </div>
+</div>
+
+<script>
+/* ============ 主題 ============ */
+let isLight=false;
+function pal(){
+  return isLight? {
+    BG:'#faf7ee', AX:'rgba(45,35,15,0.85)', TXT:'#2b2620', DIM:'#5c5340',
+    RED:'#a5342a', BLUE:'#2a5ca5', GREEN:'#1f6b52', AMBER:'#8a5a10',
+    GHOST:'rgba(70,58,35,0.7)', BAND:'rgba(45,35,15,0.045)'
+  } : {
+    BG:'#0f1117', AX:'rgba(255,255,255,0.6)', TXT:'#dedad0', DIM:'#918d80',
+    RED:'#E07055', BLUE:'#5BA3E8', GREEN:'#2DB890', AMBER:'#EF9F27',
+    GHOST:'rgba(200,196,186,0.55)', BAND:'rgba(255,255,255,0.035)'
+  };
+}
+function toggleTheme(){
+  isLight=!isLight;
+  document.documentElement.classList.toggle('light',isLight);
+  document.getElementById('btnTheme').textContent = isLight?'🌙':'☀️';
+  draw();
+}
+
+/* ============ 步驟資料（與桌機版相同的證明內容） ============ */
+const STEPS=[
+{
+  title:'問題設置',
+  html:'光線從最底層 n₁ 的物體出發，\n依序穿過 n₁→n₂→n₃→n，\n最後被觀察者看見\n（垂直藍線為法線／參考軸）。\n\n真深：h₁、h₂、h₃（已知）\n\n<span class="formula">視深 h視 的定義：</span>\n把最後那段出射光線反向延伸，\n交軸的深度就是 h視。\n\n目標：求 h視 與 hᵢ,n,nᵢ 的關係。'
+},
+{
+  title:'n₁ 層：定義 d₁',
+  html:'光線與軸的夾角為 θ₁，\n垂直位移 h₁ 時，水平位移：\n\n<span class="formula">d₁ = h₁ tanθ₁</span>'
+},
+{
+  title:'n₂ 層：定義 d₂',
+  html:'在界面 1 折射後，光線在 n₂ 層\n夾角變為 θ₂，水平位移：\n\n<span class="formula">d₂ = h₂ tanθ₂</span>'
+},
+{
+  title:'n₃ 層：定義 d₃',
+  html:'在界面 2 折射後，光線在 n₃ 層\n夾角變為 θ₃，水平位移：\n\n<span class="formula">d₃ = h₃ tanθ₃</span>\n\n光線到達出射面（界面 3）。'
+},
+{
+  title:'定義出射角 θ 與視深 h視',
+  html:'光線在出射面折射進入 n，夾角為 θ。\n把這段出射光線反向延伸成一直線，\n延伸回軸上，交點深度即為 h視。\n\n這條直線的水平位移：\n<span class="formula">h視 · tanθ</span>'
+},
+{
+  title:'關鍵等式：兩者到達同一點',
+  html:'真實光線（實線）與虛擬延伸線（虛線），\n都是從同一條軸出發、到達同一個出射點，\n所以水平位移必須相等：\n\n<div class="result eq"><div class="ln">h視·tanθ = d₁+d₂+d₃</div><div class="cont">= h₁tanθ₁</div><div class="cont">+ h₂tanθ₂</div><div class="cont">+ h₃tanθ₃</div></div>'
+},
+{
+  title:'小角度近似',
+  html:'因為所有角度都很小\n（θ,θ₁,θ₂,θ₃＜5°）：\n\n<span class="formula">tanθ ≈ sinθ</span>　（對每個角都成立）\n\n代入上式：\n<div class="result eq"><div class="ln">h視 sinθ = h₁sinθ₁</div><div class="cont">+ h₂sinθ₂</div><div class="cont">+ h₃sinθ₃</div></div>'
+},
+{
+  title:'司乃耳定律的不變量',
+  html:'三個界面依序使用司乃耳定律：\nn₁sinθ₁=n₂sinθ₂\nn₂sinθ₂=n₃sinθ₃\nn₃sinθ₃=n sinθ\n\n<div class="result eq"><div class="ln">⇒ n₁sinθ₁</div><div class="cont">= n₂sinθ₂</div><div class="cont">= n₃sinθ₃</div><div class="cont">= n sinθ</div></div>\n\n⇒ sinθᵢ = (n/nᵢ) sinθ'
+},
+{
+  title:'代入化簡・證畢',
+  html:'代入 sinθᵢ=(n/nᵢ)sinθ：\n\n<div class="formula eq"><div class="ln">h視 sinθ =</div><div class="cont">[ h₁(n/n₁)</div><div class="cont">+ h₂(n/n₂)</div><div class="cont">+ h₃(n/n₃) ]sinθ</div></div>\n\n消去共同的 sinθ：\n<div class="result eq"><div class="ln">h視 = h₁(n/n₁)</div><div class="cont">+ h₂(n/n₂)</div><div class="cont">+ h₃(n/n₃)</div></div>\n<div class="result eq" style="margin-top:0.6em"><div class="ln">即：h視/n = h₁/n₁</div><div class="cont">+ h₂/n₂</div><div class="cont">+ h₃/n₃　證畢</div></div>'
+}
+];
+let step=0;
+function renderPanel(){
+  const s=STEPS[step];
+  document.getElementById('stepTag').textContent=`${step+1}/${STEPS.length}`;
+  document.getElementById('stepTitle').textContent=s.title;
+  document.getElementById('stepContent').innerHTML=s.html;
+  document.getElementById('stepInfo').textContent=`${step+1} / ${STEPS.length}`;
+  document.getElementById('panel').scrollTop=0;
+  document.getElementById('prevBtn').disabled = step===0;
+  document.getElementById('nextBtn').disabled = step===STEPS.length-1;
+}
+function nextStep(){ if(step<STEPS.length-1){ step++; renderPanel(); draw(); } }
+function prevStep(){ if(step>0){ step--; renderPanel(); draw(); } }
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+});
+
+/* ============ Canvas 繪圖 ============ */
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let W=0,H=0;
+function resizeCanvas(){
+  const wrap=document.getElementById('canvas-wrap');
+  const dpr=window.devicePixelRatio||1;
+  W=wrap.clientWidth; H=wrap.clientHeight;
+  canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  draw();
+}
+window.addEventListener('resize',resizeCanvas);
+window.addEventListener('orientationchange',()=>setTimeout(resizeCanvas,150));
+
+function guideIntersectY(A,B,gx){
+  const t=(gx-A.x)/(B.x-A.x);
+  return A.y + t*(B.y-A.y);
+}
+function bracket(x,y1,y2,label_,color,side,fontScale){
+  const S=Math.min(W,H);
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color;
+  ctx.lineWidth=Math.max(1.1,S*0.0028);
+  const cap=Math.max(4,S*0.014);
+  ctx.beginPath();
+  ctx.moveTo(x,y1); ctx.lineTo(x,y2);
+  ctx.moveTo(x-cap,y1); ctx.lineTo(x+cap,y1);
+  ctx.moveTo(x-cap,y2); ctx.lineTo(x+cap,y2);
+  ctx.stroke();
+  const fs=Math.max(13,S*0.062)*(fontScale||1);
+  ctx.font=`700 ${fs}px "Noto Sans TC",sans-serif`;
+  ctx.textBaseline='middle';
+  ctx.textAlign = side<0 ? 'right':'left';
+  ctx.fillText(label_, x + side*(cap+6), (y1+y2)/2);
+  ctx.restore();
+}
+function hBracket(x1,x2,y,label_,color,voffset){
+  const S=Math.min(W,H);
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color;
+  ctx.lineWidth=Math.max(1,S*0.0024);
+  const cap=Math.max(3,S*0.016);
+  ctx.beginPath();
+  ctx.moveTo(x1,y); ctx.lineTo(x2,y);
+  ctx.moveTo(x1,y-cap); ctx.lineTo(x1,y+cap);
+  ctx.moveTo(x2,y-cap); ctx.lineTo(x2,y+cap);
+  ctx.stroke();
+  const fs=Math.max(11,S*0.05);
+  ctx.font=`700 ${fs}px "Noto Sans TC",sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(label_,(x1+x2)/2,y+(voffset||-S*0.036));
+  ctx.restore();
+}
+function dashedLine(x1,y1,x2,y2,color,width,dash){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash||[5,5]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.restore();
+}
+function solidRay(x1,y1,x2,y2,color,width,arrow){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  if(arrow){
+    const ang=Math.atan2(y2-y1,x2-x1);
+    const asz=width*3.0;
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-asz*Math.cos(ang-0.4), y2-asz*Math.sin(ang-0.4));
+    ctx.lineTo(x2-asz*Math.cos(ang+0.4), y2-asz*Math.sin(ang+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+function openCircle(x,y,r,color,fill){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=fill||'transparent'; ctx.lineWidth=Math.max(1.4,Math.min(W,H)*0.0035);
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  if(fill) ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+function label(x,y,text,color,size,align,weight){
+  ctx.save();
+  ctx.fillStyle=color;
+  ctx.font=`${weight||700} ${size}px "Noto Sans TC",sans-serif`;
+  ctx.textAlign=align||'left'; ctx.textBaseline='middle';
+  ctx.fillText(text,x,y);
+  ctx.restore();
+}
+
+function draw(){
+  if(W<=0||H<=0) return;
+  const P=pal();
+  const S=Math.min(W,H);          // 手機版線寬/字級基準改用較短邊
+  const LWm=isLight?1.2:1;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=P.BG; ctx.fillRect(0,0,W,H);
+
+  /* ---- 版面配置（直式：層帶偏窄，留右側標籤欄） ---- */
+  const padTop=H*0.20, padBottom=H*0.06;
+  const Huse=H-padTop-padBottom;
+  const band3=Huse*0.27, band2=Huse*0.34, band1=Huse*0.39;
+  const y3=padTop;
+  const y2=y3+band3;
+  const y1=y2+band2;
+  const y0=y1+band1;
+
+  const guideX=W*0.30;
+  const xReal=guideX-W*0.155;
+  const labelX=W*0.90;
+  const axisTop=padTop*0.16;
+
+  /* 分層底色 + 界線 */
+  const bandFill=[ [y3,y2],[y2,y1],[y1,y0] ];
+  bandFill.forEach((b,i)=>{
+    ctx.fillStyle = i%2===0 ? P.BAND : 'transparent';
+    ctx.fillRect(0,b[0],W,b[1]-b[0]);
+  });
+  const fsLine=Math.max(1,S*0.003)*LWm;
+  [y0,y1,y2,y3].forEach(y=>{
+    ctx.save();
+    ctx.strokeStyle=P.AX; ctx.lineWidth=fsLine;
+    ctx.beginPath(); ctx.moveTo(W*0.02,y); ctx.lineTo(W*0.97,y); ctx.stroke();
+    ctx.restore();
+  });
+
+  /* 介質標籤 */
+  const fsLayer=Math.max(14,S*0.075);
+  label(labelX,(y3+axisTop)/2+H*0.015,'n', P.TXT, fsLayer,'center',800);
+  label(labelX,(y2+y3)/2,'n₃', P.TXT, fsLayer,'center',800);
+  label(labelX,(y1+y2)/2,'n₂', P.TXT, fsLayer,'center',800);
+  label(labelX,(y0+y1)/2,'n₁', P.TXT, fsLayer,'center',800);
+
+  /* 真深括號 */
+  bracket(xReal,y1,y0,'h₁',P.TXT,-1);
+  bracket(xReal,y2,y1,'h₂',P.TXT,-1);
+  bracket(xReal,y3,y2,'h₃',P.TXT,-1);
+
+  /* 垂直軸線（法線） */
+  ctx.save();
+  ctx.strokeStyle=P.AX; ctx.lineWidth=Math.max(1.1,S*0.0032)*LWm;
+  ctx.beginPath(); ctx.moveTo(guideX,y0); ctx.lineTo(guideX,axisTop); ctx.stroke();
+  const ah=Math.max(6,S*0.024);
+  ctx.beginPath();
+  ctx.moveTo(guideX,axisTop-ah*0.4);
+  ctx.lineTo(guideX-ah*0.45,axisTop+ah*0.55);
+  ctx.lineTo(guideX+ah*0.45,axisTop+ah*0.55);
+  ctx.closePath(); ctx.fillStyle=P.AX; ctx.fill();
+  ctx.restore();
+
+  /* 光源 */
+  const srcR=Math.max(2.5,S*0.013);
+  ctx.save(); ctx.fillStyle=P.TXT; ctx.beginPath(); ctx.arc(guideX,y0,srcR,0,Math.PI*2); ctx.fill(); ctx.restore();
+
+  /* 光線關鍵點 */
+  const P0={x:guideX,y:y0};
+  const P1={x:guideX+W*0.06, y:y1};
+  const P2={x:P1.x+W*0.09,  y:y2};
+  const P3={x:P2.x+W*0.125, y:y3};
+  const P4={x:P3.x+W*0.16,  y:y3-(y3-axisTop)*0.55};
+  const rayW=Math.max(1.6,S*0.0046)*LWm;
+
+  function normalTick(cx,cy){
+    const len=Math.max(6,S*0.024);
+    dashedLine(cx,cy-len,cx,cy+len,P.AX,Math.max(0.8,S*0.0018),[2,3]);
+  }
+
+  const fsAng=Math.max(12,S*0.052);
+
+  if(step>=1){
+    solidRay(P0.x,P0.y,P1.x,P1.y,P.RED,rayW,false);
+    normalTick(P1.x,P1.y);
+    label(P1.x+W*0.012,P1.y-H*0.018,'θ₁',P.AMBER,fsAng,'left',700);
+    hBracket(guideX,P1.x,y1-H*0.01,'d₁',P.AMBER,-H*0.018);
+  }
+  if(step>=2){
+    solidRay(P1.x,P1.y,P2.x,P2.y,P.RED,rayW,false);
+    normalTick(P2.x,P2.y);
+    label(P2.x+W*0.012,P2.y-H*0.018,'θ₂',P.AMBER,fsAng,'left',700);
+    hBracket(P1.x,P2.x,y2-H*0.01,'d₂',P.AMBER,-H*0.018);
+  }
+  if(step>=3){
+    solidRay(P2.x,P2.y,P3.x,P3.y,P.RED,rayW,false);
+    normalTick(P3.x,P3.y);
+    label(P3.x+W*0.012,P3.y-H*0.018,'θ₃',P.AMBER,fsAng,'left',700);
+    hBracket(P2.x,P3.x,y3-H*0.01,'d₃',P.AMBER,-H*0.018);
+  }
+  if(step>=4){
+    solidRay(P3.x,P3.y,P4.x,P4.y,P.RED,rayW,true);
+    label(P3.x+W*0.014,P3.y-H*0.038,'θ',P.AMBER,Math.max(13,S*0.058),'left',800);
+    const eyeX=Math.min(P4.x+W*0.03,W*0.94), eyeY=Math.max(P4.y-H*0.014,H*0.03);
+    ctx.save();
+    ctx.strokeStyle=P.TXT; ctx.lineWidth=Math.max(1,S*0.0032)*LWm;
+    const ew=W*0.05, eh=H*0.018;
+    ctx.beginPath();
+    ctx.moveTo(eyeX-ew/2,eyeY);
+    ctx.quadraticCurveTo(eyeX,eyeY-eh,eyeX+ew/2,eyeY);
+    ctx.quadraticCurveTo(eyeX,eyeY+eh,eyeX-ew/2,eyeY);
+    ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(eyeX,eyeY,eh*0.4,0,Math.PI*2); ctx.fillStyle=P.TXT; ctx.fill();
+    ctx.restore();
+
+    const hy=guideIntersectY(P3,P4,guideX);
+    dashedLine(P3.x,P3.y,guideX,hy,P.BLUE,Math.max(1.2,S*0.0038)*LWm,[6,5]);
+    openCircle(guideX,hy,Math.max(3.5,S*0.016),P.GREEN,P.BG);
+    bracket(guideX-W*0.06,y3,hy,'h視',P.GREEN,-1,1.05);
+  }
+  if(step===5){
+    const hy=guideIntersectY(P3,P4,guideX);
+    hBracket(guideX,P3.x,y3-H*0.05,'d₁+d₂+d₃ ＝ h視·tanθ',P.GREEN,-H*0.016);
+  }
+
+  /* 底部說明 */
+  const fsMini=Math.max(11,S*0.042);
+  label(W*0.02,H*0.965,'真深＝實際垂直深度；虛線＝出射光線反向延伸',P.DIM,fsMini,'left',600);
+}
+
+/* ---- 初始化 ---- */
+renderPanel();
+window.addEventListener('load',resizeCanvas);
+requestAnimationFrame(resizeCanvas);
+</script>
+</body>
+</html>
